@@ -1,0 +1,508 @@
+import 'package:flutter/material.dart';
+import '../../../constants.dart';
+import '../../../route/route_constants.dart';
+import '../../../services/auth_service.dart';
+import '../../../utils/responsive.dart';
+
+import 'components/login_form.dart';
+
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  String _email = '';
+  String _password = '';
+  bool _isLoading = false;
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Login Failed'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: successColor,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Debug: Print the credentials being sent
+      print('Attempting login with:');
+      print('Email: $_email');
+      print('Password: ${_password.length > 0 ? '***' : 'empty'}');
+
+      final response = await AuthService.loginWithApi(_email, _password);
+
+      if (!mounted) return;
+
+      // Debug: Print the response details
+      print('Login response:');
+      print('Success: ${response.success}');
+      print('Error: ${response.error?.message}');
+      print('Status Code: ${response.error?.statusCode}');
+
+      if (response.success && response.data != null) {
+        _showSuccessSnackBar('Login successful!');
+
+        // Check redirect URL from API response
+        final redirectUrl = response.data!.redirectUrl;
+        print('Login successful! Redirect URL: $redirectUrl');
+        print('Project count: ${response.data!.projectCount}');
+
+        // Navigate based on redirect URL
+        if (redirectUrl == '/dashboard') {
+          // Navigate directly to customer dashboard
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            customerDashboardScreenRoute,
+            ModalRoute.withName(logInScreenRoute),
+          );
+        } else {
+          // Default navigation to main app with bottom navigation
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            entryPointScreenRoute,
+            ModalRoute.withName(logInScreenRoute),
+          );
+        }
+      } else {
+        String errorMessage =
+            response.error?.message ?? 'Login failed. Please try again.';
+
+        // Add more specific error handling
+        if (response.error?.statusCode == 401) {
+          errorMessage =
+              'Invalid email or password. Please check your credentials.\n\nDebug Info:\n- Email: $_email\n- Password length: ${_password.length}\n- This is likely a backend bcrypt comparison issue.';
+        } else if (response.error?.statusCode == 0) {
+          errorMessage =
+              'Cannot connect to server. Please check your internet connection and try again.';
+        } else if (response.error?.statusCode == 500) {
+          errorMessage = 'Server error. Please try again later.';
+        }
+
+        _showErrorDialog(errorMessage);
+      }
+    } catch (e) {
+      if (mounted) {
+        print('Login exception: $e');
+        _showErrorDialog('An unexpected error occurred: ${e.toString()}');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final bool isDesktop = Responsive.isDesktop(context);
+    final bool isTablet = Responsive.isTablet(context);
+
+    // Responsive logo size
+    final double logoSize = isDesktop ? 120 : (isTablet ? 100 : 80);
+    final double headerPadding = isDesktop ? 60 : (isTablet ? 50 : 40);
+
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            child: ResponsiveContainer(
+              maxWidth: 1200,
+              child: Responsive(
+                // Mobile Layout
+                mobile: _buildMobileLayout(
+                    context, isDark, logoSize, headerPadding),
+                // Tablet Layout
+                tablet: _buildMobileLayout(
+                    context, isDark, logoSize, headerPadding),
+                // Desktop Layout
+                desktop: _buildDesktopLayout(context, isDark),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Mobile and Tablet Layout (Single Column)
+  Widget _buildMobileLayout(BuildContext context, bool isDark, double logoSize,
+      double headerPadding) {
+    return Column(
+      children: [
+        // Professional Header with Logo
+        _buildHeader(context, isDark, logoSize, headerPadding),
+
+        // Login Form Section
+        Padding(
+          padding: EdgeInsets.all(ResponsiveSpacing.getPadding(context) * 1.5),
+          child: _buildLoginForm(context, isDark),
+        ),
+      ],
+    );
+  }
+
+  // Desktop Layout (Two Column - Image + Form)
+  Widget _buildDesktopLayout(BuildContext context, bool isDark) {
+    return Row(
+      children: [
+        // Left Side - Branding
+        Expanded(
+          flex: 5,
+          child: Container(
+            height: MediaQuery.of(context).size.height,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isDark
+                    ? [
+                        const Color(0xFF1A1A2E),
+                        const Color(0xFF16213E),
+                      ]
+                    : [
+                        const Color(0xFF0F3460),
+                        const Color(0xFF16213E),
+                      ],
+              ),
+            ),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Walldot Logo
+                  Container(
+                    padding: const EdgeInsets.all(30),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 30,
+                          offset: const Offset(0, 15),
+                        ),
+                      ],
+                    ),
+                    child: Image.asset(
+                      'assets/logo/walldot_logo.png',
+                      width: 150,
+                      height: 150,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  const Text(
+                    "WALLDOT BUILDERS",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 36,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 3.0,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "Building Your Dreams",
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Right Side - Login Form
+        Expanded(
+          flex: 5,
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: _buildLoginForm(context, isDark),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Header Widget (for mobile/tablet)
+  Widget _buildHeader(BuildContext context, bool isDark, double logoSize,
+      double headerPadding) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [
+                  const Color(0xFF1A1A2E),
+                  const Color(0xFF16213E),
+                ]
+              : [
+                  const Color(0xFF0F3460),
+                  const Color(0xFF16213E),
+                ],
+        ),
+      ),
+      child: Column(
+        children: [
+          SizedBox(height: headerPadding),
+          // Walldot Logo with better visibility
+          Container(
+            padding: EdgeInsets.all(logoSize * 0.2),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Image.asset(
+              'assets/logo/walldot_logo.png',
+              width: logoSize,
+              height: logoSize,
+              fit: BoxFit.contain,
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Company Name
+          Text(
+            "WALLDOT BUILDERS",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: ResponsiveFontSize.getHeadline(context),
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2.5,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Building Your Dreams",
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: ResponsiveFontSize.getBody(context),
+              fontWeight: FontWeight.w400,
+              letterSpacing: 1.2,
+            ),
+          ),
+          SizedBox(height: headerPadding),
+        ],
+      ),
+    );
+  }
+
+  // Login Form Widget (reusable for all layouts)
+  Widget _buildLoginForm(BuildContext context, bool isDark) {
+    final cardPadding = ResponsiveSpacing.getCardPadding(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 8),
+        Text(
+          "Welcome Back",
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontSize: ResponsiveFontSize.getHeadline(context),
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.5,
+              ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          "Sign in to continue managing your projects",
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: ResponsiveFontSize.getBody(context),
+                color: Theme.of(context)
+                    .textTheme
+                    .bodyMedium!
+                    .color!
+                    .withOpacity(0.6),
+              ),
+        ),
+        const SizedBox(height: 32),
+
+        // Form Card
+        Container(
+          padding: EdgeInsets.all(cardPadding * 1.5),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E1E2E) : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              LogInForm(
+                formKey: _formKey,
+                onEmailChanged: (value) => _email = value,
+                onPasswordChanged: (value) => _password = value,
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  child: Text(
+                    "Forgot Password?",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: ResponsiveFontSize.getBody(context),
+                      color: logoRed,
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pushNamed(context, passwordRecoveryScreenRoute);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 32),
+
+        // Login Button
+        SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton(
+            onPressed: _isLoading ? null : _handleLogin,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: logoRed,
+              foregroundColor: Colors.white,
+              elevation: 4,
+              shadowColor: logoRed.withOpacity(0.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(whiteColor),
+                    ),
+                  )
+                : Text(
+                    "Sign In",
+                    style: TextStyle(
+                      fontSize: ResponsiveFontSize.getBody(context) + 2,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1,
+                    ),
+                  ),
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // Sign up link
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "Don't have an account? ",
+              style: TextStyle(
+                fontSize: ResponsiveFontSize.getBody(context),
+                color: Theme.of(context)
+                    .textTheme
+                    .bodyMedium!
+                    .color!
+                    .withOpacity(0.7),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pushNamed(context, signUpScreenRoute);
+              },
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(0, 0),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                "Sign Up",
+                style: TextStyle(
+                  fontSize: ResponsiveFontSize.getBody(context),
+                  fontWeight: FontWeight.w700,
+                  color: logoRed,
+                ),
+              ),
+            )
+          ],
+        ),
+
+        const SizedBox(height: 16),
+
+        // Professional footer
+        Center(
+          child: Text(
+            "© 2024 Walldot Builders. All rights reserved.",
+            style: TextStyle(
+              fontSize: ResponsiveFontSize.getBody(context) - 2,
+              color: Theme.of(context)
+                  .textTheme
+                  .bodyMedium!
+                  .color!
+                  .withOpacity(0.4),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
