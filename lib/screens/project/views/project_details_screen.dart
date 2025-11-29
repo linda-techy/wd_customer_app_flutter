@@ -427,10 +427,14 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
 
     // Use _projectDetails progress if available, otherwise fall back to ProjectCard
     final progress = _projectDetails?.progress ?? p?.progress ?? 0;
+    final phase = _projectDetails?.projectPhase ?? p?.projectPhase;
 
-    if (progress == 0) {
+    // Show "Select your design" only when projectPhase is "design" (case-insensitive)
+    if (phase != null && phase.toLowerCase() == 'design') {
       return _buildActionRequiredCard(context);
-    } else if (progress < 50) {
+    } 
+    
+    if (progress < 50) {
       return _buildDesignProgressCard(context, p);
     } else {
       return _buildSiteProgressCard(context, p);

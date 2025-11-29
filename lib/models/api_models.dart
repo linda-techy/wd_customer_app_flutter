@@ -263,7 +263,8 @@ class ProjectCard {
   final String? startDate;
   final String? endDate;
   final String status;
-  final double progress; // Added progress field
+  final double progress;
+  final String? projectPhase;
 
   ProjectCard({
     required this.id,
@@ -273,7 +274,8 @@ class ProjectCard {
     this.startDate,
     this.endDate,
     required this.status,
-    required this.progress, // Added to constructor
+    required this.progress,
+    this.projectPhase,
   });
 
   factory ProjectCard.fromJson(Map<String, dynamic> json) {
@@ -285,7 +287,8 @@ class ProjectCard {
       startDate: json['startDate'],
       endDate: json['endDate'],
       status: json['status'] ?? 'UNKNOWN',
-      progress: (json['progress'] ?? 0.0).toDouble(), // Parse progress
+      progress: (json['progress'] ?? 0.0).toDouble(),
+      projectPhase: json['project_phase'] ?? json['projectPhase'],
     );
   }
 }
@@ -367,6 +370,7 @@ class ProjectDetails {
   final DateTime? endDate;
   final double progress;
   final String status;
+  final String? projectPhase;
   final List<ProjectDocumentSummary> documents;
   final ProgressData progressData;
 
@@ -379,6 +383,7 @@ class ProjectDetails {
     this.endDate,
     required this.progress,
     required this.status,
+    this.projectPhase,
     required this.documents,
     required this.progressData,
   });
@@ -393,6 +398,7 @@ class ProjectDetails {
       endDate: json['endDate'] != null ? DateTime.parse(json['endDate']) : null,
       progress: (json['progress'] as num?)?.toDouble() ?? 0.0,
       status: json['status'] ?? 'ACTIVE',
+      projectPhase: json['project_phase'] ?? json['projectPhase'],
       documents: (json['documents'] as List<dynamic>?)
               ?.map((e) => ProjectDocumentSummary.fromJson(e))
               .toList() ??
