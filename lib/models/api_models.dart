@@ -257,38 +257,47 @@ class ProjectSummary {
 
 class ProjectCard {
   final int id;
+  final String? projectUuid;
   final String name;
-  final String code;
-  final String location;
+  final String? code;
+  final String? location;
   final String? startDate;
   final String? endDate;
-  final String status;
+  final String? status;
   final double progress;
   final String? projectPhase;
+  final String? designPackage;
+  final bool isDesignAgreementSigned;
 
   ProjectCard({
     required this.id,
+    this.projectUuid,
     required this.name,
-    required this.code,
-    required this.location,
+    this.code,
+    this.location,
     this.startDate,
     this.endDate,
-    required this.status,
+    this.status,
     required this.progress,
     this.projectPhase,
+    this.designPackage,
+    this.isDesignAgreementSigned = false,
   });
 
   factory ProjectCard.fromJson(Map<String, dynamic> json) {
     return ProjectCard(
       id: json['id'] ?? 0,
+      projectUuid: json['projectUuid'],
       name: json['name'] ?? '',
-      code: json['code'] ?? '',
-      location: json['location'] ?? '',
+      code: json['code'],
+      location: json['location'],
       startDate: json['startDate'],
       endDate: json['endDate'],
-      status: json['status'] ?? 'UNKNOWN',
-      progress: (json['progress'] ?? 0.0).toDouble(),
-      projectPhase: json['project_phase'] ?? json['projectPhase'],
+      status: json['status'],
+      progress: (json['progress'] ?? 0).toDouble(),
+      projectPhase: json['projectPhase'],
+      designPackage: json['designPackage'],
+      isDesignAgreementSigned: json['isDesignAgreementSigned'] ?? false,
     );
   }
 }
@@ -296,25 +305,25 @@ class ProjectCard {
 class RecentActivity {
   final String type;
   final String description;
-  final String date;
-  final int? projectId;
-  final String? projectName;
+  final String timestamp;
+  final int projectId;
+  final String projectName;
 
   RecentActivity({
     required this.type,
     required this.description,
-    required this.date,
-    this.projectId,
-    this.projectName,
+    required this.timestamp,
+    required this.projectId,
+    required this.projectName,
   });
 
   factory RecentActivity.fromJson(Map<String, dynamic> json) {
     return RecentActivity(
       type: json['type'] ?? '',
       description: json['description'] ?? '',
-      date: json['date'] ?? '',
-      projectId: json['projectId'],
-      projectName: json['projectName'],
+      timestamp: json['timestamp'] ?? '',
+      projectId: json['projectId'] ?? 0,
+      projectName: json['projectName'] ?? '',
     );
   }
 }
@@ -345,70 +354,114 @@ class QuickStats {
   }
 }
 
-// API Response wrapper
 class ApiResponse<T> {
   final bool success;
   final T? data;
   final ApiError? error;
+  final String? message;
 
-  ApiResponse.success(this.data)
-      : success = true,
-        error = null;
-
-  ApiResponse.error(this.error)
-      : success = false,
-        data = null;
-}
-
-// Project Details Model
-class ProjectDetails {
-  final int id;
-  final String name;
-  final String code;
-  final String location;
-  final DateTime? startDate;
-  final DateTime? endDate;
-  final double progress;
-  final String status;
-  final String? projectPhase;
-  final List<ProjectDocumentSummary> documents;
-  final ProgressData progressData;
-
-  ProjectDetails({
-    required this.id,
-    required this.name,
-    required this.code,
-    required this.location,
-    this.startDate,
-    this.endDate,
-    required this.progress,
-    required this.status,
-    this.projectPhase,
-    required this.documents,
-    required this.progressData,
+  ApiResponse({
+    required this.success,
+    this.data,
+    this.error,
+    this.message,
   });
 
-  factory ProjectDetails.fromJson(Map<String, dynamic> json) {
-    return ProjectDetails(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? '',
-      code: json['code'] ?? '',
-      location: json['location'] ?? '',
-      startDate: json['startDate'] != null ? DateTime.parse(json['startDate']) : null,
-      endDate: json['endDate'] != null ? DateTime.parse(json['endDate']) : null,
-      progress: (json['progress'] as num?)?.toDouble() ?? 0.0,
-      status: json['status'] ?? 'ACTIVE',
-      projectPhase: json['project_phase'] ?? json['projectPhase'],
-      documents: (json['documents'] as List<dynamic>?)
-              ?.map((e) => ProjectDocumentSummary.fromJson(e))
-              .toList() ??
-          [],
-      progressData: ProgressData.fromJson(json['progressData'] ?? {}),
+  factory ApiResponse.success(T data) {
+    return ApiResponse(success: true, data: data);
+  }
+
+  factory ApiResponse.error(ApiError error) {
+    return ApiResponse(success: false, error: error);
+  }
+
+  factory ApiResponse.fromJson(
+      Map<String, dynamic> json, T Function(dynamic) fromJsonT) {
+    return ApiResponse(
+      success: json['success'] ?? true,
+      data: json['data'] != null ? fromJsonT(json['data']) : null,
+      message: json['message'],
     );
   }
 }
 
-// Project Document Summary Model
+class ProjectDetails {
+  final int id;
+  final String? projectUuid;
+  final String name;
+  final String? code;
+  final String? location;
+  final String? startDate;
+  final String? endDate;
+  final String? status;
+  final double progress;
+  final String? phase;
+  final String? designPackage;
+  final bool isDesignAgreementSigned;
+  final String? state;
+  final String? createdBy;
+  final String? responsiblePerson;
+  final String? sqFeet;
+  final String? leadId;
+  final List<ProjectDocumentSummary> documents;
+  final ProgressData? progressData;
+
+  ProjectDetails({
+    required this.id,
+    this.projectUuid,
+    required this.name,
+    this.code,
+    this.location,
+    this.startDate,
+    this.endDate,
+    this.status,
+    required this.progress,
+    this.phase,
+    this.designPackage,
+    this.isDesignAgreementSigned = false,
+    this.state,
+    this.createdBy,
+    this.responsiblePerson,
+    this.sqFeet,
+    this.leadId,
+    this.documents = const [],
+    this.progressData,
+  });
+
+  factory ProjectDetails.fromJson(Map<String, dynamic> json) {
+    var documentsList = json['documents'] as List?;
+    List<ProjectDocumentSummary> documents = documentsList != null
+        ? documentsList
+            .map((i) => ProjectDocumentSummary.fromJson(i))
+            .toList()
+        : [];
+
+    return ProjectDetails(
+      id: json['id'] ?? 0,
+      projectUuid: json['projectUuid'],
+      name: json['name'] ?? '',
+      code: json['code'],
+      location: json['location'],
+      startDate: json['startDate'],
+      endDate: json['endDate'],
+      status: json['status'],
+      progress: (json['progress'] ?? 0).toDouble(),
+      phase: json['projectPhase'],
+      designPackage: json['designPackage'],
+      isDesignAgreementSigned: json['isDesignAgreementSigned'] ?? false,
+      state: json['state'],
+      createdBy: json['createdBy'],
+      responsiblePerson: json['responsiblePerson'],
+      sqFeet: json['sqFeet'],
+      leadId: json['leadId'],
+      documents: documents,
+      progressData: json['progressData'] != null
+          ? ProgressData.fromJson(json['progressData'])
+          : null,
+    );
+  }
+}
+
 class ProjectDocumentSummary {
   final int id;
   final String filename;

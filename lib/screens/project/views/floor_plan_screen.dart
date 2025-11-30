@@ -5,7 +5,7 @@ import '../../../services/auth_service.dart';
 class FloorPlanScreen extends StatefulWidget {
   const FloorPlanScreen({super.key, this.projectId});
 
-  final int? projectId; // Support direct project ID for web refresh
+  final String? projectId; // Support direct project ID for web refresh
 
   @override
   State<FloorPlanScreen> createState() => _FloorPlanScreenState();
@@ -13,7 +13,7 @@ class FloorPlanScreen extends StatefulWidget {
 
 class _FloorPlanScreenState extends State<FloorPlanScreen> {
   bool isLoggedIn = false;
-  int? projectId;
+  String? projectId;
 
   @override
   void initState() {

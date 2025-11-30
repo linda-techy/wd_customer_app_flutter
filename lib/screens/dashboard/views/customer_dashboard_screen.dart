@@ -489,7 +489,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
           onTap: () {
             Navigator.pushNamed(
               context,
-              projectDetailsRoute(project.id),
+              projectDetailsRoute(project.projectUuid),
               arguments: project, // Still pass as backup for non-web platforms
             );
           },

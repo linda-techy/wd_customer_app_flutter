@@ -5,120 +5,711 @@ import '../services/project_module_service.dart';
 import '../config/api_config.dart';
 import '../services/auth_service.dart';
 import 'pdf_viewer_screen.dart';
+import '../models/api_models.dart';
+import '../design_tokens/app_colors.dart';
+import '../design_tokens/app_spacing.dart';
+import '../design_tokens/app_typography.dart';
+import '../responsive/responsive_builder.dart';
+import '../services/dashboard_service.dart';
+import 'project/views/design_package_selection_screen.dart';
+import '../widgets/project_module_card.dart';
+import '../widgets/circular_progress_ring.dart';
+import '../widgets/shimmer_loading.dart';
 
 class ProjectDetailsScreen extends StatefulWidget {
-  final int projectId;
-  final String projectName;
+  final String projectId;
+  final String? projectName;
 
   const ProjectDetailsScreen({
     Key? key,
     required this.projectId,
-    required this.projectName,
+    this.projectName,
   }) : super(key: key);
 
   @override
   State<ProjectDetailsScreen> createState() => _ProjectDetailsScreenState();
 }
 
-class _ProjectDetailsScreenState extends State<ProjectDetailsScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  late ProjectModuleService _service;
+class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
+  ProjectModuleService? _service;
+  ProjectDetails? _projectDetails;
+  bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 11, vsync: this);
-    _initializeService();
+    _initializeData();
   }
 
-  Future<void> _initializeService() async {
-    // Get access token from AuthService
-    final token = await AuthService.getAccessToken();
-    // Initialize service with production API URL
-    _service = ProjectModuleService(
-      baseUrl: ApiConfig.baseUrl,
-      token: token,
-    );
-  }
+  Future<void> _initializeData() async {
+    try {
+      final token = await AuthService.getAccessToken();
+      
+      if (mounted) {
+        setState(() {
+          _service = ProjectModuleService(
+            baseUrl: ApiConfig.baseUrl,
+            token: token,
+          );
+        });
+      }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+      final response = await DashboardService.getProjectDetails(widget.projectId);
+      
+      if (response.success && response.data != null && mounted) {
+        setState(() {
+          _projectDetails = response.data;
+          _isLoading = false;
+        });
+      } else if (mounted) {
+        setState(() {
+          _errorMessage = response.error?.message ?? 'Failed to load project';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Error: $e';
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.projectName),
-        elevation: 2,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(72),
+    if (_isLoading) {
+      return const Scaffold(
+        body: ProjectDetailsShimmer(),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Project Details')),
+        body: Center(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                indicatorColor: Colors.white,
-                indicatorWeight: 3,
-                labelPadding: const EdgeInsets.symmetric(horizontal: 12),
-                tabs: const [
-                  Tab(icon: Icon(Icons.folder), text: 'Documents'),
-                  Tab(icon: Icon(Icons.fact_check), text: 'Quality'),
-                  Tab(icon: Icon(Icons.timeline), text: 'Activity'),
-                  Tab(icon: Icon(Icons.photo_library), text: 'Gallery'),
-                  Tab(icon: Icon(Icons.visibility), text: 'Observations'),
-                  Tab(icon: Icon(Icons.help_outline), text: 'Queries'),
-                  Tab(icon: Icon(Icons.videocam), text: 'CCTV'),
-                  Tab(icon: Icon(Icons.vrpano), text: '360° View'),
-                  Tab(icon: Icon(Icons.location_on), text: 'Site Visits'),
-                  Tab(icon: Icon(Icons.feedback), text: 'Feedback'),
-                  Tab(icon: Icon(Icons.receipt_long), text: 'BoQ'),
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(_errorMessage!, textAlign: TextAlign.center),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _isLoading = true;
+                    _errorMessage = null;
+                  });
+                  _initializeData();
+                },
+                icon: const Icon(Icons.refresh),
+                label: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: _buildHeroSection()),
+          // Design Package Selection Card (if needed)
+          if (_needsDesignPackageSelection())
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: _buildDesignPackageActionCard(),
+              ),
+            ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: _buildSummaryCard(),
+            ),
+          ),
+          _buildSection('Project Management', [
+            _buildModuleCard(Icons.folder_outlined, 'Documents', 'View project files', 'documents'),
+            _buildModuleCard(Icons.fact_check_outlined, 'Quality', 'Track quality', null, color: AppColors.success),
+            _buildModuleCard(Icons.timeline, 'Activity', 'Recent updates', null, color: AppColors.info),
+            _buildModuleCard(Icons.calendar_today, 'Schedule', 'View timeline', 'schedule', color: AppColors.warning),
+          ]),
+          _buildSection('Visual Media', [
+            _buildModuleCard(Icons.photo_library_outlined, 'Gallery', 'Project photos', null, color: const Color(0xFFEC4899)),
+            _buildModuleCard(Icons.videocam_outlined, 'CCTV', 'Live monitoring', 'cctv_surveillance', color: const Color(0xFF8B5CF6)),
+            _buildModuleCard(Icons.vrpano_outlined, '360° View', 'Virtual tour', 'three_d_design', color: const Color(0xFF06B6D4)),
+            _buildModuleCard(Icons.location_on_outlined, 'Site Visits', 'Visit history', null, color: const Color(0xFFF59E0B)),
+          ]),
+          _buildSection('Communication', [
+            _buildModuleCard(Icons.visibility_outlined, 'Observations', 'Track issues', null, badge: 3),
+            _buildModuleCard(Icons.help_outline, 'Queries', 'Ask questions', null, color: const Color(0xFF3B82F6)),
+            _buildModuleCard(Icons.feedback_outlined, 'Feedback', 'Share thoughts', null, color: const Color(0xFF10B981)),
+            _buildModuleCard(Icons.receipt_long_outlined, 'BoQ', 'Bill of quantities', null, color: const Color(0xFF6366F1)),
+          ]),
+          const SliverToBoxAdapter(child: SizedBox(height: 32)),
+        ],
+      ),
+    );
+  }
+
+
+  Widget _buildHeroSection() {
+    final progress = (_projectDetails?.progress ?? 0) / 100.0;
+    final status = _projectDetails?.status ?? 'Unknown';
+    final location = _projectDetails?.location ?? 'Not specified';
+    final phase = _projectDetails?.phase ?? 'Planning';
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.primary, AppColors.primaryDark],
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  Expanded(
+                    child: Text(
+                      widget.projectName ?? 'Project Details',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.more_vert, color: Colors.white),
+                    onPressed: () {},
+                  ),
                 ],
               ),
-              Container(
-                height: 20,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue.shade700, Colors.blue.shade900],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  CircularProgressRing(progress: progress, size: 140),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildMetadataChip(Icons.location_on, location),
+                      const SizedBox(width: 12),
+                      _buildMetadataChip(Icons.build, phase),
+                    ],
                   ),
-                ),
-                child: Center(
-                  child: Text(
-                    '← Swipe tabs left/right to see all 11 modules →',
-                    style: TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.w500),
-                  ),
+                  const SizedBox(height: 12),
+                  _buildStatusBadge(status),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetadataChip(IconData icon, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.white),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: const TextStyle(color: Colors.white, fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(String status) {
+    Color color = AppColors.getStatusColor(status);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryCard() {
+    final startDate = _projectDetails?.startDate ?? 'Not set';
+    final endDate = _projectDetails?.endDate ?? 'Not set';
+    final designPackage = _projectDetails?.designPackage;
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Project Overview',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildInfoRow(Icons.calendar_today, 'Start Date', startDate),
+            const SizedBox(height: 12),
+            _buildInfoRow(Icons.event, 'Target Completion', endDate),
+            if (designPackage != null && designPackage.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _buildInfoRow(Icons.palette, 'Design Package', designPackage),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: AppColors.primary),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF1F2937),
                 ),
               ),
             ],
           ),
         ),
+      ],
+    );
+  }
+
+  bool _needsDesignPackageSelection() {
+    final phase = _projectDetails?.phase?.toLowerCase();
+    final designPackage = _projectDetails?.designPackage;
+    return phase == 'design' && (designPackage == null || designPackage.isEmpty);
+  }
+
+  Widget _buildDesignPackageActionCard() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: const Color(0xFFFFF3E0),
+      child: InkWell(
+        onTap: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DesignPackageSelectionScreen(
+                projectId: widget.projectId,
+              ),
+            ),
+          );
+          if (result != null) {
+            setState(() {
+              _isLoading = true;
+            });
+            _initializeData();
+          }
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.palette_outlined,
+                  color: AppColors.warning,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      '⚠️ Action Required',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFE65100),
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Select your design package to proceed',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: AppColors.warning,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+    );
+  }
+
+  Widget _buildSection(String title, List<Widget> cards) {
+    return SliverToBoxAdapter(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          DocumentsTab(projectId: widget.projectId, service: _service),
-          QualityCheckTab(projectId: widget.projectId, service: _service),
-          ActivityFeedTab(projectId: widget.projectId, service: _service),
-          GalleryTab(projectId: widget.projectId, service: _service),
-          ObservationsTab(projectId: widget.projectId, service: _service),
-          QueriesTab(projectId: widget.projectId, service: _service),
-          CctvTab(projectId: widget.projectId, service: _service),
-          View360Tab(projectId: widget.projectId, service: _service),
-          SiteVisitsTab(projectId: widget.projectId, service: _service),
-          FeedbackTab(projectId: widget.projectId, service: _service),
-          BoqTab(projectId: widget.projectId, service: _service),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: 1.0,
+              children: cards,
+            ),
+          ),
         ],
       ),
     );
   }
+
+  Widget _buildModuleCard(
+    IconData icon,
+    String title,
+    String subtitle,
+    String? route, {
+    Color? color,
+    int? badge,
+  }) {
+    return ProjectModuleCard(
+      icon: icon,
+      title: title,
+      subtitle: subtitle,
+      iconColor: color,
+      badgeCount: badge,
+      onTap: () {
+        if (route != null) {
+          Navigator.pushNamed(context, '/$route/${widget.projectId}');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$title - Coming Soon!'),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+        }
+      },
+    );
+  }
 }
 
-// ===== DOCUMENTS TAB =====
+// ===== OVERVIEW TAB =====
+class OverviewTab extends StatefulWidget {
+  final String projectId;
+
+  const OverviewTab({Key? key, required this.projectId}) : super(key: key);
+
+  @override
+  State<OverviewTab> createState() => _OverviewTabState();
+}
+
+class _OverviewTabState extends State<OverviewTab> {
+  ProjectDetails? _projectDetails;
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProjectDetails();
+  }
+
+  Future<void> _loadProjectDetails() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await DashboardService.getProjectDetails(widget.projectId);
+
+      if (response.success && response.data != null) {
+        if (mounted) {
+          setState(() {
+            _projectDetails = response.data;
+            _isLoading = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _errorMessage = response.error?.message ?? 'Failed to load project details';
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Error: $e';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(_errorMessage!, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _loadProjectDetails,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildPhaseCard(context),
+          const SizedBox(height: 24),
+          _buildOverviewCard(context),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPhaseCard(BuildContext context) {
+    final progress = _projectDetails?.progress ?? 0;
+    final phase = _projectDetails?.phase;
+    final designPackage = _projectDetails?.designPackage;
+
+    if (phase != null && 
+        phase.toLowerCase() == 'design' && 
+        (designPackage == null || designPackage.isEmpty)) {
+      return _buildActionRequiredCard(context);
+    } 
+    
+    if (progress < 50) {
+      return _buildDesignProgressCard(context);
+    } else {
+      return _buildSiteProgressCard(context);
+    }
+  }
+
+  Widget _buildActionRequiredCard(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DesignPackageSelectionScreen(
+                projectId: widget.projectId,
+              ),
+            ),
+          );
+          if (result != null) _loadProjectDetails();
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              const Icon(Icons.palette_outlined, color: AppColors.warning),
+              const SizedBox(width: 12),
+              const Expanded(child: Text('Action Required: Select Design Package')),
+              const Icon(Icons.arrow_forward),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDesignProgressCard(BuildContext context) {
+    final progress = _projectDetails?.progress ?? 0;
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.design_services_outlined, color: AppColors.info),
+                const SizedBox(width: 12),
+                const Expanded(child: Text('Design in Progress')),
+                Text('$progress%'),
+              ],
+            ),
+            const SizedBox(height: 12),
+            LinearProgressIndicator(value: progress / 100.0),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSiteProgressCard(BuildContext context) {
+    final progress = _projectDetails?.progress ?? 0;
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.construction, color: AppColors.success),
+                const SizedBox(width: 12),
+                const Expanded(child: Text('Site Progress')),
+                Text('$progress%'),
+              ],
+            ),
+            const SizedBox(height: 12),
+            LinearProgressIndicator(value: progress / 100.0),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOverviewCard(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Overview', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 16),
+            Text('Status: ${_projectDetails?.status ?? "Unknown"}'),
+            const SizedBox(height: 8),
+            Text('Location: ${_projectDetails?.location ?? "Unknown"}'),
+            const SizedBox(height: 8),
+            Text('Start Date: ${_projectDetails?.startDate ?? "Unknown"}'),
+            const SizedBox(height: 8),
+            Text('End Date: ${_projectDetails?.endDate ?? "Unknown"}'),
+          ],
+        ),
+      ),
+    );
+  }
+  }
+
 class DocumentsTab extends StatefulWidget {
-  final int projectId;
+  final String projectId;
   final ProjectModuleService service;
 
   const DocumentsTab({Key? key, required this.projectId, required this.service})
@@ -318,7 +909,7 @@ class _DocumentsTabState extends State<DocumentsTab> {
 
 // ===== QUALITY CHECK TAB =====
 class QualityCheckTab extends StatefulWidget {
-  final int projectId;
+  final String projectId;
   final ProjectModuleService service;
 
   const QualityCheckTab({Key? key, required this.projectId, required this.service})
@@ -441,7 +1032,7 @@ class _QualityCheckTabState extends State<QualityCheckTab>
 
 // ===== ACTIVITY FEED TAB =====
 class ActivityFeedTab extends StatefulWidget {
-  final int projectId;
+  final String projectId;
   final ProjectModuleService service;
 
   const ActivityFeedTab({Key? key, required this.projectId, required this.service})
@@ -536,7 +1127,7 @@ class _ActivityFeedTabState extends State<ActivityFeedTab> {
 
 // ===== GALLERY TAB =====
 class GalleryTab extends StatefulWidget {
-  final int projectId;
+  final String projectId;
   final ProjectModuleService service;
 
   const GalleryTab({Key? key, required this.projectId, required this.service})
@@ -623,7 +1214,7 @@ class _GalleryTabState extends State<GalleryTab> {
 
 // ===== OBSERVATIONS TAB =====
 class ObservationsTab extends StatefulWidget {
-  final int projectId;
+  final String projectId;
   final ProjectModuleService service;
 
   const ObservationsTab({Key? key, required this.projectId, required this.service})
@@ -830,7 +1421,7 @@ class _ObservationsTabState extends State<ObservationsTab>
 
 // ===== QUERIES TAB =====
 class QueriesTab extends StatefulWidget {
-  final int projectId;
+  final String projectId;
   final ProjectModuleService service;
 
   const QueriesTab({Key? key, required this.projectId, required this.service})
@@ -996,7 +1587,7 @@ class _QueriesTabState extends State<QueriesTab>
 
 // ===== CCTV TAB =====
 class CctvTab extends StatefulWidget {
-  final int projectId;
+  final String projectId;
   final ProjectModuleService service;
 
   const CctvTab({Key? key, required this.projectId, required this.service})
@@ -1149,7 +1740,7 @@ class _CctvTabState extends State<CctvTab> {
 
 // ===== 360° VIEW TAB =====
 class View360Tab extends StatefulWidget {
-  final int projectId;
+  final String projectId;
   final ProjectModuleService service;
 
   const View360Tab({Key? key, required this.projectId, required this.service})
@@ -1292,7 +1883,7 @@ class _View360TabState extends State<View360Tab> {
 
 // ===== SITE VISITS TAB =====
 class SiteVisitsTab extends StatefulWidget {
-  final int projectId;
+  final String projectId;
   final ProjectModuleService service;
 
   const SiteVisitsTab({Key? key, required this.projectId, required this.service})
@@ -1428,7 +2019,7 @@ class _SiteVisitsTabState extends State<SiteVisitsTab> {
 
 // ===== FEEDBACK TAB =====
 class FeedbackTab extends StatefulWidget {
-  final int projectId;
+  final String projectId;
   final ProjectModuleService service;
 
   const FeedbackTab({Key? key, required this.projectId, required this.service})
@@ -1618,7 +2209,7 @@ class _FeedbackTabState extends State<FeedbackTab> {
 
 // ===== BOQ TAB =====
 class BoqTab extends StatefulWidget {
-  final int projectId;
+  final String projectId;
   final ProjectModuleService service;
 
   const BoqTab({Key? key, required this.projectId, required this.service})

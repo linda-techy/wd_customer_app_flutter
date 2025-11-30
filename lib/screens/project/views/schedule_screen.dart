@@ -5,7 +5,7 @@ import '../../../services/auth_service.dart';
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key, this.projectId});
 
-  final int? projectId; // Support direct project ID for web refresh
+  final String? projectId; // Support direct project ID for web refresh
 
   @override
   State<ScheduleScreen> createState() => _ScheduleScreenState();
@@ -14,7 +14,7 @@ class ScheduleScreen extends StatefulWidget {
 class _ScheduleScreenState extends State<ScheduleScreen> {
   bool isLoggedIn = false;
   int selectedPhase = 0;
-  int? projectId;
+  String? projectId;
 
   @override
   void initState() {

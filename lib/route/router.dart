@@ -19,54 +19,55 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     
     // Project detail routes with ID parameter
     if (segments.length == 2) {
-      final projectId = int.tryParse(segments[1]);
+      final projectIdStr = segments[1];
+      final projectIdInt = int.tryParse(projectIdStr);
       
       switch (basePath) {
         case 'project_details':
-          if (projectId != null) {
+          if (projectIdStr.isNotEmpty) {
             return MaterialPageRoute(
               settings: settings,
-              builder: (context) => ProjectDetailsScreen(projectId: projectId),
+              builder: (context) => ProjectDetailsScreen(projectId: projectIdStr),
             );
           }
           break;
         case 'documents':
-          if (projectId != null) {
+          if (projectIdStr.isNotEmpty) {
             return MaterialPageRoute(
               settings: settings,
-              builder: (context) => DocumentsScreen(projectId: projectId),
+              builder: (context) => DocumentsScreen(projectId: projectIdStr),
             );
           }
           break;
         case 'floor_plan':
-          if (projectId != null) {
+          if (projectIdStr.isNotEmpty) {
             return MaterialPageRoute(
               settings: settings,
-              builder: (context) => FloorPlanScreen(projectId: projectId),
+              builder: (context) => FloorPlanScreen(projectId: projectIdStr),
             );
           }
           break;
         case 'three_d_design':
-          if (projectId != null) {
+          if (projectIdStr.isNotEmpty) {
             return MaterialPageRoute(
               settings: settings,
-              builder: (context) => ThreeDDesignScreen(projectId: projectId),
+              builder: (context) => ThreeDDesignScreen(projectId: projectIdStr),
             );
           }
           break;
         case 'schedule':
-          if (projectId != null) {
+          if (projectIdStr.isNotEmpty) {
             return MaterialPageRoute(
               settings: settings,
-              builder: (context) => ScheduleScreen(projectId: projectId),
+              builder: (context) => ScheduleScreen(projectId: projectIdStr),
             );
           }
           break;
         case 'cctv_surveillance':
-          if (projectId != null) {
+          if (projectIdStr.isNotEmpty) {
             return MaterialPageRoute(
               settings: settings,
-              builder: (context) => CctvSurveillanceScreen(projectId: projectId),
+              builder: (context) => CctvSurveillanceScreen(projectId: projectIdStr),
             );
           }
           break;
@@ -158,9 +159,17 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       );
     case projectDetailsScreenRoute:
       final project = settings.arguments as ProjectCard?;
+      if (project != null) {
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (context) => ProjectDetailsScreen(
+            projectId: project.projectUuid ?? project.id.toString(),
+            projectName: project.name,
+          ),
+        );
+      }
       return MaterialPageRoute(
-        settings: settings,
-        builder: (context) => ProjectDetailsScreen(project: project),
+        builder: (context) => const ProjectScreen(),
       );
     case floorPlanScreenRoute:
       return MaterialPageRoute(

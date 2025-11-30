@@ -90,11 +90,11 @@ class _MobileProjectCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  _StatusBadge(status: project.status),
+                  _StatusBadge(status: project.status ?? 'UNKNOWN'),
                 ],
               ),
 
-              if (project.code.isNotEmpty) ...[
+              if (project.code != null && project.code!.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   'Code: ${project.code}',
@@ -117,7 +117,7 @@ class _MobileProjectCard extends StatelessWidget {
                   const SizedBox(width: AppSpacing.xs),
                   Expanded(
                     child: Text(
-                      project.location,
+                      project.location ?? 'Unknown Location',
                       style: AppTypography.bodySmall(context).copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -218,10 +218,10 @@ class _TabletProjectCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        _StatusBadge(status: project.status),
+                        _StatusBadge(status: project.status ?? 'UNKNOWN'),
                       ],
                     ),
-                    if (project.code.isNotEmpty) ...[
+                    if (project.code != null && project.code!.isNotEmpty) ...[
                       const SizedBox(height: AppSpacing.xs),
                       Text(
                         'Code: ${project.code}',
@@ -241,7 +241,7 @@ class _TabletProjectCard extends StatelessWidget {
                         const SizedBox(width: AppSpacing.xs),
                         Expanded(
                           child: Text(
-                            project.location,
+                            project.location ?? 'Unknown Location',
                             style: AppTypography.bodyMedium(context).copyWith(
                               color: AppColors.textSecondary,
                             ),
@@ -344,10 +344,10 @@ class _DesktopProjectCardState extends State<_DesktopProjectCard> {
                               ),
                             ),
                             const SizedBox(width: AppSpacing.md),
-                            _StatusBadge(status: widget.project.status),
+                            _StatusBadge(status: widget.project.status ?? 'UNKNOWN'),
                           ],
                         ),
-                        if (widget.project.code.isNotEmpty) ...[
+                        if (widget.project.code != null && widget.project.code!.isNotEmpty) ...[
                           const SizedBox(height: AppSpacing.sm),
                           Text(
                             'Project Code: ${widget.project.code}',
@@ -367,7 +367,7 @@ class _DesktopProjectCardState extends State<_DesktopProjectCard> {
                             const SizedBox(width: AppSpacing.sm),
                             Expanded(
                               child: Text(
-                                widget.project.location,
+                                widget.project.location ?? 'Unknown Location',
                                 style:
                                     AppTypography.bodyLarge(context).copyWith(
                                   color: AppColors.textSecondary,

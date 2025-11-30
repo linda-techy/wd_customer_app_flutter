@@ -75,7 +75,7 @@ class DashboardService {
   }
 
   // Get detailed project information
-  static Future<ApiResponse<ProjectDetails>> getProjectDetails(int projectId) async {
+  static Future<ApiResponse<ProjectDetails>> getProjectDetails(String projectUuid) async {
     try {
       // Get access token
       final accessToken = await AuthService.getAccessToken();
@@ -110,10 +110,10 @@ class DashboardService {
             ),
           );
         }
-        return await _apiService.getProjectDetails(projectId, newToken);
+        return await _apiService.getProjectDetails(projectUuid, newToken);
       }
 
-      return await _apiService.getProjectDetails(projectId, accessToken);
+      return await _apiService.getProjectDetails(projectUuid, accessToken);
     } catch (e) {
       return ApiResponse.error(
         ApiError(

@@ -242,13 +242,13 @@ class ApiService {
   }
 
   // Get project details method
-  Future<ApiResponse<ProjectDetails>> getProjectDetails(int projectId, String accessToken) async {
+  Future<ApiResponse<ProjectDetails>> getProjectDetails(String projectUuid, String accessToken) async {
     try {
-      final url = '${ApiConfig.baseUrl}/api/dashboard/projects/$projectId';
+      final url = '${ApiConfig.baseUrl}/api/dashboard/projects/$projectUuid';
       
       print('=== API PROJECT DETAILS REQUEST ===');
       print('URL: $url');
-      print('Project ID: $projectId');
+      print('Project UUID: $projectUuid');
       print('Access Token: ${accessToken.substring(0, 20)}...');
       print('==================================');
 

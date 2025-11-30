@@ -19,7 +19,7 @@ import '../../../utils/file_operations_stub.dart'
 class DocumentsScreen extends StatefulWidget {
   const DocumentsScreen({super.key, this.projectId});
 
-  final int? projectId; // Support direct project ID for web refresh
+  final String? projectId; // Support direct project ID for web refresh
 
   @override
   State<DocumentsScreen> createState() => _DocumentsScreenState();
@@ -33,7 +33,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   List<ProjectDocument> documents = [];
   List<DocumentCategory> categories = [];
   ProjectModuleService? service;
-  int? projectId;
+  String? projectId;
 
   @override
   void initState() {
@@ -81,7 +81,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is ProjectCard) {
       setState(() {
-        projectId = args.id;
+        projectId = args.projectUuid;
       });
     }
   }

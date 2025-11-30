@@ -5,7 +5,7 @@ import '../../../services/auth_service.dart';
 class ThreeDDesignScreen extends StatefulWidget {
   const ThreeDDesignScreen({super.key, this.projectId});
 
-  final int? projectId; // Support direct project ID for web refresh
+  final String? projectId; // Support direct project ID for web refresh
 
   @override
   State<ThreeDDesignScreen> createState() => _ThreeDDesignScreenState();
@@ -14,7 +14,7 @@ class ThreeDDesignScreen extends StatefulWidget {
 class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
   bool isLoggedIn = false;
   int selectedView = 0;
-  int? projectId;
+  String? projectId;
 
   @override
   void initState() {

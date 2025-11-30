@@ -19,7 +19,7 @@ class ProjectModuleService {
 
   // ===== DOCUMENT METHODS =====
 
-  Future<List<DocumentCategory>> getDocumentCategories(int projectId) async {
+  Future<List<DocumentCategory>> getDocumentCategories(String projectId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/api/projects/$projectId/documents/categories'),
       headers: headers,
@@ -36,7 +36,7 @@ class ProjectModuleService {
     }
   }
 
-  Future<List<ProjectDocument>> getDocuments(int projectId, {int? categoryId}) async {
+  Future<List<ProjectDocument>> getDocuments(String projectId, {int? categoryId}) async {
     var uri = Uri.parse('$baseUrl/api/projects/$projectId/documents');
     if (categoryId != null) {
       uri = uri.replace(queryParameters: {'categoryId': categoryId.toString()});
@@ -56,7 +56,7 @@ class ProjectModuleService {
   }
 
   Future<ProjectDocument> uploadDocument(
-    int projectId,
+    String projectId,
     File file,
     int categoryId, {
     String? description,
@@ -90,7 +90,7 @@ class ProjectModuleService {
 
   // ===== QUALITY CHECK METHODS =====
 
-  Future<List<QualityCheck>> getQualityChecks(int projectId, {String? status}) async {
+  Future<List<QualityCheck>> getQualityChecks(String projectId, {String? status}) async {
     var uri = Uri.parse('$baseUrl/api/projects/$projectId/quality-check');
     if (status != null) {
       uri = uri.replace(queryParameters: {'status': status});
@@ -110,7 +110,7 @@ class ProjectModuleService {
   }
 
   Future<QualityCheck> createQualityCheck(
-    int projectId,
+    String projectId,
     String title,
     String description,
     String priority, {
@@ -141,7 +141,7 @@ class ProjectModuleService {
   }
 
   Future<QualityCheck> resolveQualityCheck(
-    int projectId,
+    String projectId,
     int qcId,
     String resolutionNotes,
   ) async {
@@ -164,7 +164,7 @@ class ProjectModuleService {
 
   // ===== ACTIVITY FEED METHODS =====
 
-  Future<List<ActivityFeed>> getActivities(int projectId) async {
+  Future<List<ActivityFeed>> getActivities(String projectId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/api/projects/$projectId/activities'),
       headers: headers,
@@ -183,7 +183,7 @@ class ProjectModuleService {
 
   // ===== GALLERY METHODS =====
 
-  Future<List<GalleryImage>> getGalleryImages(int projectId, {DateTime? date}) async {
+  Future<List<GalleryImage>> getGalleryImages(String projectId, {DateTime? date}) async {
     var uri = Uri.parse('$baseUrl/api/projects/$projectId/gallery');
     if (date != null) {
       uri = uri.replace(queryParameters: {'date': date.toIso8601String().split('T')[0]});
@@ -203,7 +203,7 @@ class ProjectModuleService {
   }
 
   Future<GalleryImage> uploadGalleryImage(
-    int projectId,
+    String projectId,
     File file, {
     String? caption,
     DateTime? takenDate,
@@ -247,7 +247,7 @@ class ProjectModuleService {
 
   // ===== OBSERVATION METHODS =====
 
-  Future<List<Observation>> getObservations(int projectId, {String? status}) async {
+  Future<List<Observation>> getObservations(String projectId, {String? status}) async {
     var uri = Uri.parse('$baseUrl/api/projects/$projectId/observations');
     if (status != null) {
       uri = uri.replace(queryParameters: {'status': status});
@@ -267,7 +267,7 @@ class ProjectModuleService {
   }
 
   Future<Observation> createObservation(
-    int projectId,
+    String projectId,
     String title,
     String description,
     String priority, {
@@ -308,7 +308,7 @@ class ProjectModuleService {
   }
 
   Future<Observation> resolveObservation(
-    int projectId,
+    String projectId,
     int obsId,
     String resolutionNotes,
   ) async {
@@ -331,7 +331,7 @@ class ProjectModuleService {
 
   // ===== QUERY METHODS =====
 
-  Future<List<ProjectQuery>> getQueries(int projectId, {String? status}) async {
+  Future<List<ProjectQuery>> getQueries(String projectId, {String? status}) async {
     var uri = Uri.parse('$baseUrl/api/projects/$projectId/queries');
     if (status != null) {
       uri = uri.replace(queryParameters: {'status': status});
@@ -351,7 +351,7 @@ class ProjectModuleService {
   }
 
   Future<ProjectQuery> createQuery(
-    int projectId,
+    String projectId,
     String title,
     String description,
     String priority, {
@@ -384,7 +384,7 @@ class ProjectModuleService {
   }
 
   Future<ProjectQuery> resolveQuery(
-    int projectId,
+    String projectId,
     int queryId,
     String resolution,
   ) async {
@@ -407,7 +407,7 @@ class ProjectModuleService {
 
   // ===== CCTV METHODS =====
 
-  Future<List<CctvCamera>> getCameras(int projectId, {bool installedOnly = false}) async {
+  Future<List<CctvCamera>> getCameras(String projectId, {bool installedOnly = false}) async {
     var uri = Uri.parse('$baseUrl/api/projects/$projectId/cctv');
     if (installedOnly) {
       uri = uri.replace(queryParameters: {'installedOnly': 'true'});
@@ -428,7 +428,7 @@ class ProjectModuleService {
 
   // ===== 360 VIEW METHODS =====
 
-  Future<List<View360>> get360Views(int projectId) async {
+  Future<List<View360>> get360Views(String projectId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/api/projects/$projectId/360-views'),
       headers: headers,
@@ -445,7 +445,7 @@ class ProjectModuleService {
     }
   }
 
-  Future<View360> increment360ViewCount(int projectId, int viewId) async {
+  Future<View360> increment360ViewCount(String projectId, int viewId) async {
     final response = await http.post(
       Uri.parse('$baseUrl/api/projects/$projectId/360-views/$viewId/increment-count'),
       headers: headers,
@@ -464,7 +464,7 @@ class ProjectModuleService {
 
   // ===== SITE VISIT METHODS =====
 
-  Future<List<SiteVisit>> getSiteVisits(int projectId) async {
+  Future<List<SiteVisit>> getSiteVisits(String projectId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/api/projects/$projectId/site-visits'),
       headers: headers,
@@ -482,7 +482,7 @@ class ProjectModuleService {
   }
 
   Future<SiteVisit> checkIn(
-    int projectId, {
+    String projectId, {
     String? purpose,
     String? location,
     String? weatherConditions,
@@ -513,7 +513,7 @@ class ProjectModuleService {
   }
 
   Future<SiteVisit> checkOut(
-    int projectId,
+    String projectId,
     int visitId, {
     String? notes,
     String? findings,
@@ -540,7 +540,7 @@ class ProjectModuleService {
 
   // ===== FEEDBACK METHODS =====
 
-  Future<List<FeedbackForm>> getFeedbackForms(int projectId) async {
+  Future<List<FeedbackForm>> getFeedbackForms(String projectId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/api/projects/$projectId/feedback'),
       headers: headers,
@@ -558,7 +558,7 @@ class ProjectModuleService {
   }
 
   Future<FeedbackForm> submitFeedback(
-    int projectId,
+    String projectId,
     int formId, {
     int? rating,
     String? comments,
@@ -587,7 +587,7 @@ class ProjectModuleService {
 
   // ===== BOQ METHODS =====
 
-  Future<List<BoqItem>> getBoqItems(int projectId, {int? workTypeId}) async {
+  Future<List<BoqItem>> getBoqItems(String projectId, {int? workTypeId}) async {
     var uri = Uri.parse('$baseUrl/api/projects/$projectId/boq');
     if (workTypeId != null) {
       uri = uri.replace(queryParameters: {'workTypeId': workTypeId.toString()});
@@ -606,7 +606,7 @@ class ProjectModuleService {
     }
   }
 
-  Future<List<BoqWorkType>> getBoqWorkTypes(int projectId) async {
+  Future<List<BoqWorkType>> getBoqWorkTypes(String projectId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/api/projects/$projectId/boq/work-types'),
       headers: headers,

@@ -5,7 +5,7 @@ import '../../../services/auth_service.dart';
 class CctvSurveillanceScreen extends StatefulWidget {
   const CctvSurveillanceScreen({super.key, this.projectId});
 
-  final int? projectId; // Support direct project ID for web refresh
+  final String? projectId; // Support direct project ID for web refresh
 
   @override
   State<CctvSurveillanceScreen> createState() => _CctvSurveillanceScreenState();
@@ -14,7 +14,7 @@ class CctvSurveillanceScreen extends StatefulWidget {
 class _CctvSurveillanceScreenState extends State<CctvSurveillanceScreen> {
   bool isLoggedIn = false;
   int selectedCamera = 0;
-  int? projectId;
+  String? projectId;
 
   @override
   void initState() {
