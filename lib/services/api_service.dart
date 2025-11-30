@@ -334,4 +334,45 @@ class ApiService {
       );
     }
   }
+
+  // Update design package
+  Future<ApiResponse<ProjectDetails>> updateDesignPackage(
+    String accessToken,
+    String projectUuid,
+    String designPackage,
+  ) async {
+    try {
+      final response = await http
+          .put(
+            Uri.parse('${ApiConfig.baseUrl}/api/dashboard/projects/$projectUuid/design-package'),
+            headers: ApiConfig.getAuthHeaders(accessToken),
+            body: jsonEncode({'designPackage': designPackage}),
+          )
+          .timeout(ApiConfig.connectionTimeout);
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        final projectDetails = ProjectDetails.fromJson(jsonResponse);
+        return ApiResponse.success(projectDetails);
+      } else {
+        final errorJson = jsonDecode(response.body);
+        final error = ApiError.fromJson(errorJson);
+        return ApiResponse.error(error);
+      }
+    } on SocketException {
+      return ApiResponse.error(
+        ApiError(
+          message: 'No internet connection.',
+          statusCode: 0,
+        ),
+      );
+    } catch (e) {
+      return ApiResponse.error(
+        ApiError(
+          message: 'Failed to update design package: ${e.toString()}',
+          statusCode: 0,
+        ),
+      );
+    }
+  }
 }

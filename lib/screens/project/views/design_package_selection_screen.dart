@@ -4,6 +4,7 @@ import '../../../design_tokens/app_spacing.dart';
 import '../../../design_tokens/app_typography.dart';
 import '../../../responsive/responsive_builder.dart';
 import '../../../models/api_models.dart';
+import '../../../services/dashboard_service.dart';
 
 class DesignPackageSelectionScreen extends StatefulWidget {
   const DesignPackageSelectionScreen({super.key, required this.projectId});
@@ -72,23 +73,48 @@ class _DesignPackageSelectionScreenState
       _isSubmitting = true;
     });
 
-    // TODO: Implement API call to save selection
-    // For now, simulate a delay and go back
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (mounted) {
-      setState(() {
-        _isSubmitting = false;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Selected $_selectedPackage package'),
-          backgroundColor: AppColors.success,
-        ),
+    try {
+      // Call API to save selection
+      final response = await DashboardService.updateDesignPackage(
+        widget.projectId,
+        _selectedPackage!,
       );
-      
-      Navigator.pop(context, _selectedPackage);
+
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+
+        if (response.success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Design package "$_selectedPackage" selected successfully!'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+          Navigator.pop(context, _selectedPackage);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response.error?.message ?? 'Failed to save selection'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 

@@ -123,4 +123,56 @@ class DashboardService {
       );
     }
   }
+
+  // Update design package for a project
+  static Future<ApiResponse<ProjectDetails>> updateDesignPackage(
+    String projectUuid,
+    String designPackage,
+  ) async {
+    try {
+      // Get access token
+      final accessToken = await AuthService.getAccessToken();
+      if (accessToken == null) {
+        return ApiResponse.error(
+          ApiError(
+            message: 'No access token found. Please login again.',
+            statusCode: 401,
+          ),
+        );
+      }
+
+      // Check if token is expired and refresh if needed
+      final isExpired = await AuthService.isTokenExpired();
+      if (isExpired) {
+        final refreshSuccess = await AuthService.refreshAccessToken();
+        if (!refreshSuccess) {
+          return ApiResponse.error(
+            ApiError(
+              message: 'Session expired. Please login again.',
+              statusCode: 401,
+            ),
+          );
+        }
+        final newToken = await AuthService.getAccessToken();
+        if (newToken == null) {
+          return ApiResponse.error(
+            ApiError(
+              message: 'Failed to get new access token.',
+              statusCode: 401,
+            ),
+          );
+        }
+        return await _apiService.updateDesignPackage(newToken, projectUuid, designPackage);
+      }
+
+      return await _apiService.updateDesignPackage(accessToken, projectUuid, designPackage);
+    } catch (e) {
+      return ApiResponse.error(
+        ApiError(
+          message: 'Failed to update design package: ${e.toString()}',
+          statusCode: 0,
+        ),
+      );
+    }
+  }
 }
