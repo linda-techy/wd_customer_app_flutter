@@ -5,11 +5,17 @@ import '../../../design_tokens/app_typography.dart';
 import '../../../responsive/responsive_builder.dart';
 import '../../../models/api_models.dart';
 import '../../../services/dashboard_service.dart';
+import 'design_package_payment_screen.dart';
 
 class DesignPackageSelectionScreen extends StatefulWidget {
-  const DesignPackageSelectionScreen({super.key, required this.projectId});
+  const DesignPackageSelectionScreen({
+    super.key,
+    required this.projectId,
+    required this.sqFeet,
+  });
 
   final String projectId;
+  final double sqFeet;
 
   @override
   State<DesignPackageSelectionScreen> createState() =>
@@ -25,42 +31,74 @@ class _DesignPackageSelectionScreenState
     {
       'id': 'custom',
       'name': 'Custom',
-      'description': 'Tailored design for your specific needs.',
-      'price': 'Contact for pricing',
+      'price': '₹ 95 per sq.ft. (+18% GST)',
+      'discount': 'Upto 10% OFF',
       'features': [
-        'Custom Floor Plans',
-        '2D Elevations',
-        'Basic 3D Views',
-        'Standard Material Selection'
+        'Design Program',
+        'BPI ⓘ',
+        'Room-wise Functionality Mapping',
+        'Plan (3 Changes)',
+        'Elevation (3 Changes)',
+        'Sanction Drawings',
+        'Detailed Project Costing (DPC)',
+        '3D Elevation Renders',
+        'VR Walkthroughs (2 Sessions)',
+        'Structural Design',
+        'Curated Solutions',
       ],
       'color': AppColors.primary,
     },
     {
       'id': 'premium',
       'name': 'Premium',
-      'description': 'High-end design with premium finishes.',
-      'price': 'Starts at \$5,000',
+      'price': '₹ 140 per sq.ft. (+18% GST)',
+      'discount': 'Upto 15% OFF',
       'features': [
-        'Everything in Custom',
-        'Detailed 3D Walkthrough',
-        'Interior Design Consultation',
-        'Premium Material Selection',
-        'Lighting Design'
+        'Design Program',
+        'BPI ⓘ',
+        'Room-wise Functionality Mapping',
+        'Plan (3 Changes)',
+        'Elevation (3 Changes)',
+        'Sanction Drawings',
+        'Detailed Project Costing (DPC)',
+        '3D Elevation & Interior Renders',
+        'VR Walkthroughs (2 Sessions)',
+        'Detailed Interior Design',
+        'Detailed Landscape Design',
+        'Detailed Furniture Design',
+        'Detailed Lighting Design',
+        'Individual Space Planning',
+        'Structural and MEP Design ⓘ',
+        'Additional VR Walkthrough (After finalization of interior & landscape design)',
+        'Curated Solutions',
       ],
       'color': AppColors.secondary,
     },
     {
       'id': 'bespoke',
       'name': 'Bespoke',
-      'description': 'Luxury design with exclusive attention.',
-      'price': 'Starts at \$10,000',
+      'price': '₹ 240 per sq.ft. (+18% GST)',
+      'discount': 'Upto 15% OFF',
       'features': [
-        'Everything in Premium',
-        'Unlimited Revisions',
+        'Design Program',
+        'BPI ⓘ',
+        'Room-wise Functionality Mapping',
+        'Plan (Unlimited Changes)',
+        'Elevation (Unlimited Changes)',
+        'Sanction Drawings',
+        'Detailed Project Costing (DPC)',
+        '3D Elevation & Interior Renders',
+        'VR Walkthroughs (Unlimited Sessions)',
+        'Detailed Interior Design',
+        'Detailed Landscape Design',
+        'Detailed Furniture Design',
+        'Detailed Lighting Design',
+        'Individual Space Planning',
+        'Structural and MEP Design ⓘ',
+        'Additional VR Walkthrough (Unlimited)',
+        'Curated Solutions',
         'Dedicated Design Team',
-        'VR Experience',
-        'Luxury Material Sourcing',
-        'Site Supervision'
+        'Site Supervision (Periodic)',
       ],
       'color': const Color(0xFFD4AF37), // Gold color
     },
@@ -69,52 +107,26 @@ class _DesignPackageSelectionScreenState
   Future<void> _submitSelection() async {
     if (_selectedPackage == null) return;
 
-    setState(() {
-      _isSubmitting = true;
-    });
+    final selectedPkgDetails = _packages.firstWhere(
+      (pkg) => pkg['name'] == _selectedPackage,
+      orElse: () => {},
+    );
 
-    try {
-      // Call API to save selection
-      final response = await DashboardService.updateDesignPackage(
-        widget.projectId,
-        _selectedPackage!,
-      );
+    if (selectedPkgDetails.isEmpty) return;
 
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DesignPackagePaymentScreen(
+          projectId: widget.projectId,
+          packageDetails: selectedPkgDetails,
+          sqFeet: widget.sqFeet,
+        ),
+      ),
+    );
 
-        if (response.success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Design package "$_selectedPackage" selected successfully!'),
-              backgroundColor: AppColors.success,
-            ),
-          );
-          Navigator.pop(context, _selectedPackage);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(response.error?.message ?? 'Failed to save selection'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
+    if (result != null && mounted) {
+      Navigator.pop(context, result);
     }
   }
 
@@ -178,7 +190,7 @@ class _DesignPackageSelectionScreenState
                     ),
                   )
                 : const Text(
-                    'Confirm Selection',
+                    'Next',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
           ),
@@ -280,13 +292,24 @@ class _DesignPackageSelectionScreenState
                             color: AppColors.textPrimary,
                           ),
                         ),
+                        const SizedBox(height: 4),
                         Text(
                           pkg['price'],
-                          style: AppTypography.bodySmall(context).copyWith(
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
+                          style: AppTypography.bodyMedium(context).copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
+                        if (pkg['discount'] != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            pkg['discount'],
+                            style: AppTypography.bodySmall(context).copyWith(
+                              color: AppColors.success,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -299,26 +322,33 @@ class _DesignPackageSelectionScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    pkg['description'],
-                    style: AppTypography.bodyMedium(context),
+                    'Inclusions',
+                    style: AppTypography.bodyLarge(context).copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  const SizedBox(height: AppSpacing.md),
-                  const Divider(),
                   const SizedBox(height: AppSpacing.sm),
                   ...pkg['features'].map<Widget>((feature) => Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(
-                              Icons.check,
-                              size: 16,
-                              color: color,
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Icon(
+                                Icons.circle,
+                                size: 6,
+                                color: color.withOpacity(0.7),
+                              ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 feature,
-                                style: AppTypography.bodySmall(context),
+                                style: AppTypography.bodyMedium(context).copyWith(
+                                  color: AppColors.textSecondary,
+                                  height: 1.3,
+                                ),
                               ),
                             ),
                           ],

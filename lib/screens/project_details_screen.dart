@@ -359,6 +359,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
             MaterialPageRoute(
               builder: (context) => DesignPackageSelectionScreen(
                 projectId: widget.projectId,
+                sqFeet: _projectDetails?.sqFeet ?? 0.0,
               ),
             ),
           );
@@ -440,14 +441,27 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              childAspectRatio: 1.0,
-              children: cards,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                int crossAxisCount;
+                if (constraints.maxWidth > 1200) {
+                  crossAxisCount = 4;
+                } else if (constraints.maxWidth > 600) {
+                  crossAxisCount = 3;
+                } else {
+                  crossAxisCount = 2;
+                }
+                
+                return GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: crossAxisCount,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  childAspectRatio: 1.0,
+                  children: cards,
+                );
+              },
             ),
           ),
         ],
@@ -611,6 +625,7 @@ class _OverviewTabState extends State<OverviewTab> {
             MaterialPageRoute(
               builder: (context) => DesignPackageSelectionScreen(
                 projectId: widget.projectId,
+                sqFeet: _projectDetails?.sqFeet ?? 0.0,
               ),
             ),
           );

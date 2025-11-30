@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../route/route_constants.dart';
+import '../screens/auth/views/guest_welcome_screen.dart';
 
 class AuthGuard extends StatefulWidget {
   final Widget child;
@@ -33,15 +34,18 @@ class _AuthGuardState extends State<AuthGuard> {
       _isLoading = false;
     });
 
-    // If not authenticated, redirect to login
+    // If not authenticated, redirect to login after showing the screen
     if (!isLoggedIn && mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.pushReplacementNamed(
-          context,
-          widget.redirectRoute ?? logInScreenRoute,
-        );
-      });
+      // Show the beautiful login gate for 100ms before redirecting
+      await Future.delayed(const Duration(milliseconds: 100));
     }
+  }
+
+  void _handleLogin() {
+    Navigator.pushReplacementNamed(
+      context,
+      widget.redirectRoute ?? logInScreenRoute,
+    );
   }
 
   @override
@@ -49,16 +53,16 @@ class _AuthGuardState extends State<AuthGuard> {
     if (_isLoading) {
       return const Scaffold(
         body: Center(
-          child: CircularProgressIndicator(),
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE74C3C)),
+          ),
         ),
       );
     }
 
     if (!_isAuthenticated) {
-      return const Scaffold(
-        body: Center(
-          child: Text('Redirecting to login...'),
-        ),
+      return GuestWelcomeScreen(
+        onLoginPressed: _handleLogin,
       );
     }
 

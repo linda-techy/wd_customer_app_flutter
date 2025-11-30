@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 // Login Request Model
 class LoginRequest {
   final String email;
@@ -401,7 +403,7 @@ class ProjectDetails {
   final String? state;
   final String? createdBy;
   final String? responsiblePerson;
-  final String? sqFeet;
+  final double? sqFeet;
   final String? leadId;
   final List<ProjectDocumentSummary> documents;
   final ProgressData? progressData;
@@ -452,7 +454,7 @@ class ProjectDetails {
       state: json['state'],
       createdBy: json['createdBy'],
       responsiblePerson: json['responsiblePerson'],
-      sqFeet: json['sqFeet'],
+      sqFeet: (json['sqFeet'] as num?)?.toDouble(),
       leadId: json['leadId'],
       documents: documents,
       progressData: json['progressData'] != null

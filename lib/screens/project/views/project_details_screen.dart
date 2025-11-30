@@ -286,14 +286,39 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   }
 
   Widget _buildContent(BuildContext context, ProjectCard? p) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildPhaseCard(context, p),
-        const SizedBox(height: AppSpacing.lg),
-        _buildOverviewCard(context),
-        const SizedBox(height: AppSpacing.lg),
-      ],
+    return ResponsiveBuilder(
+      builder: (context, sizingInformation) {
+        // Check if we're on a desktop screen (width > 900 typically)
+        if (sizingInformation.deviceScreenType == DeviceScreenType.desktop) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left Column: Phase/Progress (Flex 2)
+              Expanded(
+                flex: 2,
+                child: _buildPhaseCard(context, p),
+              ),
+              const SizedBox(width: AppSpacing.lg),
+              // Right Column: Overview (Flex 1)
+              Expanded(
+                flex: 1,
+                child: _buildOverviewCard(context),
+              ),
+            ],
+          );
+        }
+
+        // Mobile/Tablet: Stack vertically
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildPhaseCard(context, p),
+            const SizedBox(height: AppSpacing.lg),
+            _buildOverviewCard(context),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+        );
+      },
     );
   }
 
@@ -320,18 +345,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        onTap: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DesignPackageSelectionScreen(
-                projectId: _getProjectId() ?? '',
-              ),
-            ),
-          );
-          if (result != null) _loadProjectDetails();
-        },
-        child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
