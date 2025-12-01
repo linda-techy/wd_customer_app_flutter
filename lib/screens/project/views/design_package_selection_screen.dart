@@ -32,6 +32,7 @@ class _DesignPackageSelectionScreenState
       'id': 'custom',
       'name': 'Custom',
       'price': '₹ 95 per sq.ft. (+18% GST)',
+      'priceValue': 95,
       'discount': 'Upto 10% OFF',
       'features': [
         'Design Program',
@@ -52,6 +53,7 @@ class _DesignPackageSelectionScreenState
       'id': 'premium',
       'name': 'Premium',
       'price': '₹ 140 per sq.ft. (+18% GST)',
+      'priceValue': 140,
       'discount': 'Upto 15% OFF',
       'features': [
         'Design Program',
@@ -78,6 +80,7 @@ class _DesignPackageSelectionScreenState
       'id': 'bespoke',
       'name': 'Bespoke',
       'price': '₹ 240 per sq.ft. (+18% GST)',
+      'priceValue': 240,
       'discount': 'Upto 15% OFF',
       'features': [
         'Design Program',
@@ -360,6 +363,103 @@ class _DesignPackageSelectionScreenState
           ],
         ),
       ),
+      if (pkg['priceValue'] != null) ...[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Divider(),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                'Payment Schedule',
+                style: AppTypography.bodyLarge(context).copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade200),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                      ),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 40,
+                            child: Text(
+                              'Sl.',
+                              style: AppTypography.bodySmall(context).copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              'Activity',
+                              style: AppTypography.bodySmall(context).copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          SizedBox(
+                            width: 100,
+                            child: Text(
+                              'Payment Split',
+                              style: AppTypography.bodySmall(context).copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ...[
+                      'At the time of appointment as advance',
+                      'On finalizing preliminary designs, prior to VR walkthrough and submission of drawings for statutory approvals',
+                      'Before starting interior design phase',
+                    ].asMap().entries.map((entry) {
+                      final idx = entry.key;
+                      final activity = entry.value;
+                      final amount = (pkg['priceValue'] as int) / 3;
+                      
+                      return Container(
+                        decoration: BoxDecoration(
+                          border: Border(top: BorderSide(color: Colors.grey.shade200)),
+                        ),
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 40,
+                              child: Text('${idx + 1}', style: AppTypography.bodySmall(context)),
+                            ),
+                            Expanded(
+                              child: Text(activity, style: AppTypography.bodySmall(context)),
+                            ),
+                            const SizedBox(width: 16),
+                            SizedBox(
+                              width: 100,
+                              child: Text(
+                                'Rs. ${amount.toStringAsFixed(2)}/ Sq. Ft',
+                                style: AppTypography.bodySmall(context).copyWith(fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

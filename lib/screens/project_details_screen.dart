@@ -405,7 +405,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
                     Text(
-                      '⚠️ Action Required',
+                      'Action Required',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -414,7 +414,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Select your design package to proceed',
+                      'Select Design Package & Sign Agreement',
                       style: TextStyle(
                         fontSize: 14,
                         color: Color(0xFF6B7280),
@@ -663,7 +663,7 @@ class _OverviewTabState extends State<OverviewTab> {
             children: [
               const Icon(Icons.palette_outlined, color: AppColors.warning),
               const SizedBox(width: 12),
-              const Expanded(child: Text('Action Required: Select Design Package')),
+              const Expanded(child: Text('Action Required: Select Package & Sign Agreement')),
               const Icon(Icons.arrow_forward),
             ],
           ),
