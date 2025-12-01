@@ -26,6 +26,8 @@ class DesignPackagePaymentScreen extends StatefulWidget {
 class _DesignPackagePaymentScreenState
     extends State<DesignPackagePaymentScreen> {
   bool _isSubmitting = false;
+  bool _isCustomPayment = false;
+  String? _selectedPaymentMethod = 'Online';
   final NumberFormat _currencyFormat = NumberFormat.currency(
     locale: 'en_IN',
     symbol: '₹',
@@ -239,135 +241,370 @@ class _DesignPackagePaymentScreenState
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.primary),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        InkWell(
+          onTap: () {
+            setState(() {
+              _isCustomPayment = false;
+              _selectedPaymentMethod = 'Online';
+            });
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: !_isCustomPayment ? AppColors.primary : Colors.grey.shade300,
+                width: !_isCustomPayment ? 2 : 1,
+              ),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              color: !_isCustomPayment ? AppColors.primary.withOpacity(0.05) : null,
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: Row(
+                    children: [
+                      Icon(
+                        !_isCustomPayment ? Icons.check_circle : Icons.circle_outlined,
+                        color: !_isCustomPayment ? AppColors.primary : Colors.grey,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Pay in full',
+                                  style: AppTypography.titleMedium(context).copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.success,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    '${(widget.packageDetails['name'].toString().toLowerCase() == 'custom' ? 10 : 15)}% OFF',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  _currencyFormat.format(_totalAmount),
+                                  style: AppTypography.titleLarge(context).copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  '${_currencyFormat.format(_basePrice * 1.18)} (incl. 18% GST)',
+                                  style: AppTypography.bodySmall(context).copyWith(
+                                    color: AppColors.textSecondary,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
+        ),
+        const SizedBox(height: AppSpacing.md),
+        InkWell(
+          onTap: () {
+            setState(() {
+              _isCustomPayment = true;
+              _selectedPaymentMethod = null;
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: _isCustomPayment ? AppColors.primary : Colors.grey.shade300,
+                width: _isCustomPayment ? 2 : 1,
+              ),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              color: _isCustomPayment ? AppColors.primary.withOpacity(0.05) : null,
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _isCustomPayment ? Icons.check_circle : Icons.circle_outlined,
+                  color: _isCustomPayment ? AppColors.primary : Colors.grey,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Customize payment',
+                  style: AppTypography.bodyLarge(context).copyWith(
+                    fontWeight: _isCustomPayment ? FontWeight.bold : FontWeight.normal,
+                    color: _isCustomPayment ? AppColors.primary : Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        
+        if (_isCustomPayment) ...[
+          const SizedBox(height: AppSpacing.xl),
+          Text(
+            'Payment Schedule',
+            style: AppTypography.titleMedium(context).copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade200),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 40,
+                        child: Text(
+                          'Sl.',
+                          textAlign: TextAlign.center,
+                          style: AppTypography.bodySmall(context).copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          'Activity',
+                          style: AppTypography.bodySmall(context).copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      SizedBox(
+                        width: 100,
+                        child: Text(
+                          '% Split',
+                          textAlign: TextAlign.center,
+                          style: AppTypography.bodySmall(context).copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      SizedBox(
+                        width: 100,
+                        child: Text(
+                          'Amount',
+                          textAlign: TextAlign.right,
+                          style: AppTypography.bodySmall(context).copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ...[
+                  'At the time of appointment as advance',
+                  'On finalizing preliminary designs, prior to VR walkthrough and submission of drawings for statutory approvals',
+                  'Before starting interior design phase',
+                ].asMap().entries.map((entry) {
+                  final idx = entry.key;
+                  final activity = entry.value;
+                  // Calculate amount based on total project value (No discount + 18% GST)
+                  final priceString = widget.packageDetails['price'] as String;
+                  final pricePerSqFt = double.tryParse(
+                          priceString.replaceAll(RegExp(r'[^0-9.]'), '').split('.').first) ??
+                      0.0;
+                  
+                  final totalBasePrice = pricePerSqFt * widget.sqFeet;
+                  final totalWithGst = totalBasePrice * 1.18;
+                  final stageAmount = totalWithGst / 3;
+                  
+                  return Container(
+                    decoration: BoxDecoration(
+                      border: Border(top: BorderSide(color: Colors.grey.shade200)),
+                    ),
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Pay in full',
-                          style: AppTypography.titleMedium(context).copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.success,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
+                        SizedBox(
+                          width: 40,
                           child: Text(
-                            '${(widget.packageDetails['name'].toString().toLowerCase() == 'custom' ? 10 : 15)}% OFF',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            '${idx + 1}',
+                            textAlign: TextAlign.center,
+                            style: AppTypography.bodySmall(context),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(activity, style: AppTypography.bodySmall(context)),
+                        ),
+                        const SizedBox(width: 16),
+                        SizedBox(
+                          width: 100,
+                          child: Text(
+                            '33.33%',
+                            textAlign: TextAlign.center,
+                            style: AppTypography.bodySmall(context).copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        SizedBox(
+                          width: 100,
+                          child: Text(
+                            _currencyFormat.format(stageAmount),
+                            textAlign: TextAlign.right,
+                            style: AppTypography.bodySmall(context).copyWith(fontWeight: FontWeight.w600),
                           ),
                         ),
                       ],
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          _currencyFormat.format(_totalAmount),
-                          style: AppTypography.titleLarge(context).copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          '${_currencyFormat.format(_basePrice * 1.18)} (incl. 18% GST)',
+                  );
+                }).toList(),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    border: Border(top: BorderSide(color: Colors.grey.shade300, width: 1.5)),
+                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(width: 40), // Empty Sl.
+                      Expanded(
+                        child: Text(
+                          'Total',
                           style: AppTypography.bodySmall(context).copyWith(
-                            color: AppColors.textSecondary,
-                            decoration: TextDecoration.lineThrough,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 14,
                           ),
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      const SizedBox(width: 16),
+                      SizedBox(
+                        width: 100,
+                        child: Text(
+                          '100%',
+                          textAlign: TextAlign.center,
+                          style: AppTypography.bodySmall(context).copyWith(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      SizedBox(
+                        width: 100,
+                        child: Text(
+                          _currencyFormat.format(_basePrice * 1.18),
+                          textAlign: TextAlign.right,
+                          style: AppTypography.bodySmall(context).copyWith(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            '* The payment schedule is split into 3 equal installments (33.33% each). The amount is calculated as: (Base Rate + 18% GST) / 3.',
+            style: AppTypography.bodySmall(context).copyWith(
+              color: Colors.grey,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+
+        if (!_isCustomPayment) ...[
+          const SizedBox(height: AppSpacing.xl),
+          // Payment Methods
+          Text(
+            'Payment Methods',
+            style: AppTypography.titleMedium(context).copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              Expanded(
+                child: _buildPaymentMethodCard('Online'),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _buildPaymentMethodCard('Cash'),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _buildPaymentMethodCard('Cheque'),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          ),
-          child: Text(
-            'Customize payment',
-            style: AppTypography.bodyLarge(context),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xl),
-
-        // Payment Methods
-        Text(
-          'Payment Methods',
-          style: AppTypography.titleMedium(context).copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        Row(
-          children: [
-            Expanded(
-              child: _buildPaymentMethodCard('Online', true),
+          const SizedBox(height: AppSpacing.md),
+          TextButton(
+            onPressed: () {},
+            child: const Text('Apply Promo Code'),
+            style: TextButton.styleFrom(
+              alignment: Alignment.centerLeft,
+              padding: EdgeInsets.zero,
             ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: _buildPaymentMethodCard('Cash', false),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: _buildPaymentMethodCard('Cheque', false),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.md),
-        TextButton(
-          onPressed: () {},
-          child: const Text('Apply Promo Code'),
-          style: TextButton.styleFrom(
-            alignment: Alignment.centerLeft,
-            padding: EdgeInsets.zero,
           ),
-        ),
+        ],
       ],
     );
   }
 
-  Widget _buildPaymentMethodCard(String title, bool isSelected) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: isSelected ? AppColors.primary : Colors.grey.shade300,
+  Widget _buildPaymentMethodCard(String title) {
+    final isSelected = _selectedPaymentMethod == title;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedPaymentMethod = title;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isSelected ? AppColors.primary : Colors.grey.shade300,
+          ),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          color: isSelected ? AppColors.primary.withOpacity(0.05) : null,
         ),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        title,
-        style: TextStyle(
-          color: isSelected ? AppColors.primary : Colors.black,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        alignment: Alignment.center,
+        child: Text(
+          title,
+          style: TextStyle(
+            color: isSelected ? AppColors.primary : Colors.black,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
       ),
     );
