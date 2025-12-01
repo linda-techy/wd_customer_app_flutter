@@ -207,20 +207,23 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: Column(
                 children: [
-                  CircularProgressRing(progress: progress, size: 140),
-                  const SizedBox(height: 24),
+                  // Larger, more prominent progress ring
+                  CircularProgressRing(progress: progress, size: 180),
+                  const SizedBox(height: 32),
+                  // Metadata chips with better spacing
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _buildMetadataChip(Icons.location_on, location),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 16),
                       _buildMetadataChip(Icons.build, phase),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
+                  // More prominent status badge
                   _buildStatusBadge(status),
                 ],
               ),
@@ -233,19 +236,27 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
 
   Widget _buildMetadataChip(IconData icon, String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white.withOpacity(0.25),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: Colors.white),
-          const SizedBox(width: 6),
+          Icon(icon, size: 18, color: Colors.white),
+          const SizedBox(width: 8),
           Text(
             text,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
@@ -255,15 +266,15 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   Widget _buildStatusBadge(String status) {
     Color color = AppColors.getStatusColor(status);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: color.withOpacity(0.4),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -294,17 +305,18 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
             const Text(
               'Project Overview',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
                 color: Color(0xFF1F2937),
+                letterSpacing: -0.5,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             _buildInfoRow(Icons.calendar_today, 'Start Date', startDate),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             _buildInfoRow(Icons.event, 'Target Completion', endDate),
             if (designPackage != null && designPackage.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               _buildInfoRow(Icons.palette, 'Design Package', designPackage),
             ],
           ],
@@ -429,14 +441,28 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1F2937),
-              ),
+            padding: const EdgeInsets.fromLTRB(16, 32, 16, 16),
+            child: Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1F2937),
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ],
             ),
           ),
           Padding(
