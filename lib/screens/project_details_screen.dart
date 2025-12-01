@@ -167,6 +167,22 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
     final location = _projectDetails?.location ?? 'Not specified';
     final phase = _projectDetails?.phase ?? 'Planning';
 
+    final isDesignPhase = phase?.toLowerCase() == 'design';
+    final isAgreementPending = !(_projectDetails?.isDesignAgreementSigned ?? false);
+    
+    // If in design phase and agreement not signed, show "Yet to start"
+    final showYetToStart = isDesignPhase && isAgreementPending;
+    
+    // Calculate display progress
+    double displayProgress = progress;
+    if (isDesignPhase) {
+      if (isAgreementPending) {
+        displayProgress = 0.0;
+      } else {
+        displayProgress = (_projectDetails?.designProgress ?? 0) / 100.0;
+      }
+    }
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -211,7 +227,12 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
               child: Column(
                 children: [
                   // Larger, more prominent progress ring
-                  CircularProgressRing(progress: progress, size: 180),
+                  CircularProgressRing(
+                    progress: displayProgress, 
+                    size: 180,
+                    overrideText: showYetToStart ? 'Yet to start' : null,
+                    overrideSubtext: showYetToStart ? 'Pending Agreement' : null,
+                  ),
                   const SizedBox(height: 32),
                   // Metadata chips with better spacing
                   Row(

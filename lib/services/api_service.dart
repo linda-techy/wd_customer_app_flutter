@@ -346,7 +346,10 @@ class ApiService {
           .put(
             Uri.parse('${ApiConfig.baseUrl}/api/dashboard/projects/$projectUuid/design-package'),
             headers: ApiConfig.getAuthHeaders(accessToken),
-            body: jsonEncode({'designPackage': designPackage}),
+            body: jsonEncode({
+              'designPackage': designPackage,
+              'isDesignAgreementSigned': true,
+            }),
           )
           .timeout(ApiConfig.connectionTimeout);
 

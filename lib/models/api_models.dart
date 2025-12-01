@@ -291,22 +291,6 @@ class ProjectCard {
       id: json['id'] ?? 0,
       projectUuid: json['projectUuid'],
       name: json['name'] ?? '',
-      code: json['code'],
-      location: json['location'],
-      startDate: json['startDate'],
-      endDate: json['endDate'],
-      status: json['status'],
-      progress: (json['progress'] ?? 0).toDouble(),
-      projectPhase: json['projectPhase'],
-      designPackage: json['designPackage'],
-      isDesignAgreementSigned: json['isDesignAgreementSigned'] ?? false,
-    );
-  }
-}
-
-class RecentActivity {
-  final String type;
-  final String description;
   final String timestamp;
   final int projectId;
   final String projectName;
@@ -400,20 +384,6 @@ class ProjectDetails {
   final String? phase;
   final String? designPackage;
   final bool isDesignAgreementSigned;
-  final String? state;
-  final String? createdBy;
-  final String? responsiblePerson;
-  final double? sqFeet;
-  final String? leadId;
-  final List<ProjectDocumentSummary> documents;
-  final ProgressData? progressData;
-
-  ProjectDetails({
-    required this.id,
-    this.projectUuid,
-    required this.name,
-    this.code,
-    this.location,
     this.startDate,
     this.endDate,
     this.status,
@@ -421,19 +391,6 @@ class ProjectDetails {
     this.phase,
     this.designPackage,
     this.isDesignAgreementSigned = false,
-    this.state,
-    this.createdBy,
-    this.responsiblePerson,
-    this.sqFeet,
-    this.leadId,
-    this.documents = const [],
-    this.progressData,
-  });
-
-  factory ProjectDetails.fromJson(Map<String, dynamic> json) {
-    var documentsList = json['documents'] as List?;
-    List<ProjectDocumentSummary> documents = documentsList != null
-        ? documentsList
             .map((i) => ProjectDocumentSummary.fromJson(i))
             .toList()
         : [];
@@ -452,22 +409,6 @@ class ProjectDetails {
       designPackage: json['designPackage'],
       isDesignAgreementSigned: json['isDesignAgreementSigned'] ?? false,
       state: json['state'],
-      createdBy: json['createdBy'],
-      responsiblePerson: json['responsiblePerson'],
-      sqFeet: (json['sqFeet'] as num?)?.toDouble(),
-      leadId: json['leadId'],
-      documents: documents,
-      progressData: json['progressData'] != null
-          ? ProgressData.fromJson(json['progressData'])
-          : null,
-    );
-  }
-}
-
-class ProjectDocumentSummary {
-  final int id;
-  final String filename;
-  final String downloadUrl;
   final int? fileSize;
   final String? fileType;
   final String? categoryName;

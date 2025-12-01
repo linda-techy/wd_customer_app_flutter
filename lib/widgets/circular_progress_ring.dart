@@ -6,6 +6,8 @@ class CircularProgressRing extends StatefulWidget {
   final double size;
   final double strokeWidth;
   final Color? color;
+  final String? overrideText;
+  final String? overrideSubtext;
   final bool showPercentage;
 
   const CircularProgressRing({
@@ -15,6 +17,8 @@ class CircularProgressRing extends StatefulWidget {
     this.strokeWidth = 10,
     this.color,
     this.showPercentage = true,
+    this.overrideText,
+    this.overrideSubtext,
   }) : super(key: key);
 
   @override
@@ -101,20 +105,23 @@ class _CircularProgressRingState extends State<CircularProgressRing>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '${(_animation.value * 100).toInt()}%',
+                      widget.overrideText ?? '${(_animation.value * 100).toInt()}%',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: widget.size * 0.25,
+                        fontSize: widget.overrideText != null ? widget.size * 0.15 : widget.size * 0.25,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF1F2937),
                       ),
                     ),
-                    Text(
-                      'Complete',
-                      style: TextStyle(
-                        fontSize: widget.size * 0.1,
-                        color: const Color(0xFF6B7280),
+                    if (widget.overrideSubtext != null || widget.overrideText == null)
+                      Text(
+                        widget.overrideSubtext ?? 'Complete',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: widget.size * 0.1,
+                          color: const Color(0xFF6B7280),
+                        ),
                       ),
-                    ),
                   ],
                 ),
             ],
