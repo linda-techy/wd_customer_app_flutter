@@ -9,6 +9,8 @@ class CircularProgressRing extends StatefulWidget {
   final String? overrideText;
   final String? overrideSubtext;
   final bool showPercentage;
+  final Color? textColor;
+  final Color? subTextColor;
 
   const CircularProgressRing({
     Key? key,
@@ -19,6 +21,8 @@ class CircularProgressRing extends StatefulWidget {
     this.showPercentage = true,
     this.overrideText,
     this.overrideSubtext,
+    this.textColor,
+    this.subTextColor,
   }) : super(key: key);
 
   @override
@@ -87,7 +91,7 @@ class _CircularProgressRingState extends State<CircularProgressRing>
                 painter: _CircleProgressPainter(
                   progress: 1.0,
                   strokeWidth: widget.strokeWidth,
-                  color: Colors.grey.shade200,
+                  color: Colors.grey.shade200.withOpacity(0.3),
                 ),
               ),
               // Progress circle
@@ -110,7 +114,7 @@ class _CircularProgressRingState extends State<CircularProgressRing>
                       style: TextStyle(
                         fontSize: widget.overrideText != null ? widget.size * 0.15 : widget.size * 0.25,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1F2937),
+                        color: widget.textColor ?? const Color(0xFF1F2937),
                       ),
                     ),
                     if (widget.overrideSubtext != null || widget.overrideText == null)
@@ -119,7 +123,7 @@ class _CircularProgressRingState extends State<CircularProgressRing>
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: widget.size * 0.1,
-                          color: const Color(0xFF6B7280),
+                          color: widget.subTextColor ?? const Color(0xFF6B7280),
                         ),
                       ),
                   ],
