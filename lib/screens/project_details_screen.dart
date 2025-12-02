@@ -223,6 +223,22 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
               ),
             ),
             Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: Column(
+                children: [
+                  // Larger, more prominent progress ring
+                  CircularProgressRing(
+                    progress: displayProgress,
+                    size: 180,
+                    overrideText: showYetToStart ? 'Yet to start' : null,
+                    overrideSubtext: showYetToStart ? 'Pending Agreement' : null,
+                    textColor: Colors.white,
+                    subTextColor: Colors.white.withOpacity(0.8),
+                  ),
+                  const SizedBox(height: 32),
+                  // Metadata chips with better spacing
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _buildMetadataChip(Icons.location_on, location),
                       const SizedBox(width: 16),

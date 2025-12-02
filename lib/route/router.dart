@@ -163,7 +163,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         return MaterialPageRoute(
           settings: settings,
           builder: (context) => ProjectDetailsScreen(
-            projectId: project.projectUuid ?? project.id.toString(),
+            projectId: project.projectUuid ?? project.projectUuid.toString(),
             projectName: project.name,
           ),
         );
