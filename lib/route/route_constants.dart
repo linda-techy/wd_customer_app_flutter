@@ -22,8 +22,7 @@ const String serverErrorScreenRoute = "server_error";
 // Main Navigation Routes
 const String homeScreenRoute = "home";
 const String entryPointScreenRoute = "entry_point";
-const String searchScreenRoute = "search";
-const String searchHistoryScreenRoute = "search_history";
+
 
 // Profile & Settings Routes
 const String profileScreenRoute = "profile";

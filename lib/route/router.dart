@@ -108,11 +108,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         builder: (context) => const CustomerDashboardScreen(),
       );
 
-    // Search (for projects/documents)
-    case searchScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const SearchScreen(),
-      );
+
 
     // Profile & Settings
     case profileScreenRoute:

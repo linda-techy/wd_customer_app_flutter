@@ -66,7 +66,6 @@ class _EntryPointState extends State<EntryPoint> {
       // Always keep Home as first tab, even when logged in
       _pages = [
         const HomeScreen(),
-        const SearchScreen(),
         const NotificationsScreen(),
         const BlogScreen(),
         const CustomerDashboardScreen(),
@@ -77,7 +76,6 @@ class _EntryPointState extends State<EntryPoint> {
       // When not logged in, show home screen as first tab
       _pages = [
         const HomeScreen(),
-        const SearchScreen(),
         const NotificationsScreen(),
         const BlogScreen(),
         const ProjectScreen(),
@@ -161,14 +159,7 @@ class _EntryPointState extends State<EntryPoint> {
                           index: 0,
                           isDark: isDark,
                         ),
-                        _buildSidebarItem(
-                          context,
-                          icon: Icons.search_outlined,
-                          activeIcon: Icons.search,
-                          label: "Search",
-                          index: 1,
-                          isDark: isDark,
-                        ),
+
                         _buildSidebarItem(
                           context,
                           icon: Icons.notifications_outlined,
@@ -236,12 +227,14 @@ class _EntryPointState extends State<EntryPoint> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+
+                        const SizedBox(width: 12),
                         Material(
                           color: Colors.transparent,
                           child: InkWell(
                             onTap: () {
                               setState(() {
-                                _currentIndex = 1; // Search index
+                                _currentIndex = 1; // Notifications index
                               });
                             },
                             borderRadius: BorderRadius.circular(8),
@@ -255,39 +248,10 @@ class _EntryPointState extends State<EntryPoint> {
                               ),
                               child: Icon(
                                 _currentIndex == 1
-                                    ? Icons.search
-                                    : Icons.search_outlined,
-                                color:
-                                    _currentIndex == 1 ? Colors.white : logoRed,
-                                size: 24,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              setState(() {
-                                _currentIndex = 2; // Notifications index
-                              });
-                            },
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: _currentIndex == 2
-                                    ? logoRed
-                                    : logoRed.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(
-                                _currentIndex == 2
                                     ? Icons.notifications
                                     : Icons.notifications_outlined,
                                 color:
-                                    _currentIndex == 2 ? Colors.white : logoRed,
+                                    _currentIndex == 1 ? Colors.white : logoRed,
                                 size: 24,
                               ),
                             ),
@@ -346,6 +310,7 @@ class _EntryPointState extends State<EntryPoint> {
           ],
         ),
         actions: [
+
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: Material(
@@ -353,7 +318,7 @@ class _EntryPointState extends State<EntryPoint> {
               child: InkWell(
                 onTap: () {
                   setState(() {
-                    _currentIndex = 1; // Search index
+                    _currentIndex = 1; // Notifications index
                   });
                 },
                 borderRadius: BorderRadius.circular(8),
@@ -365,37 +330,10 @@ class _EntryPointState extends State<EntryPoint> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
-                    _currentIndex == 1 ? Icons.search : Icons.search_outlined,
-                    color: _currentIndex == 1 ? Colors.white : logoRed,
-                    size: 24,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  setState(() {
-                    _currentIndex = 2; // Notifications index
-                  });
-                },
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color:
-                        _currentIndex == 2 ? logoRed : logoRed.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    _currentIndex == 2
+                    _currentIndex == 1
                         ? Icons.notifications
                         : Icons.notifications_outlined,
-                    color: _currentIndex == 2 ? Colors.white : logoRed,
+                    color: _currentIndex == 1 ? Colors.white : logoRed,
                     size: 24,
                   ),
                 ),
@@ -489,21 +427,21 @@ class _EntryPointState extends State<EntryPoint> {
   // Helper methods to map between bottom nav and page indices
   int _getBottomNavIndex() {
     // Map page index to bottom nav index
-    // Pages: 0=Home, 1=Search, 2=Notifications, 3=Blog, 4=Project, 5=Portfolio, 6=Profile
+    // Pages: 0=Home, 1=Notifications, 2=Blog, 3=Project, 4=Portfolio, 5=Profile
     // Bottom Nav: 0=Home, 1=Blog, 2=Project, 3=Portfolio, 4=Profile
     switch (_currentIndex) {
       case 0:
         return 0; // Home
-      case 3:
+      case 2:
         return 1; // Blog
-      case 4:
+      case 3:
         return 2; // Project
-      case 5:
+      case 4:
         return 3; // Portfolio
-      case 6:
+      case 5:
         return 4; // Profile
       default:
-        return 0; // Default to Home if Search or Notifications is active
+        return 0; // Default to Home if Notifications is active
     }
   }
 
@@ -513,13 +451,13 @@ class _EntryPointState extends State<EntryPoint> {
       case 0:
         return 0; // Home
       case 1:
-        return 3; // Blog
+        return 2; // Blog
       case 2:
-        return 4; // Project
+        return 3; // Project
       case 3:
-        return 5; // Portfolio
+        return 4; // Portfolio
       case 4:
-        return 6; // Profile
+        return 5; // Profile
       default:
         return 0;
     }

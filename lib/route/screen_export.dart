@@ -35,8 +35,7 @@ export '/screens/notification/view/notificatios_screen.dart';
 // Addresses (Job Sites)
 export '/screens/address/views/addresses_screen.dart';
 
-// Search (Projects/Documents)
-export '/screens/search/views/search_screen.dart';
+
 
 // Note: E-commerce screens (products, cart, checkout, reviews, etc.) have been removed
 // If you need them, check git history or REFACTORING_PLAN.md
