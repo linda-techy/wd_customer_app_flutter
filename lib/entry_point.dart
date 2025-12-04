@@ -165,7 +165,7 @@ class _EntryPointState extends State<EntryPoint> {
                           icon: Icons.notifications_outlined,
                           activeIcon: Icons.notifications,
                           label: "Notifications",
-                          index: 2,
+                          index: 1,
                           isDark: isDark,
                         ),
                         _buildSidebarItem(
@@ -173,7 +173,7 @@ class _EntryPointState extends State<EntryPoint> {
                           icon: Icons.article_outlined,
                           activeIcon: Icons.article,
                           label: "Blog",
-                          index: 3,
+                          index: 2,
                           isDark: isDark,
                         ),
                         _buildSidebarItem(
@@ -181,7 +181,7 @@ class _EntryPointState extends State<EntryPoint> {
                           icon: Icons.construction_outlined,
                           activeIcon: Icons.construction,
                           label: "Projects",
-                          index: 4,
+                          index: 3,
                           isDark: isDark,
                         ),
                         _buildSidebarItem(
@@ -189,7 +189,7 @@ class _EntryPointState extends State<EntryPoint> {
                           icon: Icons.work_outline,
                           activeIcon: Icons.work,
                           label: "Portfolio",
-                          index: 5,
+                          index: 4,
                           isDark: isDark,
                         ),
                         _buildSidebarItem(
@@ -197,7 +197,7 @@ class _EntryPointState extends State<EntryPoint> {
                           icon: Icons.person_outline,
                           activeIcon: Icons.person,
                           label: "Profile",
-                          index: 6,
+                          index: 5,
                           isDark: isDark,
                         ),
                       ],
