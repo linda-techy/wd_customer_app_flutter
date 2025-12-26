@@ -44,7 +44,6 @@ class _DesignPackagePaymentScreenState
   }
 
   double get _discountAmount {
-    // 10% for Custom, 15% for others
     final packageName = widget.packageDetails['name'].toString().toLowerCase();
     final discountPercent = packageName == 'custom' ? 0.10 : 0.15;
     return _basePrice * discountPercent;
@@ -354,7 +353,7 @@ class _DesignPackagePaymentScreenState
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Customize payment',
+                  'Pay in installment',
                   style: AppTypography.bodyLarge(context).copyWith(
                     fontWeight: _isCustomPayment ? FontWeight.bold : FontWeight.normal,
                     color: _isCustomPayment ? AppColors.primary : Colors.black,
