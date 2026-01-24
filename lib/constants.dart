@@ -85,6 +85,11 @@ const Color errorColor = Color(0xFFEA5B5B);
 const double defaultPadding = 16.0;
 const double defaultBorderRadious = 12.0;
 const Duration defaultDuration = Duration(milliseconds: 300);
+const Duration kDefaultDuration = Duration(milliseconds: 300);
+const Duration kFastDuration = Duration(milliseconds: 200);
+const Duration kSlowDuration = Duration(milliseconds: 600);
+const Curve kButtonScaleCurve = Curves.easeOut;
+const Curve kStandardCurve = Curves.easeInOut;
 
 // TEMPORARY: Simplified password validator for testing
 final passwordValidator = MultiValidator([

@@ -4,6 +4,7 @@ import '../screens/dashboard/views/customer_dashboard_screen.dart';
 import '../models/api_models.dart';
 
 import 'screen_export.dart';
+import 'fade_slide_page_route.dart';
 
 // Construction-focused routing for Walldot Builders Customer App
 // Removed all e-commerce routes (products, cart, checkout, etc.)
@@ -25,9 +26,9 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       switch (basePath) {
         case 'project_details':
           if (projectIdStr.isNotEmpty) {
-            return MaterialPageRoute(
+            return FadeSlidePageRoute(
               settings: settings,
-              builder: (context) => ProjectDetailsScreen(projectId: projectIdStr),
+              page: ProjectDetailsScreen(projectId: projectIdStr),
             );
           }
           break;
@@ -96,16 +97,16 @@ Route<dynamic> generateRoute(RouteSettings settings) {
 
     // Main Navigation
     case entryPointScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const EntryPoint(),
+      return FadeSlidePageRoute(
+        page: const EntryPoint(),
       );
     case homeScreenRoute:
       return MaterialPageRoute(
         builder: (context) => const HomeScreen(),
       );
     case customerDashboardScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const CustomerDashboardScreen(),
+      return FadeSlidePageRoute(
+        page: const CustomerDashboardScreen(),
       );
 
 
@@ -156,9 +157,9 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case projectDetailsScreenRoute:
       final project = settings.arguments as ProjectCard?;
       if (project != null) {
-        return MaterialPageRoute(
+        return FadeSlidePageRoute(
           settings: settings,
-          builder: (context) => ProjectDetailsScreen(
+          page: ProjectDetailsScreen(
             projectId: project.projectUuid ?? project.projectUuid.toString(),
             projectName: project.name,
           ),

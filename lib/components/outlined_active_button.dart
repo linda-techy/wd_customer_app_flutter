@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants.dart';
+import 'animations/scale_button.dart';
 
 class OutlinedActiveButton extends StatelessWidget {
   const OutlinedActiveButton({
@@ -16,13 +17,16 @@ class OutlinedActiveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: press,
-      style: isActive
-          ? OutlinedButton.styleFrom(
-              backgroundColor: primaryColor, foregroundColor: Colors.white)
-          : null,
-      child: Text(text),
+    return ScaleButton(
+      onTap: isActive ? press : null,
+      child: OutlinedButton(
+        onPressed: isActive ? press : null,
+        style: isActive
+            ? OutlinedButton.styleFrom(
+                backgroundColor: primaryColor, foregroundColor: Colors.white)
+            : null,
+        child: Text(text),
+      ),
     );
   }
 }

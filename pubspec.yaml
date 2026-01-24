@@ -31,6 +31,7 @@ dependencies:
   open_filex: ^4.4.0  # For opening files with external apps
   permission_handler: ^11.0.1  # For handling file permissions
   mime: ^1.0.4  # For detecting file MIME types
+  flutter_animate: ^4.5.2
 
 dev_dependencies:
   flutter_test:
