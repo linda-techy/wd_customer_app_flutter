@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../widgets/auth_guard.dart';
 import '../../../services/dashboard_service.dart';
 import '../../../models/api_models.dart';
 import '../../../route/route_constants.dart';
 import '../../../components/molecules/responsive_project_card.dart';
 import '../../../design_tokens/app_colors.dart';
+import '../../../constants.dart';
+import '../../../components/animations/hover_card.dart';
+import '../../../components/animations/fade_entry.dart';
+import '../../../components/animations/scale_button.dart';
 
 class CustomerDashboardScreen extends StatefulWidget {
   const CustomerDashboardScreen({super.key});
@@ -57,9 +63,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
   Widget build(BuildContext context) {
     return AuthGuard(
       child: Scaffold(
-        backgroundColor: Theme.of(context).brightness == Brightness.dark
-            ? const Color(0xFF121212)
-            : Colors.grey[50],
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: _isLoading
             ? _buildLoadingState()
             : _errorMessage != null
@@ -70,21 +74,21 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD32F2F)),
+          const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
-            'Loading your dashboard...',
-            style: TextStyle(
-              fontSize: 16,
-              color: Color(0xFFD32F2F),
+            'Building your experience...',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: primaryColor,
+              fontWeight: FontWeight.w500,
             ),
-          ),
+          ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 1200.ms),
         ],
       ),
     );
@@ -97,37 +101,34 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Color(0xFFD32F2F),
-            ),
+            const Icon(Icons.cloud_off_rounded, size: 64, color: errorColor),
             const SizedBox(height: 16),
             Text(
-              'Failed to load dashboard',
+              'Connection Interrupted',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: const Color(0xFFD32F2F),
-                    fontWeight: FontWeight.w600,
+                    color: errorColor,
+                    fontWeight: FontWeight.bold,
                   ),
             ),
             const SizedBox(height: 8),
             Text(
-              _errorMessage ?? 'Unknown error occurred',
+              _errorMessage ?? 'Unable to sync with the server.',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: blackColor60),
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _loadDashboardData,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD32F2F),
-                foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ScaleButton(
+              onTap: _loadDashboardData,
+              child: ElevatedButton(
+                onPressed: _loadDashboardData,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: errorColor,
+                  foregroundColor: Colors.white,
+                  shape: const StadiumBorder(),
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                ),
+                child: const Text('Try Again'),
               ),
-              child: const Text('Retry'),
             ),
           ],
         ),
@@ -136,282 +137,191 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
   }
 
   Widget _buildDashboardContent() {
-    if (_dashboardData == null) {
-      return _buildErrorState();
-    }
+    final user = _dashboardData!.user;
+    final projects = _dashboardData!.projects;
 
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
-        // App Bar
+        // Premium Sliver App Bar
         SliverAppBar(
-          expandedHeight: 240,
+          expandedHeight: 280,
           floating: false,
           pinned: true,
-          backgroundColor: const Color(0xFFD32F2F), // logoRed
+          backgroundColor: surfaceColor,
           elevation: 0,
           flexibleSpace: FlexibleSpaceBar(
-            titlePadding: EdgeInsets.zero,
-            title: Container(), // Empty title to remove the heading
-            centerTitle: false,
-            background: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFD32F2F),
-                    Color(0xFFE91E63)
-                  ], // logoRed, logoPink
-                ),
-              ),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // Enhanced depth overlays
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.white.withOpacity(0.15),
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.08),
-                          ],
-                          stops: const [0.0, 0.5, 1.0],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Decorative circles for depth
-                  Positioned(
-                    right: -50,
-                    top: -30,
-                    child: Container(
-                      width: 180,
-                      height: 180,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.08),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: -40,
-                    bottom: -40,
-                    child: Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.05),
-                      ),
-                    ),
-                  ),
-                  // Content
-                  Padding(
-                    padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).padding.top + 20,
-                      left: 16,
-                      right: 16,
-                      bottom:
-                          _dashboardData!.projects.totalProjects == 1 ? 8 : 16,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Icon(
-                                Icons.celebration_outlined,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                'Hello,',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      color: Colors.white.withOpacity(0.9),
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      letterSpacing: 0.3,
-                                    ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          _dashboardData!.user.fullName.split(' ').first,
-                          style: Theme.of(context)
-                              .textTheme
-                              .displaySmall
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.5,
-                                height: 1.2,
-                              ),
-                        ),
-                        // Dynamic spacing based on content
-                        if (_dashboardData!.projects.totalProjects != 1)
-                          SizedBox(
-                            height: _dashboardData!.projects.totalProjects == 0
-                                ? 12
-                                : 16,
-                          ),
-                        // Context-aware content based on project count
-                        if (_dashboardData!.projects.totalProjects == 0)
-                          // Empty state handling (no projects)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                  color: Colors.white.withOpacity(0.2),
-                                  width: 1.5),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.rocket_launch_outlined,
-                                    color: Colors.white,
-                                    size: 18,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    'Let\'s begin your project',
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.95),
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      letterSpacing: 0.2,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        else if (_dashboardData!.projects.totalProjects == 1)
-                          // Single project - remove redundant info (project card shows below)
-                          const SizedBox.shrink()
-                        else
-                          // Multiple projects - show statistics
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildStatChip(
-                                    'Projects',
-                                    '${_dashboardData!.projects.totalProjects}',
-                                    const Color(0xFF4CAF50),
-                                    Icons.folder_outlined),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _buildStatChip(
-                                    'Active',
-                                    '${_dashboardData!.projects.activeProjects}',
-                                    const Color(0xFF2196F3),
-                                    Icons.rocket_launch_outlined),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _buildStatChip(
-                                    'Completed',
-                                    '${_dashboardData!.projects.completedProjects}',
-                                    const Color(0xFFD32F2F),
-                                    Icons.check_circle_outline),
-                              ),
-                            ],
-                          ),
+            background: Stack(
+              fit: StackFit.expand,
+              children: [
+                // "Live Site Look" Background Image (Placeholder)
+                Image.network(
+                  "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800",
+                  fit: BoxFit.cover,
+                ).animate().fadeIn(duration: 800.ms),
+                // Premium Gradient Overlay
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.3),
+                        Colors.black.withOpacity(0.7),
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        // Main Content
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(
-              16,
-              _dashboardData!.projects.totalProjects == 1 ? 8 : 16,
-              16,
-              16,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      _getSectionTitle(),
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 22,
-                            letterSpacing: -0.5,
-                          ),
-                    ),
-                    if (_dashboardData!.projects.totalProjects > 1)
+                ),
+                // Content
+                Positioned(
+                  bottom: 30,
+                  left: 20,
+                  right: 20,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white.withOpacity(0.3)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.auto_awesome,
-                              size: 14,
-                              color: AppColors.primary,
-                            ),
-                            const SizedBox(width: 4),
+                            const Icon(Icons.wb_sunny_rounded, color: Colors.orangeAccent, size: 14),
+                            const SizedBox(width: 6),
                             Text(
-                              '${_dashboardData!.projects.totalProjects}',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
+                              "Today's Site Status",
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
                         ),
+                      ).animate().slideX(begin: -0.2, duration: 600.ms, curve: Curves.easeOut),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Good Morning,\n${user.fullName.split(' ').first}',
+                        style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                          color: Colors.white,
+                          height: 1.1,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.3),
+                              offset: const Offset(0, 2),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                      ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, duration: 600.ms),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Key Metrics Grid
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FadeEntry(
+                  delay: 300.ms,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _buildMetricCard(
+                          label: "Active Projects",
+                          value: "${projects.activeProjects}",
+                          icon: Icons.construction,
+                          color: primaryColor,
+                        ),
                       ),
-                  ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildMetricCard(
+                          label: "Completed",
+                          value: "${projects.completedProjects}",
+                          icon: Icons.verified,
+                          color: successColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Quick Actions
+                FadeEntry(
+                  delay: 350.ms,
+                  child: SizedBox(
+                    height: 100,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        _buildQuickAction(
+                          context,
+                          "Payments",
+                          Icons.account_balance_wallet,
+                          Colors.purple,
+                          () => Navigator.pushNamed(context, paymentsScreenRoute),
+                        ),
+                        const SizedBox(width: 12),
+                        _buildQuickAction(
+                          context,
+                          "Site Updates",
+                          Icons.camera_alt,
+                          Colors.blue,
+                          () => Navigator.pushNamed(context, siteUpdatesScreenRoute),
+                        ),
+                        const SizedBox(width: 12),
+                        _buildQuickAction(
+                          context,
+                          "Support",
+                          Icons.headset_mic,
+                          Colors.orange,
+                          () {},
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+                
+                // Section Title with Action
+                FadeEntry(
+                  delay: 400.ms,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Your Projects",
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      if (projects.totalProjects > 0)
+                        TextButton(
+                          onPressed: () {
+                             // Navigate with fade
+                             Navigator.pushNamed(context, projectScreenRoute);
+                          },
+                          child: const Text("View All"),
+                        ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 16),
-                _buildProjectCards(),
+                
+                // Project List
+                _buildProjectList(projects),
               ],
             ),
           ),
@@ -420,110 +330,53 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
     );
   }
 
-  String _getSectionTitle() {
-    final count = _dashboardData!.projects.totalProjects;
-    if (count == 0) return 'Your Projects';
-    if (count == 1) return 'Your Project';
-    return 'All Projects';
-  }
-
-  Widget _buildStatChip(
-      String label, String value, Color color, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: Colors.white,
-            size: 18,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
-              fontSize: 18,
-              height: 1.0,
+  Widget _buildMetricCard({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return HoverCard(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: blackColor.withOpacity(0.05)),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.08),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
             ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.2,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProjectCards() {
-    if (_dashboardData == null ||
-        _dashboardData!.projects.recentProjects.isEmpty) {
-      return _buildEmptyProjectsState();
-    }
-
-    return Column(
-      children: _dashboardData!.projects.recentProjects.map((project) {
-        return ResponsiveProjectCard(
-          project: project,
-          onTap: () {
-            Navigator.pushNamed(
-              context,
-              projectDetailsRoute(project.projectUuid),
-              arguments: project, // Still pass as backup for non-web platforms
-            );
-          },
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildEmptyProjectsState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+          ],
+        ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(
-              Icons.folder_open,
-              size: 56,
-              color: Colors.grey,
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 20),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Text(
-              'No projects yet',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w600,
-                  ),
+              value,
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                color: blackColor,
+                height: 1.0,
+              ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
-              'Your project details will appear here once available.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[500],
-                  ),
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: blackColor60,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -531,39 +384,114 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
     );
   }
 
-  Color _getStatusColor(String status) {
-    switch (status.toUpperCase()) {
-      case 'ACTIVE':
-        return Colors.green;
-      case 'COMPLETED':
-        return Colors.grey;
-      case 'PENDING':
-        return Colors.orange;
-      case 'CANCELLED':
-        return Colors.red;
-      default:
-        return Colors.blue;
+  Widget _buildProjectList(DashboardProjectsDto projects) {
+    if (projects.totalProjects == 0) {
+      return FadeEntry(
+        delay: 500.ms,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(30),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: blackColor.withOpacity(0.05)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: lightGreyColor,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.rocket_launch, size: 40, color: greyColor),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                "No Active Projects",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "Contact us to start your dream project.",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: greyColor),
+              ),
+            ],
+          ),
+        ),
+      );
     }
+
+    return Column(
+      children: projects.recentProjects.asMap().entries.map((entry) {
+        final index = entry.key;
+        final project = entry.value;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: FadeEntry(
+            delay: (500 + (index * 100)).ms,
+            child: ResponsiveProjectCard(
+              project: project,
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  projectDetailsRoute(project.projectUuid),
+                  arguments: project,
+                );
+              },
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
   }
 
-  String _formatProjectDates(String? startDate, String? endDate) {
-    if (startDate != null && endDate != null) {
-      return 'Started: $startDate • Ends: $endDate';
-    } else if (startDate != null) {
-      return 'Started: $startDate';
-    } else if (endDate != null) {
-      return 'Ends: $endDate';
-    }
-    return '';
-  }
-
-  Color _getProgressColor(double progress) {
-    if (progress < 30) {
-      return Colors.red;
-    } else if (progress < 70) {
-      return Colors.orange;
-    } else {
-      return Colors.green;
-    }
+  Widget _buildQuickAction(
+      BuildContext context, String label, IconData icon, Color color, VoidCallback onTap) {
+    return ScaleButton(
+      onTap: onTap,
+      child: Container(
+        width: 100,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: blackColor.withOpacity(0.05)),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: blackColor80,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

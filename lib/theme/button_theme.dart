@@ -11,9 +11,8 @@ ElevatedButtonThemeData elevatedButtonThemeData = ElevatedButtonThemeData(
     minimumSize: const Size(double.infinity, 48),
     elevation: 2,
     shadowColor: primaryColor.withOpacity(0.3),
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(8)),
-    ),
+    shadowColor: primaryColor.withOpacity(0.3),
+    shape: const StadiumBorder(),
     textStyle: const TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w600,
@@ -30,9 +29,7 @@ OutlinedButtonThemeData outlinedButtonTheme(
           horizontal: defaultPadding * 1.5, vertical: defaultPadding),
       minimumSize: const Size(double.infinity, 48),
       side: BorderSide(width: 1.5, color: borderColor),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(8)),
-      ),
+      shape: const StadiumBorder(),
       textStyle: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,

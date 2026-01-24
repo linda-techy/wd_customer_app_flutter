@@ -3,8 +3,8 @@ import '../entry_point.dart';
 import '../screens/dashboard/views/customer_dashboard_screen.dart';
 import '../models/api_models.dart';
 
-import 'screen_export.dart';
-import 'fade_slide_page_route.dart';
+import 'package:wd_customer_app_flutter/screens/payments/views/payments_screen.dart';
+import 'package:wd_customer_app_flutter/screens/project/views/site_updates_screen.dart';
 
 // Construction-focused routing for Walldot Builders Customer App
 // Removed all e-commerce routes (products, cart, checkout, etc.)
@@ -205,6 +205,16 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       );
 
     // Default/Fallback
+
+    case paymentsScreenRoute:
+      return FadeSlidePageRoute(
+        page: const PaymentsScreen(),
+      );
+    case siteUpdatesScreenRoute:
+      return FadeSlidePageRoute(
+        page: const SiteUpdatesScreen(),
+      );
+
     default:
       return MaterialPageRoute(
         builder: (context) => const OnbordingScrenn(),

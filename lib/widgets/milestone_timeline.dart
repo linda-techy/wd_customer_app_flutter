@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import '../constants.dart';
 
 class MilestoneTimeline extends StatelessWidget {
   final List<ProjectMilestone> milestones;
@@ -13,114 +15,175 @@ class MilestoneTimeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Project Timeline',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF1F2937),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 80,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: milestones.length,
-              itemBuilder: (context, index) {
-                final milestone = milestones[index];
-                final isCompleted = index < currentMilestoneIndex;
-                final isCurrent = index == currentMilestoneIndex;
-                final isFuture = index > currentMilestoneIndex;
+          const SizedBox(height: 24),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: milestones.length,
+            itemBuilder: (context, index) {
+              final milestone = milestones[index];
+              final isCompleted = index < currentMilestoneIndex;
+              final isCurrent = index == currentMilestoneIndex;
+              final isLast = index == milestones.length - 1;
 
-                return _MilestoneItem(
-                  milestone: milestone,
-                  isCompleted: isCompleted,
-                  isCurrent: isCurrent,
-                  isFuture: isFuture,
-                  isLast: index == milestones.length - 1,
-                );
-              },
-            ),
+              return IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Timeline Line & Dot Column
+                    SizedBox(
+                      width: 40,
+                      child: Column(
+                        children: [
+                          // The Dot
+                          _buildDot(isCompleted, isCurrent),
+                          // The Line
+                          if (!isLast)
+                            Expanded(
+                              child: Container(
+                                width: 2,
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isCompleted ? successColor : blackColor10,
+                                  gradient: isCurrent
+                                      ? LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [successColor, blackColor10],
+                                        )
+                                      : null,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Content Column
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 32.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              milestone.name,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight:
+                                    isCurrent ? FontWeight.bold : FontWeight.w600,
+                                color: isFuture(index) ? blackColor40 : blackColor,
+                              ),
+                            ),
+                            if (milestone.targetDate != null) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                "Target: ${_formatDate(milestone.targetDate!)}",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isCurrent ? primaryColor : blackColor60,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                            if (milestone.description != null && isCurrent) ...[
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: surfaceColor,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: blackColor10),
+                                ),
+                                child: Text(
+                                  milestone.description!,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: blackColor80,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ).animate().fadeIn().slideX(begin: 0.1),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),
     );
   }
-}
 
-class _MilestoneItem extends StatelessWidget {
-  final ProjectMilestone milestone;
-  final bool isCompleted;
-  final bool isCurrent;
-  final bool isFuture;
-  final bool isLast;
+  bool isFuture(int index) => index > currentMilestoneIndex;
 
-  const _MilestoneItem({
-    required this.milestone,
-    required this.isCompleted,
-    required this.isCurrent,
-    required this.isFuture,
-    required this.isLast,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    Color indicatorColor;
-    IconData indicatorIcon;
-    
+  Widget _buildDot(bool isCompleted, bool isCurrent) {
     if (isCompleted) {
-      indicatorColor = const Color(0xFF10B981);
-      indicatorIcon = Icons.check_circle;
-    } else if (isCurrent) {
-      indicatorColor = const Color(0xFF3B82F6);
-      indicatorIcon = Icons.radio_button_checked;
-    } else {
-      indicatorColor = const Color(0xFF9CA3AF);
-      indicatorIcon = Icons.radio_button_unchecked;
-    }
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              indicatorIcon,
-              color: indicatorColor,
-              size: 32,
-            ),
-            const SizedBox(height: 4),
-            SizedBox(
-              width: 80,
-              child: Text(
-                milestone.name,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: isCurrent ? FontWeight.w600 : FontWeight.normal,
-                  color: isFuture ? const Color(0xFF9CA3AF) : const Color(0xFF1F2937),
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
+      return Container(
+        width: 24,
+        height: 24,
+        decoration: const BoxDecoration(
+          color: successColor,
+          shape: BoxShape.circle,
         ),
-        if (!isLast)
-          Container(
-            width: 40,
-            height: 2,
-            margin: const EdgeInsets.only(bottom: 40),
-            color: isCompleted ? const Color(0xFF10B981) : const Color(0xFFE5E7EB),
-          ),
-      ],
-    );
+        child: const Icon(Icons.check, color: Colors.white, size: 16),
+      ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack);
+    } else if (isCurrent) {
+      return Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          border: Border.all(color: primaryColor, width: 6),
+        ),
+      )
+          .animate(onPlay: (c) => c.repeat(reverse: true))
+          .boxShadow(
+            begin: BoxShadow(color: primaryColor.withOpacity(0.2), blurRadius: 0, spreadRadius: 0),
+            end: BoxShadow(color: primaryColor.withOpacity(0.0), blurRadius: 12, spreadRadius: 8),
+            duration: 1500.ms,
+          );
+    } else {
+      return Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          border: Border.all(color: blackColor20, width: 2),
+        ),
+      );
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return "${date.day}/${date.month}/${date.year}";
   }
 }
 

@@ -59,6 +59,10 @@ const Color blackColor20 = Color(0xFFD0D0D2);
 const Color blackColor10 = Color(0xFFE8E8E9);
 const Color blackColor5 = Color(0xFFF3F3F4);
 
+const Color surfaceColor = Color(0xFFFAFAFA); // Premium reduced-glare white
+const Color surfaceColorDark = Color(0xFF20202A); // Premium dark surface
+
+
 const Color whiteColor = Colors.white;
 const Color whileColor80 = Color(0xFFCCCCCC);
 const Color whileColor60 = Color(0xFF999999);
@@ -78,9 +82,9 @@ const Color darkGreyColor = Color(0xFF1C1C25);
 // const Color greyColor5 = Color(0xFFFBFBFC);
 
 const Color purpleColor = Color(0xFF2C5F2D);
-const Color successColor = Color(0xFF2ED573);
-const Color warningColor = Color(0xFFFFBE21);
-const Color errorColor = Color(0xFFEA5B5B);
+const Color successColor = Color(0xFF00C853); // Emerald Green
+const Color warningColor = Color(0xFFFFAB00); // Safety Orange
+const Color errorColor = Color(0xFFD32F2F); // Material Red 700
 
 const double defaultPadding = 16.0;
 const double defaultBorderRadious = 12.0;

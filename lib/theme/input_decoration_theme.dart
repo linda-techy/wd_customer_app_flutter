@@ -6,6 +6,8 @@ const InputDecorationTheme lightInputDecorationTheme = InputDecorationTheme(
   fillColor: lightGreyColor,
   filled: true,
   hintStyle: TextStyle(color: greyColor),
+  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+  floatingLabelBehavior: FloatingLabelBehavior.auto,
   border: outlineInputBorder,
   enabledBorder: outlineInputBorder,
   focusedBorder: focusedOutlineInputBorder,

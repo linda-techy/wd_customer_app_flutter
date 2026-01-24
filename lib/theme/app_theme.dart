@@ -13,47 +13,53 @@ class AppTheme {
       fontFamily: "Plus Jakarta",
       primarySwatch: primaryMaterialColor,
       primaryColor: primaryColor,
-      scaffoldBackgroundColor:
-          const Color(0xFFFAFAFA), // Clean off-white background
+      scaffoldBackgroundColor: surfaceColor,
       iconTheme: const IconThemeData(color: blackColor),
       textTheme: const TextTheme(
         displayLarge: TextStyle(
+          fontFamily: grandisExtendedFont,
           fontSize: 32,
           fontWeight: FontWeight.bold,
           color: blackColor,
           letterSpacing: -0.5,
         ),
         displayMedium: TextStyle(
+          fontFamily: grandisExtendedFont,
           fontSize: 28,
           fontWeight: FontWeight.bold,
           color: blackColor,
           letterSpacing: -0.5,
         ),
         displaySmall: TextStyle(
+          fontFamily: grandisExtendedFont,
           fontSize: 24,
           fontWeight: FontWeight.w600,
           color: blackColor,
           letterSpacing: -0.25,
         ),
         headlineLarge: TextStyle(
+          fontFamily: grandisExtendedFont,
           fontSize: 22,
           fontWeight: FontWeight.w600,
           color: blackColor,
           letterSpacing: -0.25,
         ),
         headlineMedium: TextStyle(
+          fontFamily: grandisExtendedFont,
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: blackColor,
           letterSpacing: -0.25,
         ),
         headlineSmall: TextStyle(
+          fontFamily: grandisExtendedFont,
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: blackColor,
           letterSpacing: -0.25,
         ),
         titleLarge: TextStyle(
+          fontFamily: grandisExtendedFont, // Use Grandis for major titles too
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: blackColor,
@@ -119,10 +125,13 @@ class AppTheme {
       scrollbarTheme: scrollbarThemeData,
       dataTableTheme: dataTableLightThemeData,
       cardTheme: CardTheme(
-        elevation: 2,
-        shadowColor: blackColor.withOpacity(0.1),
+        elevation: 0, // Flat premium look by default, handled by wrappers
+        color: whiteColor,
+        shadowColor: blackColor.withOpacity(0.05),
+        margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: blackColor.withOpacity(0.05), width: 1),
         ),
       ),
     );
