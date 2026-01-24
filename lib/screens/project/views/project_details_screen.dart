@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../models/api_models.dart';
 import '../../../route/route_constants.dart';
 import '../../../design_tokens/app_colors.dart';
@@ -6,6 +7,10 @@ import '../../../design_tokens/app_spacing.dart';
 import '../../../design_tokens/app_typography.dart';
 import '../../../responsive/responsive_builder.dart';
 import '../../../services/dashboard_service.dart';
+import '../../../constants.dart';
+import '../../../components/animations/fade_entry.dart';
+import '../../../components/animations/hover_card.dart';
+import '../../../components/animations/scale_button.dart';
 import 'design_package_selection_screen.dart';
 
 class ProjectDetailsScreen extends StatefulWidget {
@@ -27,7 +32,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Only load once when dependencies are ready
     if (!_hasLoadedOnce) {
       _hasLoadedOnce = true;
       _loadProjectDetails();
@@ -35,45 +39,25 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   }
 
   ProjectCard? _getProjectCard() {
-    // Try to get project from widget first, then from route arguments
-    if (widget.project != null) {
-      return widget.project;
-    }
-    
-    // Fallback to route arguments
+    if (widget.project != null) return widget.project;
     try {
       final args = ModalRoute.of(context)?.settings.arguments;
-      if (args is ProjectCard) {
-        return args;
-      }
+      if (args is ProjectCard) return args;
     } catch (e) {
       print('Error getting project from route: $e');
     }
-    
     return null;
   }
 
   String? _getProjectId() {
-    // Priority 1: Direct projectId parameter
-    if (widget.projectId != null) {
-      return widget.projectId;
-    }
-    
-    // Priority 2: From ProjectCard widget parameter
-    if (widget.project != null) {
-      return widget.project!.projectUuid;
-    }
-    
-    // Priority 3: From route arguments
+    if (widget.projectId != null) return widget.projectId;
+    if (widget.project != null) return widget.project!.projectUuid;
     try {
       final args = ModalRoute.of(context)?.settings.arguments;
-      if (args is ProjectCard) {
-        return args.projectUuid;
-      }
+      if (args is ProjectCard) return args.projectUuid;
     } catch (e) {
       print('Error getting project from route: $e');
     }
-    
     return null;
   }
 
@@ -85,7 +69,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
 
     try {
       final projectId = _getProjectId();
-      
       if (projectId == null) {
         setState(() {
           _errorMessage = 'No project selected';
@@ -94,9 +77,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         return;
       }
 
-      print('=== LOADING PROJECT DETAILS ===');
-      print('Project ID: $projectId');
-
       final response = await DashboardService.getProjectDetails(projectId);
 
       if (response.success && response.data != null) {
@@ -104,7 +84,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           _projectDetails = response.data;
           _isLoading = false;
         });
-        print('Project details loaded successfully');
       } else {
         setState(() {
           _errorMessage = response.error?.message ?? 'Failed to load project details';
@@ -112,7 +91,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         });
       }
     } catch (e) {
-      print('Error loading project details: $e');
       setState(() {
         _errorMessage = 'Error: $e';
         _isLoading = false;
@@ -122,162 +100,24 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final ProjectCard? p = _getProjectCard();
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
+      backgroundColor: surfaceColor,
       body: _isLoading
-          ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Loading project details...'),
-                ],
-              ),
-            )
+          ? const Center(child: CircularProgressIndicator(color: primaryColor))
           : _errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text(_errorMessage!, textAlign: TextAlign.center),
-                      const SizedBox(height: 16),
-                      ElevatedButton.icon(
-                        onPressed: _loadProjectDetails,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Retry'),
-                      ),
-                    ],
-                  ),
-                )
+              ? _buildErrorState()
               : CustomScrollView(
                   physics: const BouncingScrollPhysics(),
                   slivers: [
-                    SliverAppBar(
-                      expandedHeight: 260,
-                      floating: false,
-                      pinned: true,
-                      backgroundColor: AppColors.primary,
-                      elevation: 0,
-                      flexibleSpace: FlexibleSpaceBar(
-                        titlePadding:
-                            const EdgeInsetsDirectional.only(start: 60, bottom: 16),
-                        centerTitle: false,
-                        title: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                _projectDetails?.name ?? p?.name ?? 'Project Details',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 18,
-                                  letterSpacing: -0.5,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (_projectDetails?.status != null || p?.status?.isNotEmpty == true) ...[
-                              const SizedBox(width: 8),
-                              _buildStatusChip(_projectDetails?.status ?? p?.status ?? 'UNKNOWN'),
-                            ],
-                          ],
-                        ),
-                        background: Container(
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [AppColors.primary, AppColors.secondary],
-                            ),
-                          ),
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              Positioned.fill(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Colors.white.withOpacity(0.1),
-                                        Colors.transparent,
-                                        Colors.black.withOpacity(0.05),
-                                      ],
-                                      stops: const [0.0, 0.5, 1.0],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                left: 16,
-                                right: 16,
-                                bottom: 80,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.location_on_rounded,
-                                          size: 14,
-                                          color: Colors.white.withOpacity(0.9),
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Expanded(
-                                          child: Text(
-                                            _projectDetails?.location ?? p?.location ?? 'Location not specified',
-                                            style: TextStyle(
-                                              color: Colors.white.withOpacity(0.95),
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w500,
-                                              letterSpacing: 0.2,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    SliverToBoxAdapter(
-                      child: ResponsiveBuilder(
-                        mobile: (context) => Padding(
-                          padding: EdgeInsets.all(context.marginSize),
-                          child: _buildContent(context, p),
-                        ),
-                        tablet: (context) => Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: context.marginSize,
-                            vertical: AppSpacing.md,
-                          ),
-                          child: _buildContent(context, p),
-                        ),
-                        desktop: (context) => Center(
-                          child: Container(
-                            constraints: const BoxConstraints(maxWidth: 1200),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: context.marginSize,
-                              vertical: AppSpacing.lg,
-                            ),
-                            child: _buildContent(context, p),
-                          ),
-                        ),
+                    _buildSliverAppBar(p),
+                    SliverPadding(
+                      padding: const EdgeInsets.all(defaultPadding),
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate([
+                          _buildContent(context, p),
+                        ]),
                       ),
                     ),
                   ],
@@ -285,184 +125,356 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
     );
   }
 
-  Widget _buildContent(BuildContext context, ProjectCard? p) {
-    return ResponsiveBuilder(
-      builder: (context, sizingInformation) {
-        // Check if we're on a desktop screen (width > 900 typically)
-        if (sizingInformation.deviceScreenType == DeviceScreenType.desktop) {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Left Column: Phase/Progress (Flex 2)
-              Expanded(
-                flex: 2,
-                child: _buildPhaseCard(context, p),
-              ),
-              const SizedBox(width: AppSpacing.lg),
-              // Right Column: Overview (Flex 1)
-              Expanded(
-                flex: 1,
-                child: _buildOverviewCard(context),
-              ),
-            ],
-          );
-        }
-
-        // Mobile/Tablet: Stack vertically
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildSliverAppBar(ProjectCard? p) {
+    return SliverAppBar(
+      expandedHeight: 280,
+      floating: false,
+      pinned: true,
+      backgroundColor: surfaceColor,
+      elevation: 0,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+          fit: StackFit.expand,
           children: [
-            _buildPhaseCard(context, p),
-            const SizedBox(height: AppSpacing.lg),
-            _buildOverviewCard(context),
-            const SizedBox(height: AppSpacing.lg),
+            // Background Image
+            Image.network(
+              "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800",
+              fit: BoxFit.cover,
+            ).animate().fadeIn(duration: 800.ms),
+            
+            // Gradient Overlay
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.2),
+                    Colors.black.withOpacity(0.8),
+                  ],
+                ),
+              ),
+            ),
+
+            // Content
+            Positioned(
+              left: 20,
+              right: 20,
+              bottom: 30,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_projectDetails?.status != null || p?.status?.isNotEmpty == true)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(_projectDetails?.status ?? p?.status ?? '').withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: _getStatusColor(_projectDetails?.status ?? p?.status ?? '').withOpacity(0.5)),
+                      ),
+                      child: Text(
+                        (_projectDetails?.status ?? p?.status ?? 'UNKNOWN').toUpperCase(),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ).animate().slideX(begin: -0.2, curve: Curves.easeOut),
+                  
+                  const SizedBox(height: 12),
+                  
+                  Text(
+                    _projectDetails?.name ?? p?.name ?? 'Project Details',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: grandisExtendedFont,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 28,
+                      height: 1.1,
+                    ),
+                  ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
+                  
+                  const SizedBox(height: 8),
+                  
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on, size: 14, color: Colors.white70),
+                      const SizedBox(width: 4),
+                      Text(
+                        _projectDetails?.location ?? p?.location ?? 'Location not specified',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ).animate().fadeIn(delay: 300.ms),
+                ],
+              ),
+            ),
           ],
-        );
-      },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, ProjectCard? p) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Progress Section
+        FadeEntry(
+          delay: 400.ms,
+          child: _buildPhaseCard(context, p),
+        ),
+        const SizedBox(height: 24),
+
+        // Quick Stats / Overview
+        FadeEntry(
+          delay: 500.ms,
+          child: _buildOverviewSection(context),
+        ),
+        const SizedBox(height: 24),
+
+        // Action Buttons Grid
+        FadeEntry(
+          delay: 600.ms,
+          child: _buildActionGrid(context),
+        ),
+      ],
     );
   }
 
   Widget _buildPhaseCard(BuildContext context, ProjectCard? p) {
     final progress = _projectDetails?.progress ?? p?.progress ?? 0;
-    final phase = _projectDetails?.phase ?? p?.projectPhase;
-    final designPackage = _projectDetails?.designPackage ?? p?.designPackage;
-
-    if (phase != null && 
-        phase.toLowerCase() == 'design' && 
-        (designPackage == null || designPackage.isEmpty)) {
-      return _buildActionRequiredCard(context);
-    } 
     
-    if (progress < 50) {
-      return _buildDesignProgressCard(context, p);
-    } else {
-      return _buildSiteProgressCard(context, p);
-    }
+    return HoverCard(
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: primaryColor.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Total Progress", style: TextStyle(color: blackColor60, fontSize: 12)),
+                    SizedBox(height: 4),
+                    Text("On Track", style: TextStyle(color: successColor, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    "$progress%",
+                    style: const TextStyle(
+                      color: primaryColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: LinearProgressIndicator(
+                value: progress / 100.0,
+                minHeight: 8,
+                backgroundColor: blackColor5,
+                valueColor: const AlwaysStoppedAnimation<Color>(primaryColor),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  Widget _buildActionRequiredCard(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              const Icon(Icons.palette_outlined, color: AppColors.warning),
-              const SizedBox(width: 12),
-              const Expanded(child: Text('Action Required: Select Design Package')),
-              const Icon(Icons.arrow_forward),
-            ],
+  Widget _buildOverviewSection(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildInfoCard(
+            "Start Date",
+            "Oct 24, 2023",
+            Icons.calendar_today_outlined,
+            Colors.blue,
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildDesignProgressCard(BuildContext context, ProjectCard? p) {
-    final progress = _projectDetails?.progress ?? p?.progress ?? 0;
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.design_services_outlined, color: AppColors.info),
-                const SizedBox(width: 12),
-                const Expanded(child: Text('Design in Progress')),
-                Text('$progress%'),
-              ],
-            ),
-            const SizedBox(height: 12),
-            LinearProgressIndicator(value: progress / 100.0),
-          ],
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildInfoCard(
+            "Est. Completion",
+            "Aug 15, 2024",
+            Icons.flag_outlined,
+            Colors.orange,
+          ),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildSiteProgressCard(BuildContext context, ProjectCard? p) {
-    final progress = _projectDetails?.progress ?? p?.progress ?? 0;
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.construction, color: AppColors.success),
-                const SizedBox(width: 12),
-                const Expanded(child: Text('Site Progress')),
-                Text('$progress%'),
-              ],
-            ),
-            const SizedBox(height: 12),
-            LinearProgressIndicator(value: progress / 100.0),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOverviewCard(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Overview', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
-            // Add overview details here
-            Text('Status: ${_projectDetails?.status ?? "Unknown"}'),
-            Text('Location: ${_projectDetails?.location ?? "Unknown"}'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusChip(String status) {
-    Color color;
-    switch (status.toUpperCase()) {
-      case 'ACTIVE':
-      case 'IN_PROGRESS':
-        color = Colors.green;
-        break;
-      case 'COMPLETED':
-        color = Colors.blue;
-        break;
-      case 'ON_HOLD':
-        color = Colors.orange;
-        break;
-      default:
-        color = Colors.grey;
-    }
-
+  Widget _buildInfoCard(String label, String value, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.5)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: blackColor.withOpacity(0.05)),
       ),
-      child: Text(
-        status.toUpperCase(),
-        style: TextStyle(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(height: 12),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 2),
+          Text(label, style: const TextStyle(color: blackColor60, fontSize: 12)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionGrid(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionTile(
+                "Timeline",
+                Icons.timeline,
+                Colors.purple,
+                () {
+                  // TODO: Navigate or show Timeline
+                  // Since timeline is a widget, maybe open a bottom sheet or new screen
+                },
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildActionTile(
+                "Documents",
+                Icons.folder_outlined,
+                Colors.blue,
+                 () => Navigator.pushNamed(context, documentsScreenRoute),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionTile(
+                "Site Updates",
+                Icons.camera_alt_outlined,
+                Colors.green,
+                () => Navigator.pushNamed(context, siteUpdatesScreenRoute),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildActionTile(
+                "Payments",
+                Icons.account_balance_wallet_outlined,
+                Colors.orange,
+                () => Navigator.pushNamed(context, paymentsScreenRoute),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionTile(String label, IconData icon, Color color, VoidCallback onTap) {
+    return ScaleButton(
+      onTap: onTap,
+      child: Container(
+        height: 100,
+        decoration: BoxDecoration(
           color: Colors.white,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: blackColor.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                color: blackColor80,
+              ),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: errorColor),
+          const SizedBox(height: 16),
+          Text(_errorMessage!, style: const TextStyle(color: errorColor)),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: _loadProjectDetails,
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toUpperCase()) {
+      case 'ACTIVE': return successColor;
+      case 'COMPLETED': return primaryColor;
+      case 'ON_HOLD': return Colors.orange;
+      default: return Colors.grey;
+    }
   }
 }

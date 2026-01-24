@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../constants.dart';
+import '../../../design_tokens/app_typography.dart';
+import '../../../components/animations/fade_entry.dart';
+import '../../../components/animations/hover_card.dart';
+import '../../../components/animations/scale_button.dart';
 
 class BlogScreen extends StatelessWidget {
   const BlogScreen({super.key});
@@ -7,64 +12,80 @@ class BlogScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // Header
-            SliverToBoxAdapter(
-              child: Container(
-                padding: const EdgeInsets.all(defaultPadding * 1.5),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      primaryColor,
-                      primaryColor.withOpacity(0.9),
-                    ],
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Construction Insights",
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                                letterSpacing: 0.5,
-                              ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Latest news, tips, and industry updates",
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
-                          ),
-                    ),
-                  ],
-                ),
+      backgroundColor: surfaceColor,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          _buildSliverAppBar(),
+          SliverPadding(
+            padding: const EdgeInsets.all(defaultPadding),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  return FadeEntry(
+                    delay: (100 + (index * 100)).ms,
+                    child: _buildBlogCard(context, index),
+                  );
+                },
+                childCount: 6,
               ),
             ),
-
-            // Blog Posts
-            SliverPadding(
-              padding: const EdgeInsets.all(defaultPadding * 1.5),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    return _buildBlogCard(context, index);
-                  },
-                  childCount: 6,
-                ),
-              ),
-            ),
-
-            // Bottom padding for navigation bar
-            const SliverToBoxAdapter(
-              child: SizedBox(height: defaultPadding * 4),
-            ),
-          ],
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 80)),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildSliverAppBar() {
+    return SliverAppBar(
+      expandedHeight: 220,
+      floating: false,
+      pinned: true,
+      backgroundColor: surfaceColor,
+      elevation: 0,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+           fit: StackFit.expand,
+           children: [
+             Image.network(
+               "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800",
+               fit: BoxFit.cover,
+             ).animate().fadeIn(duration: 800.ms),
+             Container(
+               color: Colors.black.withOpacity(0.6),
+             ),
+             Positioned(
+               bottom: 30,
+               left: 20,
+               right: 20,
+               child: Column(
+                 crossAxisAlignment: CrossAxisAlignment.start,
+                 mainAxisSize: MainAxisSize.min,
+                 children: [
+                   Container(
+                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                     decoration: BoxDecoration(
+                       color: primaryColor,
+                       borderRadius: BorderRadius.circular(20),
+                     ),
+                     child: const Text("INSIGHTS", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                   ).animate().slideX(begin: -0.2),
+                   const SizedBox(height: 12),
+                   const Text(
+                     "Construction\nTrends & News",
+                     style: TextStyle(
+                       fontFamily: grandisExtendedFont,
+                       fontSize: 32,
+                       fontWeight: FontWeight.bold,
+                       color: Colors.white,
+                       height: 1.1,
+                     ),
+                   ).animate().fadeIn().slideY(begin: 0.1),
+                 ],
+               ),
+             ),
+           ],
         ),
       ),
     );
@@ -77,115 +98,95 @@ class BlogScreen extends StatelessWidget {
         'category': 'Industry News',
         'date': 'March 15, 2024',
         'readTime': '5 min read',
-        'description':
-            'Discover the latest construction methods and technologies that are revolutionizing the industry.',
-        'icon': Icons.construction,
+        'description': 'Discover the latest construction methods and technologies that are revolutionizing the industry.',
+        'image': 'https://images.unsplash.com/photo-1581094794329-cdac82aadbcc?w=800',
       },
       {
         'title': 'Sustainable Building Materials Guide',
         'category': 'Sustainability',
         'date': 'March 12, 2024',
         'readTime': '8 min read',
-        'description':
-            'Learn about eco-friendly materials that are both durable and environmentally responsible.',
-        'icon': Icons.eco,
+        'description': 'Learn about eco-friendly materials that are both durable and environmentally responsible.',
+        'image': 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800',
       },
       {
         'title': 'Project Management Best Practices',
         'category': 'Management',
         'date': 'March 10, 2024',
         'readTime': '6 min read',
-        'description':
-            'Essential tips for managing construction projects efficiently and on budget.',
-        'icon': Icons.engineering,
+        'description': 'Essential tips for managing construction projects efficiently and on budget.',
+        'image': 'https://images.unsplash.com/photo-1507537297725-24a1c434b6b8?w=800',
       },
       {
         'title': 'Safety Protocols on Construction Sites',
         'category': 'Safety',
         'date': 'March 8, 2024',
         'readTime': '4 min read',
-        'description':
-            'Comprehensive guide to maintaining safety standards in construction environments.',
-        'icon': Icons.security,
+        'description': 'Comprehensive guide to maintaining safety standards in construction environments.',
+        'image': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800',
       },
       {
         'title': 'Cost-Effective Home Renovation Ideas',
         'category': 'Renovation',
         'date': 'March 5, 2024',
         'readTime': '7 min read',
-        'description':
-            'Smart renovation strategies that add value without breaking the bank.',
-        'icon': Icons.home_repair_service,
+        'description': 'Smart renovation strategies that add value without breaking the bank.',
+        'image': 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800',
       },
       {
         'title': 'Commercial Building Design Trends',
         'category': 'Design',
         'date': 'March 3, 2024',
         'readTime': '9 min read',
-        'description':
-            'Explore the latest trends in commercial architecture and interior design.',
-        'icon': Icons.business,
+        'description': 'Explore the latest trends in commercial architecture and interior design.',
+        'image': 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800',
       },
     ];
 
     final data = blogData[index % blogData.length];
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: defaultPadding * 1.5),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.white,
-        border: Border.all(
-          color: Colors.grey[200]!,
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header with image placeholder
-          Container(
-            height: 140,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12),
-              ),
-              color: primaryColor.withOpacity(0.05),
+    return HoverCard(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 24),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: blackColor.withOpacity(0.05),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
             ),
-            child: Stack(
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image Header
+            Stack(
               children: [
-                // Background icon
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(12),
-                      ),
-                    ),
-                    child: Icon(
-                      data['icon'] as IconData,
-                      size: 60,
-                      color: primaryColor.withOpacity(0.2),
-                    ),
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  child: Image.network(
+                    data['image'] as String,
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
                   ),
                 ),
-                // Category badge
                 Positioned(
-                  top: defaultPadding,
-                  left: defaultPadding,
+                  top: 16,
+                  right: 16,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: defaultPadding,
-                      vertical: 6,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: primaryColor,
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       data['category'] as String,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: blackColor,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -194,114 +195,71 @@ class BlogScreen extends StatelessWidget {
                 ),
               ],
             ),
-          ),
 
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(defaultPadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Meta information
-                Row(
-                  children: [
-                    Icon(
-                      Icons.calendar_today,
-                      size: 16,
-                      color: Colors.grey[600],
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      data['date'] as String,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        data['date'] as String,
+                        style: const TextStyle(color: blackColor40, fontSize: 12),
                       ),
-                    ),
-                    const SizedBox(width: defaultPadding),
-                    Icon(
-                      Icons.access_time,
-                      size: 16,
-                      color: Colors.grey[600],
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      data['readTime'] as String,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
+                      const SizedBox(width: 8),
+                      const CircleAvatar(radius: 2, backgroundColor: blackColor40),
+                      const SizedBox(width: 8),
+                      Text(
+                        data['readTime'] as String,
+                        style: const TextStyle(color: blackColor40, fontSize: 12),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    data['title'] as String,
+                    style: const TextStyle(
+                      fontFamily: grandisExtendedFont,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: blackColor,
+                      height: 1.2,
                     ),
-                  ],
-                ),
-                const SizedBox(height: defaultPadding),
-
-                // Title
-                Text(
-                  data['title'] as String,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
-                ),
-                const SizedBox(height: 8),
-
-                // Description
-                Text(
-                  data['description'] as String,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                        height: 1.4,
-                      ),
-                ),
-                const SizedBox(height: defaultPadding),
-
-                // Read more button
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton(
-                      onPressed: () {},
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            "Read More",
-                            style: TextStyle(
-                              color: primaryColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(
-                            Icons.arrow_forward,
-                            size: 16,
-                            color: primaryColor,
-                          ),
-                        ],
-                      ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    data['description'] as String,
+                    style: const TextStyle(
+                      color: blackColor60,
+                      height: 1.5,
+                      fontSize: 14,
                     ),
-                    Row(
+                  ),
+                  const SizedBox(height: 16),
+                  ScaleButton(
+                    onTap: () {},
+                    child: Row(
                       children: [
-                        Icon(
-                          Icons.favorite_border,
-                          size: 20,
-                          color: Colors.grey[400],
+                        const Text(
+                          "Read Article",
+                          style: TextStyle(
+                            color: primaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
                         const SizedBox(width: 8),
-                        Icon(
-                          Icons.share,
-                          size: 20,
-                          color: Colors.grey[400],
-                        ),
+                        const Icon(Icons.arrow_forward_rounded, size: 16, color: primaryColor),
                       ],
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

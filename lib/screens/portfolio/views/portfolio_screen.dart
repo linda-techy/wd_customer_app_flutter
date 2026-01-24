@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../constants.dart';
+import '../../../design_tokens/app_colors.dart';
+import '../../../design_tokens/app_typography.dart';
+import '../../../components/animations/fade_entry.dart';
+import '../../../components/animations/hover_card.dart';
+import '../../../components/animations/scale_button.dart';
 
 class PortfolioScreen extends StatelessWidget {
   const PortfolioScreen({super.key});
@@ -7,63 +13,111 @@ class PortfolioScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // Header
-            SliverToBoxAdapter(
+      backgroundColor: surfaceColor,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          _buildSliverAppBar(context),
+          SliverPadding(
+            padding: const EdgeInsets.all(defaultPadding),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  return FadeEntry(
+                    delay: (100 + (index * 100)).ms,
+                    child: _buildPortfolioItem(context, index),
+                  );
+                },
+                childCount: 4,
+              ),
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 80)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSliverAppBar(BuildContext context) {
+    return SliverAppBar(
+      expandedHeight: 200,
+      floating: false,
+      pinned: true,
+      backgroundColor: surfaceColor,
+      elevation: 0,
+       flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [primaryColor, primaryColor.withOpacity(0.8)],
+                ),
+              ),
+            ),
+            // Decorative circles
+            Positioned(
+              right: -50,
+              top: -50,
               child: Container(
-                padding: const EdgeInsets.all(defaultPadding * 1.5),
+                width: 200,
+                height: 200,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      primaryColor,
-                      primaryColor.withOpacity(0.9),
-                    ],
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Portfolio",
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                                letterSpacing: 0.5,
-                              ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Our award-winning construction projects",
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
-                          ),
-                    ),
-                  ],
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.1),
                 ),
               ),
             ),
-
-            // Portfolio Items
-            SliverPadding(
-              padding: const EdgeInsets.all(defaultPadding * 1.5),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    return _buildPortfolioItem(context, index);
-                  },
-                  childCount: 4,
-                ),
+             Positioned(
+              left: 20,
+              bottom: 40,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                   Container(
+                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                     decoration: BoxDecoration(
+                       color: Colors.white.withOpacity(0.2),
+                       borderRadius: BorderRadius.circular(20),
+                     ),
+                     child: const Row(
+                       mainAxisSize: MainAxisSize.min,
+                       children: [
+                         Icon(Icons.star, color: Colors.amber, size: 14),
+                         SizedBox(width: 4),
+                         Text(
+                           "Featured Projects",
+                           style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                         ),
+                       ],
+                     ),
+                   ).animate().slideX(begin: -0.2),
+                   const SizedBox(height: 12),
+                  const Text(
+                    "Our Portfolio",
+                    style: TextStyle(
+                      fontFamily: grandisExtendedFont,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      height: 1.1,
+                    ),
+                  ).animate().fadeIn().slideY(begin: 0.1),
+                   const SizedBox(height: 4),
+                    Text(
+                    "Award-winning construction excellence",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ).animate().fadeIn(delay: 200.ms),
+                ],
               ),
-            ),
-
-            // Bottom padding for navigation bar
-            const SliverToBoxAdapter(
-              child: SizedBox(height: defaultPadding * 4),
-            ),
+             ),
           ],
         ),
       ),
@@ -78,15 +132,11 @@ class PortfolioScreen extends StatelessWidget {
         'location': 'Downtown Business District',
         'year': '2023',
         'description':
-            'A 25-story modern office complex featuring sustainable design, smart building technology, and premium amenities. This LEED-certified building includes rooftop gardens, energy-efficient systems, and state-of-the-art conference facilities.',
-        'features': [
-          '25 Stories',
-          'LEED Certified',
-          'Smart Building',
-          'Rooftop Garden'
-        ],
+            'A 25-story modern office complex featuring sustainable design, smart building technology, and premium amenities.',
+        'features': ['25 Stories', 'LEED Certified', 'Smart Building'],
         'icon': Icons.business,
         'color': Colors.blue,
+        'image': 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800',
       },
       {
         'title': 'Luxury Residential Complex',
@@ -94,31 +144,23 @@ class PortfolioScreen extends StatelessWidget {
         'location': 'Exclusive Suburban Area',
         'year': '2023',
         'description':
-            'Premium residential development with 50 luxury apartments, featuring high-end finishes, private balconies, and community amenities including swimming pool, fitness center, and landscaped gardens.',
-        'features': [
-          '50 Units',
-          'Luxury Finishes',
-          'Swimming Pool',
-          'Fitness Center'
-        ],
+            'Premium residential development with 50 luxury apartments, featuring high-end finishes and private balconies.',
+        'features': ['50 Units', 'Luxury Finishes', 'Swimming Pool'],
         'icon': Icons.apartment,
         'color': Colors.green,
+        'image': 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800',
       },
       {
-        'title': 'Industrial Manufacturing Facility',
+        'title': 'Industrial Manufacturing',
         'category': 'Industrial',
         'location': 'Industrial Technology Park',
         'year': '2022',
         'description':
-            'State-of-the-art manufacturing facility designed for efficiency and sustainability. Features advanced automation systems, energy-efficient lighting, and environmentally responsible waste management.',
-        'features': [
-          '100,000 sq ft',
-          'Automated Systems',
-          'Energy Efficient',
-          'Green Certified'
-        ],
+            'State-of-the-art manufacturing facility designed for efficiency and sustainability.',
+        'features': ['100k sq ft', 'Automated', 'Green Certified'],
         'icon': Icons.factory,
         'color': Colors.orange,
+        'image': 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800',
       },
       {
         'title': 'Modern Shopping Center',
@@ -126,234 +168,158 @@ class PortfolioScreen extends StatelessWidget {
         'location': 'City Center',
         'year': '2022',
         'description':
-            'Contemporary shopping center with 100+ retail spaces, entertainment venues, and dining options. Features open-air design, sustainable materials, and smart parking systems.',
-        'features': [
-          '100+ Stores',
-          'Entertainment Venues',
-          'Smart Parking',
-          'Open Air Design'
-        ],
+            'Contemporary shopping center with 100+ retail spaces, entertainment venues, and dining options.',
+        'features': ['100+ Stores', 'Entertainment', 'Open Air'],
         'icon': Icons.store,
         'color': Colors.purple,
+        'image': 'https://images.unsplash.com/photo-1519567241046-7f570eee3d9f?w=800',
       },
     ];
 
     final data = portfolioData[index % portfolioData.length];
+    final color = data['color'] as Color;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: defaultPadding * 2),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.white,
-        border: Border.all(
-          color: Colors.grey[200]!,
-          width: 1,
+    return HoverCard(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 24),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: blackColor.withOpacity(0.05),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Image/Icon
-          Container(
-            height: 180,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12),
-              ),
-              color: (data['color'] as Color).withOpacity(0.05),
-            ),
-            child: Stack(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image Header
+            Stack(
               children: [
-                // Background icon
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(12),
-                      ),
-                    ),
-                    child: Icon(
-                      data['icon'] as IconData,
-                      size: 60,
-                      color: (data['color'] as Color).withOpacity(0.2),
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  child: Image.network(
+                    data['image'] as String,
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (c, e, s) => Container(
+                      height: 200,
+                      color: color.withOpacity(0.1),
+                      child: Center(child: Icon(data['icon'] as IconData, size: 50, color: color)),
                     ),
                   ),
                 ),
-                // Project info overlay
                 Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
+                  top: 16,
+                  right: 16,
                   child: Container(
-                    padding: const EdgeInsets.all(defaultPadding),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.vertical(
-                        bottom: Radius.circular(12),
-                      ),
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.7),
-                        ],
-                      ),
+                      color: Colors.black.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: (data['color'] as Color),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                data['category'] as String,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              data['year'] as String,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          data['title'] as String,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 18,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          data['location'] as String,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      data['year'] as String,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
+                  ),
+                ),
+                 Positioned(
+                  top: 16,
+                  left: 16,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      data['category'] as String,
+                      style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                   ),
                 ),
               ],
             ),
-          ),
-
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(defaultPadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Description
-                Text(
-                  data['description'] as String,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[700],
-                        height: 1.5,
+            
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    data['title'] as String,
+                    style: const TextStyle(
+                      fontFamily: grandisExtendedFont,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: blackColor,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on, size: 14, color: blackColor40),
+                      const SizedBox(width: 4),
+                      Text(
+                        data['location'] as String,
+                        style: const TextStyle(color: blackColor60, fontSize: 13),
                       ),
-                ),
-                const SizedBox(height: defaultPadding),
-
-                // Features
-                Text(
-                  "Key Features",
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
-                ),
-                const SizedBox(height: defaultPadding / 2),
-                Wrap(
-                  spacing: defaultPadding / 2,
-                  runSpacing: defaultPadding / 2,
-                  children: (data['features'] as List<String>).map((feature) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: defaultPadding / 2,
-                        vertical: 6,
-                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    data['description'] as String,
+                    style: const TextStyle(color: blackColor80, height: 1.5, fontSize: 14),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: (data['features'] as List<String>).map((feature) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: blackColor5,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          feature,
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: blackColor60),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+                   ScaleButton(
+                    onTap: () {},
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
-                        color: (data['color'] as Color).withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: (data['color'] as Color).withOpacity(0.2),
-                        ),
+                        border: Border.all(color: blackColor10),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(
-                        feature,
-                        style: TextStyle(
-                          color: (data['color'] as Color),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: defaultPadding),
-
-                // Action buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.visibility, size: 18),
-                        label: const Text("View Details"),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: defaultPadding / 2),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          elevation: 0,
+                      child: const Center(
+                        child: Text(
+                          "View Project Details",
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: primaryColor),
                         ),
                       ),
                     ),
-                    const SizedBox(width: defaultPadding / 2),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.share, size: 18),
-                        label: const Text("Share"),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: defaultPadding / 2),
-                          side: BorderSide(color: primaryColor),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
