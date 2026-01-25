@@ -384,7 +384,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
     );
   }
 
-  Widget _buildProjectList(DashboardProjectsDto projects) {
+  Widget _buildProjectList(ProjectSummary projects) {
     if (projects.totalProjects == 0) {
       return FadeEntry(
         delay: 500.ms,
@@ -446,7 +446,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
       }).toList(),
     );
   }
-  }
+
 
   Widget _buildQuickAction(
       BuildContext context, String label, IconData icon, Color color, VoidCallback onTap) {

@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../constants.dart';
 import '../../../services/auth_service.dart';
+import '../../../components/animations/scale_button.dart';
+import '../../../components/animations/fade_entry.dart';
+import '../../../components/animations/hover_card.dart';
 
 class ThreeDDesignScreen extends StatefulWidget {
   const ThreeDDesignScreen({super.key, this.projectId});
 
-  final String? projectId; // Support direct project ID for web refresh
+  final String? projectId;
 
   @override
   State<ThreeDDesignScreen> createState() => _ThreeDDesignScreenState();
@@ -14,12 +19,18 @@ class ThreeDDesignScreen extends StatefulWidget {
 class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
   bool isLoggedIn = false;
   int selectedView = 0;
-  String? projectId;
+  
+  // Simulated 3D views
+  final List<Map<String, dynamic>> views = [
+    {"name": "Exterior", "icon": Icons.home_outlined},
+    {"name": "Interior", "icon": Icons.chair_outlined},
+    {"name": "Walkthrough", "icon": Icons.directions_walk},
+    {"name": "Bird's Eye", "icon": Icons.flight_takeoff},
+  ];
 
   @override
   void initState() {
     super.initState();
-    projectId = widget.projectId;
     _checkAuthStatus();
   }
 
@@ -34,262 +45,233 @@ class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
   Widget build(BuildContext context) {
     if (!isLoggedIn) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text("3D Design"),
-          backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
-        ),
-        body: const Center(
-          child: Text("Please log in to access 3D designs"),
-        ),
+        appBar: AppBar(title: const Text("3D Design"), backgroundColor: surfaceColor),
+        body: const Center(child: Text("Please log in to access 3D designs")),
       );
     }
 
     return Scaffold(
+      backgroundColor: Colors.black, // Dark background for cinema feel
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text("3D Design"),
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
+        title: const Text("3D Virtual Tour", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
+        centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.fullscreen),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Opening fullscreen view...')),
-              );
-            },
+            icon: const Icon(Icons.share, color: Colors.white),
+            onPressed: () {},
           ),
           IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Sharing 3D design...')),
-              );
-            },
+            icon: const Icon(Icons.fullscreen, color: Colors.white),
+            onPressed: () {},
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
+        fit: StackFit.expand,
         children: [
-          // View Selector
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildViewButton("Exterior", 0, Icons.home),
-                ),
-                const SizedBox(width: defaultPadding / 2),
-                Expanded(
-                  child: _buildViewButton("Interior", 1, Icons.living),
-                ),
-                const SizedBox(width: defaultPadding / 2),
-                Expanded(
-                  child: _buildViewButton("Walkthrough", 2, Icons.view_in_ar),
-                ),
-              ],
-            ),
-          ),
-
-          // 3D View Area
-          Expanded(
+          // 3D Viewport Placeholder
+          InteractiveViewer(
+             minScale: 0.5,
+            maxScale: 2.0,
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: defaultPadding),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.grey[100],
-                border: Border.all(color: Colors.grey[300]!),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    selectedView == 0
-                        ? Icons.home
-                        : selectedView == 1
-                            ? Icons.living
-                            : Icons.view_in_ar,
-                    size: 80,
-                    color: primaryColor.withOpacity(0.3),
-                  ),
-                  const SizedBox(height: defaultPadding),
-                  Text(
-                    selectedView == 0
-                        ? "Exterior View"
-                        : selectedView == 1
-                            ? "Interior View"
-                            : "3D Walkthrough",
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: primaryColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    selectedView == 0
-                        ? "Building exterior and landscaping"
-                        : selectedView == 1
-                            ? "Interior rooms and spaces"
-                            : "Interactive 3D walkthrough experience",
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: defaultPadding),
-
-                  // Control Buttons
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.rotate_left),
-                        tooltip: "Rotate Left",
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.zoom_in),
-                        tooltip: "Zoom In",
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.zoom_out),
-                        tooltip: "Zoom Out",
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.rotate_right),
-                        tooltip: "Rotate Right",
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Design Details
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Design Features",
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
+                gradient: RadialGradient(
+                  center: Alignment.center,
+                  radius: 1.5,
+                  colors: [
+                    const Color(0xFF2C3E50),
+                    Colors.black,
+                  ],
                 ),
-                const SizedBox(height: defaultPadding),
-
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildFeatureCard(
-                          "Modern Architecture",
-                          "Contemporary design with clean lines",
-                          Icons.architecture),
-                      _buildFeatureCard("Energy Efficient",
-                          "Solar panels and smart systems", Icons.solar_power),
-                      _buildFeatureCard("Smart Home",
-                          "Automated lighting and security", Icons.home),
-                      _buildFeatureCard("Landscaping",
-                          "Beautiful gardens and outdoor spaces", Icons.park),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: defaultPadding * 1.5),
-
-                // Action Buttons
-                Row(
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Starting VR experience...')),
-                          );
-                        },
-                        icon: const Icon(Icons.view_in_ar),
-                        label: const Text("VR Experience"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryColor,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: defaultPadding),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
+                    Icon(
+                      views[selectedView]['icon'], 
+                      size: 100, 
+                      color: Colors.white.withOpacity(0.2)
+                    ).animate(key: ValueKey(selectedView))
+                    .scale(duration: 600.ms, curve: Curves.easeOutBack)
+                    .fadeIn(),
+                    const SizedBox(height: 20),
+                    Text(
+                      "${views[selectedView]['name']} View",
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.5),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
                       ),
-                    ),
-                    const SizedBox(width: defaultPadding),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Opening design options...')),
-                          );
-                        },
-                        icon: const Icon(Icons.palette),
-                        label: const Text("Customize"),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: defaultPadding),
-                          side: BorderSide(color: primaryColor),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
+                    ).animate(key: ValueKey(selectedView)).fadeIn(delay: 200.ms),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white24),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        "Drag to Rotate • Pinch to Zoom",
+                        style: TextStyle(color: Colors.white54, fontSize: 12),
                       ),
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
+          ),
+
+          // View Selector - Floating Bottom
+          Positioned(
+            bottom: 40,
+            left: 20,
+            right: 20,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 20,
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(views.length, (index) {
+                        final isSelected = selectedView == index;
+                        return GestureDetector(
+                          onTap: () => setState(() => selectedView = index),
+                          child: AnimatedContainer(
+                            duration: 300.ms,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: isSelected ? primaryColor : Colors.transparent,
+                              borderRadius: BorderRadius.circular(22),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  views[index]['icon'],
+                                  color: isSelected ? Colors.white : Colors.white70,
+                                  size: 18,
+                                ),
+                                if (isSelected) ...[
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    views[index]['name'],
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ).animate().slide(begin: const Offset(0, 1), curve: Curves.easeOutBack, duration: 600.ms),
+
+          // Side Tools
+          Positioned(
+            top: 120,
+            right: 20,
+            child: Column(
+              children: [
+                _buildSideButton(Icons.layers, "Layers", () {}),
+                const SizedBox(height: 12),
+                _buildSideButton(Icons.wb_sunny, "Lighting", () {}),
+                const SizedBox(height: 12),
+                _buildSideButton(Icons.straighten, "Measure", () {}),
+                const SizedBox(height: 12),
+                _buildSideButton(Icons.info_outline, "Info", _showInfoSheet),
+              ],
+            ).animate().slide(begin: const Offset(1, 0), curve: Curves.easeOutBack, duration: 800.ms),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildViewButton(String title, int index, IconData icon) {
-    final isSelected = selectedView == index;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedView = index;
-        });
-      },
+  Widget _buildSideButton(IconData icon, String tooltip, VoidCallback onTap) {
+    return ScaleButton(
+      onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: defaultPadding / 2),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor : Colors.grey[100],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? primaryColor : Colors.grey[300]!,
-          ),
+          color: Colors.black.withOpacity(0.6),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white.withOpacity(0.2)),
+        ),
+        child: Icon(icon, color: Colors.white, size: 24),
+      ),
+    );
+  }
+
+  void _showInfoSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              icon,
-              color: isSelected ? Colors.white : Colors.grey[600],
-              size: 20,
+            const Text(
+              "Modern Villa Design",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             Text(
-              title,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.grey[600],
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+              "Version 2.4 • Updated yesterday",
+              style: TextStyle(color: blackColor.withOpacity(0.6)),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                _buildInfoStat("Area", "2,500 sq ft"),
+                _buildInfoStat("Style", "Modern"),
+                _buildInfoStat("Est. Cost", "\$150k"),
+              ],
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: const Text("Close Details"),
               ),
             ),
           ],
@@ -297,40 +279,24 @@ class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
       ),
     );
   }
-
-  Widget _buildFeatureCard(String title, String description, IconData icon) {
-    return Container(
-      width: 200,
-      margin: const EdgeInsets.only(right: defaultPadding),
-      padding: const EdgeInsets.all(defaultPadding),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.white,
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            icon,
-            color: primaryColor,
-            size: 24,
-          ),
-          const SizedBox(height: defaultPadding / 2),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            description,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[600],
-                ),
-          ),
-        ],
+  
+  Widget _buildInfoStat(String label, String value) {
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: surfaceColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: blackColor10),
+        ),
+        child: Column(
+          children: [
+            Text(label, style: const TextStyle(fontSize: 12, color: blackColor60)),
+             const SizedBox(height: 4),
+            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          ],
+        ),
       ),
     );
   }

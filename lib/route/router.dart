@@ -3,8 +3,10 @@ import '../entry_point.dart';
 import '../screens/dashboard/views/customer_dashboard_screen.dart';
 import '../models/api_models.dart';
 
-import 'package:wd_customer_app_flutter/screens/payments/views/payments_screen.dart';
-import 'package:wd_customer_app_flutter/screens/project/views/site_updates_screen.dart';
+import 'package:wd_cust_mobile_app/screens/payments/views/payments_screen.dart';
+import 'package:wd_cust_mobile_app/screens/project/views/site_updates_screen.dart';
+import 'fade_slide_page_route.dart';
+import 'screen_export.dart';
 
 // Construction-focused routing for Walldot Builders Customer App
 // Removed all e-commerce routes (products, cart, checkout, etc.)
@@ -161,7 +163,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           settings: settings,
           page: ProjectDetailsScreen(
             projectId: project.projectUuid ?? project.projectUuid.toString(),
-            projectName: project.name,
           ),
         );
       }

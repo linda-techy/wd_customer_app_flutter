@@ -11,7 +11,7 @@ ElevatedButtonThemeData elevatedButtonThemeData = ElevatedButtonThemeData(
     minimumSize: const Size(double.infinity, 48),
     elevation: 2,
     shadowColor: primaryColor.withOpacity(0.3),
-    shadowColor: primaryColor.withOpacity(0.3),
+
     shape: const StadiumBorder(),
     textStyle: const TextStyle(
       fontSize: 16,

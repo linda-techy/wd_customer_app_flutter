@@ -14,7 +14,7 @@ export '/screens/portfolio/views/portfolio_screen.dart';
 
 // Project Screens
 export '/screens/project/views/project_screen.dart';
-export '/screens/project_details_screen.dart';
+export '../screens/project/views/project_details_screen.dart';
 export '/screens/project/views/floor_plan_screen.dart';
 export '/screens/project/views/three_d_design_screen.dart';
 export '/screens/project/views/schedule_screen.dart';

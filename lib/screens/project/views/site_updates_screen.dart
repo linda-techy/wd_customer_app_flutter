@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../components/organisms/site_update_card.dart';
-import '../../constants.dart';
+import '../../../components/organisms/site_update_card.dart';
+import '../../../constants.dart';
 
 class SiteUpdatesScreen extends StatelessWidget {
   const SiteUpdatesScreen({super.key});

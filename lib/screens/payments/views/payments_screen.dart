@@ -67,7 +67,7 @@ class PaymentsScreen extends StatelessWidget {
                             color: successColor,
                             strokeWidth: 8,
                             strokeCap: StrokeCap.round,
-                          ).animate().listen(duration: 1000.ms, (val) {}), // Just trigger
+                          ).animate().scale(), // Just trigger animation
                           Center(
                             child: Text(
                               "${(progress * 100).toInt()}%",

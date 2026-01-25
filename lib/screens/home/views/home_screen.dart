@@ -230,8 +230,23 @@ class _HomeScreenState extends State<HomeScreen> {
                      decoration: BoxDecoration(
                        color: primaryColor,
                        borderRadius: BorderRadius.circular(30),
+                       boxShadow: [
+                         BoxShadow(
+                           color: primaryColor.withOpacity(0.4),
+                           blurRadius: 12,
+                           offset: const Offset(0, 4),
+                         ),
+                       ],
                      ),
-                     child: const Text("TRUSTED BY 500+ CLIENTS", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                     child: const Text(
+                       "CRAFTING ICONIC SPACES",
+                       style: TextStyle(
+                         color: Colors.white,
+                         fontSize: 11,
+                         fontWeight: FontWeight.w800,
+                         letterSpacing: 1.2,
+                       ),
+                     ),
                    ).animate().slideX(),
                    const SizedBox(height: 16),
                    const Text(
@@ -293,11 +308,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildStatsGrid(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: _buildStatCard("5+", "Premium\nProjects", Colors.blue)),
+        Expanded(child: _buildStatCard("25k+", "Sq.Ft.\nCrafted", Colors.blue)),
         const SizedBox(width: 12),
-        Expanded(child: _buildStatCard("100%", "Quality\nGuarantee", Colors.green)),
+        Expanded(child: _buildStatCard("100%", "On-Time\nRecord", Colors.green)),
         const SizedBox(width: 12),
-        Expanded(child: _buildStatCard("₹10Cr+", "Portfolio\nValue", Colors.orange)),
+        Expanded(child: _buildStatCard("Zero", "Hidden\nCosts", Colors.orange)),
       ],
     );
   }

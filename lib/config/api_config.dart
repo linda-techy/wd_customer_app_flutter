@@ -4,7 +4,7 @@ class ApiConfig {
   // For Android emulator use: http://10.0.2.2:8081
   // For iOS simulator use: http://localhost:8081
   // For physical device use: http://YOUR_IP_ADDRESS:8081
-  static const String baseUrl = 'http://localhost:8081';
+  static const String baseUrl = 'http://localhost:8080';
   //static const String baseUrl = 'https://cust-api.walldotbuilders.com';
 
   // API endpoints
