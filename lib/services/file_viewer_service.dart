@@ -8,6 +8,7 @@ enum FileType {
   image,
   word,
   excel,
+  csv,
   powerpoint,
   text,
   video,
@@ -27,6 +28,7 @@ class FileViewerService {
     if (_imageExtensions.contains(extension)) return FileType.image;
     if (_wordExtensions.contains(extension)) return FileType.word;
     if (_excelExtensions.contains(extension)) return FileType.excel;
+    if (_csvExtensions.contains(extension)) return FileType.csv;
     if (_powerpointExtensions.contains(extension)) return FileType.powerpoint;
     if (_textExtensions.contains(extension)) return FileType.text;
     if (_videoExtensions.contains(extension)) return FileType.video;
@@ -39,6 +41,7 @@ class FileViewerService {
       if (mimeType.contains('word') || mimeType.contains('msword') || 
           mimeType.contains('document')) return FileType.word;
       if (mimeType.contains('excel') || mimeType.contains('spreadsheet')) return FileType.excel;
+      if (mimeType.contains('csv') || mimeType.contains('comma-separated')) return FileType.csv;
       if (mimeType.contains('powerpoint') || mimeType.contains('presentation')) return FileType.powerpoint;
       if (mimeType.contains('text')) return FileType.text;
       if (mimeType.contains('video')) return FileType.video;
@@ -91,7 +94,8 @@ class FileViewerService {
   static bool canViewInApp(FileType fileType) {
     return fileType == FileType.pdf || 
            fileType == FileType.image || 
-           fileType == FileType.text;
+           fileType == FileType.text ||
+           fileType == FileType.csv;
   }
 
   /// Get file icon based on type
@@ -105,6 +109,8 @@ class FileViewerService {
         return '📝';
       case FileType.excel:
         return '📊';
+      case FileType.csv:
+        return '📋';
       case FileType.powerpoint:
         return '📽️';
       case FileType.text:
@@ -122,7 +128,8 @@ class FileViewerService {
   static const _pdfExtensions = ['pdf'];
   static const _imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
   static const _wordExtensions = ['doc', 'docx', 'odt', 'rtf'];
-  static const _excelExtensions = ['xls', 'xlsx', 'ods', 'csv'];
+  static const _excelExtensions = ['xls', 'xlsx', 'ods'];
+  static const _csvExtensions = ['csv'];
   static const _powerpointExtensions = ['ppt', 'pptx', 'odp'];
   static const _textExtensions = ['txt', 'md', 'log', 'json', 'xml'];
   static const _videoExtensions = ['mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv'];

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -612,6 +613,8 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
         return _buildImageViewer();
       case FileType.text:
         return _buildTextViewer();
+      case FileType.csv:
+        return _buildCsvViewer();
       case FileType.word:
       case FileType.excel:
       case FileType.powerpoint:
@@ -741,7 +744,7 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
 
   Widget _buildTextViewer() {
     if (_fileBytes != null) {
-      final text = String.fromCharCodes(_fileBytes!);
+      final text = utf8.decode(_fileBytes!, allowMalformed: true);
       return SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: SelectableText(
@@ -752,6 +755,79 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
     }
 
     return const Center(child: Text('Unable to load text file'));
+  }
+
+  Widget _buildCsvViewer() {
+    if (_fileBytes == null) {
+      return const Center(child: Text('Unable to load CSV file'));
+    }
+
+    try {
+      final content = utf8.decode(_fileBytes!, allowMalformed: true);
+      
+      // Simple CSV parser: separate lines, then split by comma
+      // Note: This is a basic implementation. Complex CSVs (quoted values with newlines) 
+      // might need a dedicated CSV package.
+      final List<List<String>> rows = content
+          .split('\n')
+          .where((line) => line.trim().isNotEmpty)
+          .map((line) => line.split(',').map((e) => e.trim()).toList())
+          .toList();
+
+      if (rows.isEmpty) {
+        return const Center(child: Text('CSV file is empty'));
+      }
+
+      // Assume first row is header if it exists
+      final headers = rows.first;
+      final dataRows = rows.skip(1).toList();
+
+      return SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: DataTable(
+            columns: headers.map((header) => DataColumn(
+              label: Text(
+                header, 
+                style: const TextStyle(fontWeight: FontWeight.bold)
+              ),
+            )).toList(),
+            rows: dataRows.map((row) {
+              // Ensure row has same number of cells as headers
+              final cells = [...row];
+              while (cells.length < headers.length) {
+                cells.add('');
+              }
+              while (cells.length > headers.length) {
+                cells.removeLast();
+              }
+              
+              return DataRow(
+                cells: cells.map((cell) => DataCell(Text(cell))).toList(),
+              );
+            }).toList(),
+          ),
+        ),
+      );
+    } catch (e) {
+      print('Error parsing CSV: $e');
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red),
+              const SizedBox(height: 8),
+              Text('Error parsing CSV: $e'),
+              const SizedBox(height: 8),
+              const Text('Try downloading the file to view externally.')
+            ],
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildOfficeDocumentViewer() {

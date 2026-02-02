@@ -30,22 +30,34 @@ class OnbordingScrenn extends StatelessWidget {
         child: SafeArea(
           child: Stack(
             children: [
-              // Main Content
-              Center(
-                child: SingleChildScrollView(
-                  child: ResponsiveContainer(
-                    maxWidth: isDesktop ? 1000 : 600,
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal:
-                            ResponsiveSpacing.getHorizontalPadding(context),
-                        vertical: ResponsiveSpacing.getPadding(context) * 2,
+              // Main Content - viewport-bound, no scroll
+              Positioned.fill(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final maxHeight = constraints.maxHeight;
+                    final padding = ResponsiveSpacing.getPadding(context);
+                    return Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: maxHeight,
+                          maxWidth: isDesktop ? 1000 : 600,
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal:
+                                ResponsiveSpacing.getHorizontalPadding(context),
+                            vertical: padding * 2,
+                          ),
+                          child: isDesktop
+                              ? _buildDesktopLayout(context)
+                              : SizedBox(
+                                  height: maxHeight - padding * 4,
+                                  child: _buildMobileLayout(context, isTablet),
+                                ),
+                        ),
                       ),
-                      child: isDesktop
-                          ? _buildDesktopLayout(context)
-                          : _buildMobileLayout(context, isTablet),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ),
 
@@ -248,14 +260,23 @@ class OnbordingScrenn extends StatelessWidget {
     );
   }
 
-  // Mobile/Tablet Layout - Compact Single Column
+  // Mobile/Tablet Layout - Viewport-fit, no scroll
   Widget _buildMobileLayout(BuildContext context, bool isTablet) {
-    final logoSize = isTablet ? 110.0 : 90.0;
+    final height = MediaQuery.sizeOf(context).height;
+    final isShortScreen = height < 600;
+    // Slightly smaller logo on mobile to fit viewport; scale down further on very short screens
+    final logoSize = isShortScreen
+        ? 64.0
+        : (isTablet ? 88.0 : 76.0);
+    final spacing = isShortScreen ? 8.0 : (isTablet ? 16.0 : 12.0);
+    final bodyFont = ResponsiveFontSize.getBody(context);
+    final headlineFont = ResponsiveFontSize.getHeadline(context);
+    final titleFont = ResponsiveFontSize.getTitle(context);
 
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.max,
       children: [
-        // Logo with Animation
+        // Top: Logo + headline + tagline (fixed)
         Hero(
           tag: 'walldot_logo',
           child: Container(
@@ -278,14 +299,11 @@ class OnbordingScrenn extends StatelessWidget {
             ),
           ),
         ),
-
-        SizedBox(height: isTablet ? 32 : 24),
-
-        // Company Name
+        SizedBox(height: spacing),
         Text(
           "WALLDOT BUILDERS",
           style: TextStyle(
-            fontSize: ResponsiveFontSize.getHeadline(context),
+            fontSize: isShortScreen ? headlineFont * 0.9 : headlineFont,
             fontWeight: FontWeight.w900,
             color: logoRed,
             letterSpacing: 2.5,
@@ -293,101 +311,68 @@ class OnbordingScrenn extends StatelessWidget {
           ),
           textAlign: TextAlign.center,
         ),
-
-        SizedBox(height: isTablet ? 16 : 12),
-
-        // Tagline
+        SizedBox(height: spacing * 0.8),
         Text(
           "Building Excellence",
           style: TextStyle(
-            fontSize: ResponsiveFontSize.getTitle(context),
+            fontSize: isShortScreen ? titleFont * 0.9 : titleFont,
             fontWeight: FontWeight.w600,
             color: blackColor80,
             letterSpacing: 1.2,
           ),
           textAlign: TextAlign.center,
         ),
-
-        SizedBox(height: isTablet ? 24 : 20),
-
-        // Brand Story - Compact
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: isTablet ? 40 : 20),
-          child: Container(
-            padding: EdgeInsets.all(isTablet ? 20 : 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: blackColor.withOpacity(0.06),
-                  blurRadius: 15,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-              border: Border.all(
-                color: logoRed.withOpacity(0.1),
-                width: 1.5,
+        SizedBox(height: spacing),
+        Text(
+          "From vision to reality.",
+          style: TextStyle(
+            fontSize: isShortScreen ? bodyFont * 0.9 : bodyFont,
+            color: blackColor60,
+            letterSpacing: 0.3,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        // Middle: value points in one row (flexible)
+        Expanded(
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: isTablet ? 24 : 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildMobileValueChip(
+                    context,
+                    icon: Icons.verified_outlined,
+                    label: "Quality",
+                    isTablet: isTablet,
+                    isShortScreen: isShortScreen,
+                  ),
+                  _buildMobileValueChip(
+                    context,
+                    icon: Icons.engineering_outlined,
+                    label: "Expert Team",
+                    isTablet: isTablet,
+                    isShortScreen: isShortScreen,
+                  ),
+                  _buildMobileValueChip(
+                    context,
+                    icon: Icons.workspace_premium_outlined,
+                    label: "Results",
+                    isTablet: isTablet,
+                    isShortScreen: isShortScreen,
+                  ),
+                ],
               ),
-            ),
-            child: Text(
-              "Each dot represents a construction phase. The connections show our commitment to seamless building—from planning to completion.",
-              style: TextStyle(
-                fontSize: ResponsiveFontSize.getBody(context),
-                color: blackColor60,
-                height: 1.5,
-                letterSpacing: 0.3,
-              ),
-              textAlign: TextAlign.center,
             ),
           ),
         ),
-
-        SizedBox(height: isTablet ? 24 : 20),
-
-        // Value Points - Better Design
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: isTablet ? 20 : 10),
-          child: Column(
-            children: [
-              _buildMobileValueCard(
-                context,
-                icon: Icons.verified_outlined,
-                title: "Trusted Quality",
-                subtitle: "Premium craftsmanship",
-                isTablet: isTablet,
-              ),
-              SizedBox(height: isTablet ? 12 : 10),
-              _buildMobileValueCard(
-                context,
-                icon: Icons.engineering_outlined,
-                title: "Expert Team",
-                subtitle: "Industry leaders",
-                isTablet: isTablet,
-              ),
-              SizedBox(height: isTablet ? 12 : 10),
-              _buildMobileValueCard(
-                context,
-                icon: Icons.workspace_premium_outlined,
-                title: "Proven Results",
-                subtitle: "Track record",
-                isTablet: isTablet,
-              ),
-            ],
-          ),
-        ),
-
-        SizedBox(height: isTablet ? 32 : 24),
-
-        // CTA Button
+        // Bottom: CTA + tagline (fixed)
         SizedBox(
           width: double.infinity,
-          height: 54,
+          height: isShortScreen ? 48 : 54,
           child: ElevatedButton(
             onPressed: () async {
-              print('Onboarding: Start Building button clicked (Mobile)');
               await AuthService.setWelcomeSeen();
-              // Navigate to entry shell and force Home tab (preserve login state)
               Navigator.pushReplacementNamed(
                 context,
                 entryPointScreenRoute,
@@ -410,7 +395,7 @@ class OnbordingScrenn extends StatelessWidget {
                   "Start Building",
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
-                    fontSize: ResponsiveFontSize.getBody(context) + 2,
+                    fontSize: bodyFont + 2,
                     letterSpacing: 1,
                   ),
                 ),
@@ -420,18 +405,56 @@ class OnbordingScrenn extends StatelessWidget {
             ),
           ),
         ),
-
-        const SizedBox(height: 12),
-
-        // Secondary text
+        SizedBox(height: spacing),
         Text(
           "Your Vision. Our Expertise.",
           style: TextStyle(
-            fontSize: ResponsiveFontSize.getBody(context),
+            fontSize: isShortScreen ? bodyFont * 0.9 : bodyFont,
             color: blackColor40,
             fontStyle: FontStyle.italic,
             letterSpacing: 0.5,
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMobileValueChip(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required bool isTablet,
+    required bool isShortScreen,
+  }) {
+    final size = isShortScreen ? 20.0 : (isTablet ? 24.0 : 22.0);
+    final fontSize = isShortScreen
+        ? ResponsiveFontSize.getBody(context) * 0.85
+        : ResponsiveFontSize.getBody(context);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: logoRed.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: size, color: logoRed),
+        ),
+        SizedBox(height: isShortScreen ? 4 : 8),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w600,
+            color: blackColor80,
+            letterSpacing: 0.2,
+          ),
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
@@ -453,77 +476,4 @@ class OnbordingScrenn extends StatelessWidget {
     );
   }
 
-  Widget _buildMobileValueCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required bool isTablet,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isTablet ? 20 : 16,
-        vertical: isTablet ? 16 : 14,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: blackColor.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border.all(
-          color: logoRed.withOpacity(0.1),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          // Icon Circle
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: logoRed.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              size: isTablet ? 24 : 22,
-              color: logoRed,
-            ),
-          ),
-          SizedBox(width: isTablet ? 16 : 14),
-          // Text Content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: ResponsiveFontSize.getBody(context) + 1,
-                    fontWeight: FontWeight.w700,
-                    color: blackColor,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: ResponsiveFontSize.getBody(context) - 1,
-                    color: blackColor60,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

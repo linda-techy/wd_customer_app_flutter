@@ -67,6 +67,8 @@ String projectFloorPlanRoute(dynamic projectId) => 'floor_plan/$projectId';
 String project3DDesignRoute(dynamic projectId) => 'three_d_design/$projectId';
 String projectScheduleRoute(dynamic projectId) => 'schedule/$projectId';
 String projectCctvRoute(dynamic projectId) => 'cctv_surveillance/$projectId';
+String projectGalleryRoute(dynamic projectId) => 'project_gallery/$projectId';
+String projectActivityRoute(dynamic projectId) => 'project_activity/$projectId';
 
 // Dashboard Routes
 const String customerDashboardScreenRoute = "customer_dashboard";

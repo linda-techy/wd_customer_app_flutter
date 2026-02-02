@@ -9,7 +9,12 @@ import 'package:share_plus/share_plus.dart';
 /// Save file to device and return the file path
 Future<String> saveFileToDevice(Uint8List bytes, String filename) async {
   try {
-    final directory = await getApplicationDocumentsDirectory();
+    Directory? directory;
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      directory = await getDownloadsDirectory();
+    }
+    directory ??= await getApplicationDocumentsDirectory();
+    
     final filePath = '${directory.path}/$filename';
     final file = File(filePath);
     await file.writeAsBytes(bytes);
@@ -22,7 +27,12 @@ Future<String> saveFileToDevice(Uint8List bytes, String filename) async {
 /// Download file to device (saves to app directory)
 Future<void> downloadFileToDevice(Uint8List bytes, String filename) async {
   try {
-    final directory = await getApplicationDocumentsDirectory();
+    Directory? directory;
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      directory = await getDownloadsDirectory();
+    }
+    directory ??= await getApplicationDocumentsDirectory();
+
     final filePath = '${directory.path}/$filename';
     final file = File(filePath);
     await file.writeAsBytes(bytes);

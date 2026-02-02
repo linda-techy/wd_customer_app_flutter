@@ -475,20 +475,98 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     try {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Downloading...'), duration: Duration(seconds: 2)),
+          const SnackBar(content: Text('Starting download...'), duration: Duration(seconds: 1)),
         );
       }
-      // Re-using existing logic logic would go here
-      // For brevity in rewrite, assuming stub or implementation is same
-       await Future.delayed(1.seconds); // Simulating
-       if (mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(
-           const SnackBar(content: Text('Download function called'), backgroundColor: successColor),
-         );
-       }
+
+      final token = await AuthService.getAccessToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final url = _resolveFileUrl(doc.downloadUrl);
+      
+      final dio = Dio();
+      final response = await dio.get(
+        url,
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Accept': '*/*'
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final bytes = Uint8List.fromList(response.data);
+        await downloadFileToDevice(bytes, doc.filename);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Downloaded ${doc.filename} successfully'), 
+              backgroundColor: successColor,
+              action: SnackBarAction(
+                label: 'View',
+                textColor: Colors.white,
+                onPressed: () {
+                   Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => UniversalFileViewerScreen(
+                        fileUrl: doc.downloadUrl,
+                        filename: doc.filename,
+                        fileType: doc.fileType,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
+        }
+      } else {
+        throw Exception('Failed to download: ${response.statusCode}');
+      }
+
     } catch (e) {
-      // Error handling
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Download failed: $e'), backgroundColor: errorColor),
+        );
+      }
     }
+  }
+
+  String _resolveFileUrl(String url) {
+    if (url.isEmpty) return url;
+    try {
+      final baseUri = Uri.parse(ApiConfig.baseUrl);
+      final uri = Uri.parse(url);
+
+      if (uri.hasScheme) {
+        if (_isLoopbackHost(uri.host) && baseUri.host.isNotEmpty) {
+          return uri
+              .replace(
+                scheme: baseUri.scheme,
+                host: baseUri.host,
+                port: baseUri.hasPort ? baseUri.port : null,
+              )
+              .toString();
+        }
+        return uri.toString();
+      }
+
+      return baseUri.resolveUri(uri).toString();
+    } catch (e) {
+      return url;
+    }
+  }
+
+  bool _isLoopbackHost(String host) {
+    final normalized = host.toLowerCase();
+    return normalized == 'localhost' ||
+        normalized == '127.0.0.1' ||
+        normalized == '0.0.0.0';
   }
 
   Future<void> _shareDocument(ProjectDocument doc) async {

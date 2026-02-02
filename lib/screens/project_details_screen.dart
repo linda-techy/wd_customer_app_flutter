@@ -143,7 +143,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
             _buildModuleCard(Icons.calendar_today, 'Schedule', 'View timeline', 'schedule', color: AppColors.warning),
           ]),
           _buildSection('Visual Media', [
-            _buildModuleCard(Icons.photo_library_outlined, 'Gallery', 'Project photos', null, color: const Color(0xFFEC4899)),
+            _buildModuleCard(Icons.photo_library_outlined, 'Gallery', 'Project photos', 'project_gallery', color: const Color(0xFFEC4899)),
             _buildModuleCard(Icons.videocam_outlined, 'CCTV', 'Live monitoring', 'cctv_surveillance', color: const Color(0xFF8B5CF6)),
             _buildModuleCard(Icons.vrpano_outlined, '360° View', 'Virtual tour', 'three_d_design', color: const Color(0xFF06B6D4)),
             _buildModuleCard(Icons.location_on_outlined, 'Site Visits', 'Visit history', null, color: const Color(0xFFF59E0B)),

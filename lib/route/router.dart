@@ -5,6 +5,7 @@ import '../models/api_models.dart';
 
 import 'package:wd_cust_mobile_app/screens/payments/views/payments_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/site_updates_screen.dart';
+import 'package:wd_cust_mobile_app/screens/project/views/gallery_screen.dart';
 import 'fade_slide_page_route.dart';
 import 'screen_export.dart';
 
@@ -71,6 +72,14 @@ Route<dynamic> generateRoute(RouteSettings settings) {
             return MaterialPageRoute(
               settings: settings,
               builder: (context) => CctvSurveillanceScreen(projectId: projectIdStr),
+            );
+          }
+          break;
+        case 'project_gallery':
+          if (projectIdStr.isNotEmpty) {
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => GalleryScreen(projectId: projectIdStr),
             );
           }
           break;
