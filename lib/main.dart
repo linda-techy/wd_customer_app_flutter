@@ -1,14 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'route/route_constants.dart';
 import 'route/router.dart' as router;
 import 'theme/app_theme.dart';
 import 'services/auth_service.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Load .env based on APP_ENV (--dart-define=APP_ENV=staging|production)
+  final appEnv = String.fromEnvironment('APP_ENV', defaultValue: '');
+  if (appEnv == 'staging') {
+    await dotenv.load(fileName: '.env', overrideWithFiles: ['.env.staging']);
+  } else if (appEnv == 'production') {
+    await dotenv.load(fileName: '.env', overrideWithFiles: ['.env.production']);
+  } else {
+    await dotenv.load(fileName: '.env');
+  }
+
   // Web-specific initialization
   if (kIsWeb) {
-    // Configure web-specific settings
     _configureWeb();
   }
 
@@ -21,19 +33,17 @@ void _configureWeb() {
 }
 
 // Thanks for using our template. You are using the free version of the template.
-// 🔗 Full template: https://theflutterway.gumroad.com/l/fluttershop
+// Full template: https://theflutterway.gumroad.com/l/fluttershop
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Walldot Builders',
       theme: AppTheme.lightTheme(context),
-      // Dark theme is inclided in the Full template
       themeMode: ThemeMode.light,
       onGenerateRoute: router.generateRoute,
       home: const InitialScreen(),

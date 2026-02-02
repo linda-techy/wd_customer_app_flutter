@@ -5,8 +5,134 @@ import '../../../services/auth_service.dart';
 import '../../../components/walldot_logo.dart';
 import '../../../utils/responsive.dart';
 
-class OnbordingScrenn extends StatelessWidget {
+class OnbordingScrenn extends StatefulWidget {
   const OnbordingScrenn({super.key});
+
+  @override
+  State<OnbordingScrenn> createState() => _OnbordingScrennState();
+}
+
+class _OnbordingScrennState extends State<OnbordingScrenn>
+    with TickerProviderStateMixin {
+  static const _duration = Duration(milliseconds: 1400);
+
+  late final AnimationController _controller;
+  late final Animation<double> _logoAnim;
+  late final Animation<double> _headlineAnim;
+  late final Animation<double> _taglineAnim;
+  late final Animation<double> _storyAnim;
+  late final Animation<double> _chip1Anim;
+  late final Animation<double> _chip2Anim;
+  late final Animation<double> _chip3Anim;
+  late final Animation<double> _ctaAnim;
+  late final Animation<double> _footerAnim;
+  late final Animation<double> _skipAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: _duration);
+    final curve = Curves.easeOutCubic;
+    final logoCurve = Curves.easeOutBack;
+    _logoAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.0, 0.22, curve: logoCurve),
+      ),
+    );
+    _headlineAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.08, 0.28, curve: curve),
+      ),
+    );
+    _taglineAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.14, 0.34, curve: curve),
+      ),
+    );
+    _storyAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.20, 0.42, curve: curve),
+      ),
+    );
+    _chip1Anim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.28, 0.50, curve: curve),
+      ),
+    );
+    _chip2Anim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.36, 0.58, curve: curve),
+      ),
+    );
+    _chip3Anim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.44, 0.66, curve: curve),
+      ),
+    );
+    _ctaAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.52, 0.78, curve: curve),
+      ),
+    );
+    _footerAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.60, 0.84, curve: curve),
+      ),
+    );
+    _skipAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.0, 0.18, curve: curve),
+      ),
+    );
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Widget _slideFade(Animation<double> anim, Widget child,
+      {double slideY = 0.12}) {
+    return AnimatedBuilder(
+      animation: anim,
+      builder: (context, child) {
+        return Opacity(
+          opacity: anim.value,
+          child: Transform.translate(
+            offset: Offset(0, (1 - anim.value) * 20),
+            child: child,
+          ),
+        );
+      },
+      child: child,
+    );
+  }
+
+  Widget _scaleFade(Animation<double> anim, Widget child) {
+    return AnimatedBuilder(
+      animation: anim,
+      builder: (context, child) {
+        final scale = 0.85 + 0.15 * anim.value;
+        return Opacity(
+          opacity: anim.value,
+          child: Transform.scale(scale: scale, child: child),
+        );
+      },
+      child: child,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,10 +175,22 @@ class OnbordingScrenn extends StatelessWidget {
                             vertical: padding * 2,
                           ),
                           child: isDesktop
-                              ? _buildDesktopLayout(context)
+                              ? _slideFade(_logoAnim, _buildDesktopLayout(context))
                               : SizedBox(
                                   height: maxHeight - padding * 4,
-                                  child: _buildMobileLayout(context, isTablet),
+                                  child: _buildMobileLayout(
+                                    context,
+                                    isTablet,
+                                    logoAnim: _logoAnim,
+                                    headlineAnim: _headlineAnim,
+                                    taglineAnim: _taglineAnim,
+                                    storyAnim: _storyAnim,
+                                    chip1Anim: _chip1Anim,
+                                    chip2Anim: _chip2Anim,
+                                    chip3Anim: _chip3Anim,
+                                    ctaAnim: _ctaAnim,
+                                    footerAnim: _footerAnim,
+                                  ),
                                 ),
                         ),
                       ),
@@ -65,7 +203,9 @@ class OnbordingScrenn extends StatelessWidget {
               Positioned(
                 top: ResponsiveSpacing.getPadding(context),
                 right: ResponsiveSpacing.getPadding(context),
-                child: TextButton(
+                child: _slideFade(
+                  _skipAnim,
+                  TextButton(
                   onPressed: () async {
                     print('Onboarding: Skip button clicked');
                     await AuthService.setWelcomeSeen();
@@ -91,6 +231,7 @@ class OnbordingScrenn extends StatelessWidget {
                       letterSpacing: 0.5,
                     ),
                   ),
+                ),
                 ),
               ),
             ],
@@ -260,14 +401,24 @@ class OnbordingScrenn extends StatelessWidget {
     );
   }
 
-  // Mobile/Tablet Layout - Viewport-fit, no scroll
-  Widget _buildMobileLayout(BuildContext context, bool isTablet) {
+  // Mobile/Tablet Layout - Viewport-fit, no scroll, with staggered transitions
+  Widget _buildMobileLayout(
+    BuildContext context,
+    bool isTablet, {
+    required Animation<double> logoAnim,
+    required Animation<double> headlineAnim,
+    required Animation<double> taglineAnim,
+    required Animation<double> storyAnim,
+    required Animation<double> chip1Anim,
+    required Animation<double> chip2Anim,
+    required Animation<double> chip3Anim,
+    required Animation<double> ctaAnim,
+    required Animation<double> footerAnim,
+  }) {
     final height = MediaQuery.sizeOf(context).height;
     final isShortScreen = height < 600;
-    // Slightly smaller logo on mobile to fit viewport; scale down further on very short screens
-    final logoSize = isShortScreen
-        ? 64.0
-        : (isTablet ? 88.0 : 76.0);
+    final logoSize =
+        isShortScreen ? 64.0 : (isTablet ? 88.0 : 76.0);
     final spacing = isShortScreen ? 8.0 : (isTablet ? 16.0 : 12.0);
     final bodyFont = ResponsiveFontSize.getBody(context);
     final headlineFont = ResponsiveFontSize.getHeadline(context);
@@ -276,143 +427,175 @@ class OnbordingScrenn extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: [
-        // Top: Logo + headline + tagline (fixed)
-        Hero(
-          tag: 'walldot_logo',
-          child: Container(
-            padding: EdgeInsets.all(logoSize * 0.2),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: logoRed.withOpacity(0.15),
-                  blurRadius: 30,
-                  spreadRadius: 8,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: WalldotLogo(
-              size: logoSize,
-              showText: false,
+        _scaleFade(
+          logoAnim,
+          Hero(
+            tag: 'walldot_logo',
+            child: Container(
+              padding: EdgeInsets.all(logoSize * 0.2),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: logoRed.withOpacity(0.15),
+                    blurRadius: 30,
+                    spreadRadius: 8,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: WalldotLogo(
+                size: logoSize,
+                showText: false,
+              ),
             ),
           ),
         ),
         SizedBox(height: spacing),
-        Text(
-          "WALLDOT BUILDERS",
-          style: TextStyle(
-            fontSize: isShortScreen ? headlineFont * 0.9 : headlineFont,
-            fontWeight: FontWeight.w900,
-            color: logoRed,
-            letterSpacing: 2.5,
-            height: 1.2,
+        _slideFade(
+          headlineAnim,
+          Text(
+            "WALLDOT BUILDERS",
+            style: TextStyle(
+              fontSize: isShortScreen ? headlineFont * 0.9 : headlineFont,
+              fontWeight: FontWeight.w900,
+              color: logoRed,
+              letterSpacing: 2.5,
+              height: 1.2,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
         ),
         SizedBox(height: spacing * 0.8),
-        Text(
-          "Building Excellence",
-          style: TextStyle(
-            fontSize: isShortScreen ? titleFont * 0.9 : titleFont,
-            fontWeight: FontWeight.w600,
-            color: blackColor80,
-            letterSpacing: 1.2,
+        _slideFade(
+          taglineAnim,
+          Text(
+            "Building Excellence",
+            style: TextStyle(
+              fontSize: isShortScreen ? titleFont * 0.9 : titleFont,
+              fontWeight: FontWeight.w600,
+              color: blackColor80,
+              letterSpacing: 1.2,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
         ),
         SizedBox(height: spacing),
-        Text(
-          "From vision to reality.",
-          style: TextStyle(
-            fontSize: isShortScreen ? bodyFont * 0.9 : bodyFont,
-            color: blackColor60,
-            letterSpacing: 0.3,
+        _slideFade(
+          storyAnim,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 20),
+            child: Text(
+              "Each dot represents a construction phase. The connections show our commitment to seamless building—from planning to completion.",
+              style: TextStyle(
+                fontSize: isShortScreen ? bodyFont * 0.85 : bodyFont,
+                color: blackColor60,
+                height: 1.4,
+                letterSpacing: 0.3,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 3,
+            ),
           ),
-          textAlign: TextAlign.center,
         ),
-        // Middle: value points in one row (flexible)
         Expanded(
           child: Center(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: isTablet ? 24 : 16),
+              padding: EdgeInsets.symmetric(horizontal: isTablet ? 24 : 12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildMobileValueChip(
-                    context,
-                    icon: Icons.verified_outlined,
-                    label: "Quality",
-                    isTablet: isTablet,
-                    isShortScreen: isShortScreen,
+                  _slideFade(
+                    chip1Anim,
+                    _buildMobileValueChip(
+                      context,
+                      icon: Icons.verified_outlined,
+                      title: "Trusted Quality",
+                      subtitle: "Premium craftsmanship",
+                      isTablet: isTablet,
+                      isShortScreen: isShortScreen,
+                    ),
                   ),
-                  _buildMobileValueChip(
-                    context,
-                    icon: Icons.engineering_outlined,
-                    label: "Expert Team",
-                    isTablet: isTablet,
-                    isShortScreen: isShortScreen,
+                  _slideFade(
+                    chip2Anim,
+                    _buildMobileValueChip(
+                      context,
+                      icon: Icons.engineering_outlined,
+                      title: "Expert Team",
+                      subtitle: "Industry leaders",
+                      isTablet: isTablet,
+                      isShortScreen: isShortScreen,
+                    ),
                   ),
-                  _buildMobileValueChip(
-                    context,
-                    icon: Icons.workspace_premium_outlined,
-                    label: "Results",
-                    isTablet: isTablet,
-                    isShortScreen: isShortScreen,
+                  _slideFade(
+                    chip3Anim,
+                    _buildMobileValueChip(
+                      context,
+                      icon: Icons.workspace_premium_outlined,
+                      title: "Proven Results",
+                      subtitle: "Track record",
+                      isTablet: isTablet,
+                      isShortScreen: isShortScreen,
+                    ),
                   ),
                 ],
               ),
             ),
           ),
         ),
-        // Bottom: CTA + tagline (fixed)
-        SizedBox(
-          width: double.infinity,
-          height: isShortScreen ? 48 : 54,
-          child: ElevatedButton(
-            onPressed: () async {
-              await AuthService.setWelcomeSeen();
-              Navigator.pushReplacementNamed(
-                context,
-                entryPointScreenRoute,
-                arguments: {'forceHome': true},
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: logoRed,
-              foregroundColor: Colors.white,
-              elevation: 6,
-              shadowColor: logoRed.withOpacity(0.4),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Start Building",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: bodyFont + 2,
-                    letterSpacing: 1,
-                  ),
+        _slideFade(
+          ctaAnim,
+          SizedBox(
+            width: double.infinity,
+            height: isShortScreen ? 48 : 54,
+            child: ElevatedButton(
+              onPressed: () async {
+                await AuthService.setWelcomeSeen();
+                Navigator.pushReplacementNamed(
+                  context,
+                  entryPointScreenRoute,
+                  arguments: {'forceHome': true},
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: logoRed,
+                foregroundColor: Colors.white,
+                elevation: 6,
+                shadowColor: logoRed.withOpacity(0.4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(width: 8),
-                const Icon(Icons.arrow_forward, size: 18),
-              ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Start Building",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: bodyFont + 2,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.arrow_forward, size: 18),
+                ],
+              ),
             ),
           ),
         ),
         SizedBox(height: spacing),
-        Text(
-          "Your Vision. Our Expertise.",
-          style: TextStyle(
-            fontSize: isShortScreen ? bodyFont * 0.9 : bodyFont,
-            color: blackColor40,
-            fontStyle: FontStyle.italic,
-            letterSpacing: 0.5,
+        _slideFade(
+          footerAnim,
+          Text(
+            "Your Vision. Our Expertise.",
+            style: TextStyle(
+              fontSize: isShortScreen ? bodyFont * 0.9 : bodyFont,
+              color: blackColor40,
+              fontStyle: FontStyle.italic,
+              letterSpacing: 0.5,
+            ),
           ),
         ),
       ],
@@ -422,14 +605,18 @@ class OnbordingScrenn extends StatelessWidget {
   Widget _buildMobileValueChip(
     BuildContext context, {
     required IconData icon,
-    required String label,
+    required String title,
+    required String subtitle,
     required bool isTablet,
     required bool isShortScreen,
   }) {
     final size = isShortScreen ? 20.0 : (isTablet ? 24.0 : 22.0);
-    final fontSize = isShortScreen
+    final titleFontSize = isShortScreen
         ? ResponsiveFontSize.getBody(context) * 0.85
         : ResponsiveFontSize.getBody(context);
+    final subtitleFontSize = isShortScreen
+        ? ResponsiveFontSize.getBody(context) * 0.75
+        : ResponsiveFontSize.getBody(context) - 1;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -445,11 +632,24 @@ class OnbordingScrenn extends StatelessWidget {
         ),
         SizedBox(height: isShortScreen ? 4 : 8),
         Text(
-          label,
+          title,
           style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.w600,
-            color: blackColor80,
+            fontSize: titleFontSize,
+            fontWeight: FontWeight.w700,
+            color: blackColor,
+            letterSpacing: 0.2,
+          ),
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        SizedBox(height: isShortScreen ? 2 : 4),
+        Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: subtitleFontSize,
+            fontWeight: FontWeight.w400,
+            color: blackColor60,
             letterSpacing: 0.2,
           ),
           textAlign: TextAlign.center,

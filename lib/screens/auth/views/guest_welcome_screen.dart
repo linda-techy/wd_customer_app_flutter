@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+/// Marketing-optimized guest gate: no scroll, viewport-fit, focal CTA.
+/// Designed for conversion: minimal friction, single clear action.
 class GuestWelcomeScreen extends StatefulWidget {
   final VoidCallback onLoginPressed;
 
@@ -39,16 +41,19 @@ class _GuestWelcomeScreenState extends State<GuestWelcomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final isSmallHeight = size.height < 700;
+    final isMobile = size.width < 600;
+
     return Scaffold(
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFE74C3C),
-              Color(0xFFD35400),
-            ],
+            colors: [Color(0xFFE74C3C), Color(0xFFD35400)],
           ),
         ),
         child: SafeArea(
@@ -56,46 +61,32 @@ class _GuestWelcomeScreenState extends State<GuestWelcomeScreen>
             opacity: _fadeAnimation,
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final isMobile = constraints.maxWidth < 600;
-                final isTablet =
-                    constraints.maxWidth >= 600 && constraints.maxWidth < 1024;
-
-                return SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isMobile ? 24 : (isTablet ? 48 : 80),
-                        vertical: isMobile ? 32 : 48,
+                return Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 20 : 48,
+                    vertical: isSmallHeight ? 16 : 24,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      // Top: compact hero
+                      Flexible(
+                        flex: 2,
+                        fit: FlexFit.tight,
+                        child: _buildHeader(isMobile, isSmallHeight),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Header
-                          _buildHeader(isMobile),
-                          SizedBox(height: isMobile ? 48 : 64),
-
-                          // Feature Cards
-                          if (!isMobile)
-                            _buildFeatureGrid(isTablet)
-                          else
-                            _buildFeatureList(),
-
-                          SizedBox(height: isMobile ? 48 : 64),
-
-                          // Stats Section
-                          _buildStatsSection(isMobile),
-
-                          SizedBox(height: isMobile ? 40 : 56),
-
-                          // CTA Button
-                          _buildCTAButton(isMobile),
-                        ],
+                      SizedBox(height: isSmallHeight ? 12 : 20),
+                      // Middle: trust badges + stats (compact)
+                      Flexible(
+                        flex: 2,
+                        fit: FlexFit.tight,
+                        child: _buildValueSection(isMobile, isSmallHeight),
                       ),
-                    ),
+                      SizedBox(height: isSmallHeight ? 12 : 20),
+                      // Bottom: focal CTA
+                      _buildCTAButton(isMobile),
+                    ],
                   ),
                 );
               },
@@ -106,213 +97,162 @@ class _GuestWelcomeScreenState extends State<GuestWelcomeScreen>
     );
   }
 
-  Widget _buildHeader(bool isMobile) {
+  Widget _buildHeader(bool isMobile, bool isSmallHeight) {
+    final iconSize = isSmallHeight ? 40.0 : (isMobile ? 48.0 : 56.0);
+    final titleSize = isSmallHeight ? 22.0 : (isMobile ? 26.0 : 32.0);
+    final subtitleSize = isSmallHeight ? 12.0 : (isMobile ? 13.0 : 14.0);
+
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Icon
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(isSmallHeight ? 12 : 16),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
-          child: Icon(
-            Icons.construction,
-            size: isMobile ? 48 : 64,
-            color: Colors.white,
-          ),
+          child: Icon(Icons.construction, size: iconSize, color: Colors.white),
         ),
-        const SizedBox(height: 24),
-
-        // Title
+        SizedBox(height: isSmallHeight ? 12 : 16),
         Text(
-          'Construction Project\nManagement',
+          'Your Project Awaits',
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: isMobile ? 28 : 40,
+            fontSize: titleSize,
             fontWeight: FontWeight.bold,
             color: Colors.white,
             height: 1.2,
-            letterSpacing: -0.5,
+            letterSpacing: -0.3,
           ),
         ),
-        const SizedBox(height: 16),
-
-        // Subtitle
+        SizedBox(height: isSmallHeight ? 4 : 8),
         Text(
-          'Track progress, manage documents, and collaborate\nwith your team in real-time',
+          'Login to track progress, view documents & collaborate',
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: isMobile ? 14 : 16,
-            color: Colors.white.withOpacity(0.9),
-            height: 1.5,
+            fontSize: subtitleSize,
+            color: Colors.white.withOpacity(0.95),
+            height: 1.3,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildFeatureGrid(bool isTablet) {
-    return Wrap(
-      spacing: 24,
-      runSpacing: 24,
-      alignment: WrapAlignment.center,
-      children: [
-        _buildFeatureCard(
-          Icons.timeline,
-          'Real-Time Tracking',
-          'Monitor project progress with live updates and milestones',
-          isTablet,
-        ),
-        _buildFeatureCard(
-          Icons.folder,
-          'Document Management',
-          'Store and access all project documents in one place',
-          isTablet,
-        ),
-        _buildFeatureCard(
-          Icons.people,
-          'Team Collaboration',
-          'Work together seamlessly with your entire team',
-          isTablet,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFeatureList() {
+  /// Condensed value props: icon chips + stats in minimal space
+  Widget _buildValueSection(bool isMobile, bool isSmallHeight) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildFeatureCard(
-          Icons.timeline,
-          'Real-Time Tracking',
-          'Monitor project progress',
-          true,
+        // Icon badges (no descriptions - saves height)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildValueChip(Icons.timeline, 'Track', isSmallHeight),
+            SizedBox(width: isMobile ? 12 : 20),
+            _buildValueChip(Icons.folder_rounded, 'Documents', isSmallHeight),
+            SizedBox(width: isMobile ? 12 : 20),
+            _buildValueChip(Icons.people_rounded, 'Collaborate', isSmallHeight),
+          ],
         ),
-        const SizedBox(height: 16),
-        _buildFeatureCard(
-          Icons.folder,
-          'Document Management',
-          'Store all project documents',
-          true,
-        ),
-        const SizedBox(height: 16),
-        _buildFeatureCard(
-          Icons.people,
-          'Team Collaboration',
-          'Work with your team',
-          true,
-        ),
+        SizedBox(height: isSmallHeight ? 12 : 16),
+        // Compact stats
+        _buildStatsRow(isMobile, isSmallHeight),
       ],
     );
   }
 
-  Widget _buildFeatureCard(
-      IconData icon, String title, String description, bool isCompact) {
+  Widget _buildValueChip(IconData icon, String label, bool isSmall) {
     return Container(
-      width: isCompact ? double.infinity : 280,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.symmetric(
+        horizontal: isSmall ? 10 : 14,
+        vertical: isSmall ? 8 : 10,
+      ),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.25), width: 1),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 32, color: Colors.white),
-          const SizedBox(height: 16),
+          Icon(icon, size: isSmall ? 18 : 20, color: Colors.white),
+          SizedBox(width: isSmall ? 4 : 6),
           Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+            label,
+            style: TextStyle(
+              fontSize: isSmall ? 11 : 12,
+              fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            description,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white.withOpacity(0.85),
-              height: 1.4,
-            ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatsSection(bool isMobile) {
+  Widget _buildStatsRow(bool isMobile, bool isSmallHeight) {
+    final valueSize = isSmallHeight ? 18.0 : (isMobile ? 20.0 : 24.0);
+    final labelSize = isSmallHeight ? 9.0 : (isMobile ? 10.0 : 11.0);
+
     return Container(
-      padding: EdgeInsets.all(isMobile ? 20 : 32),
+      padding: EdgeInsets.symmetric(
+        horizontal: isSmallHeight ? 16 : 24,
+        vertical: isSmallHeight ? 12 : 16,
+      ),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
+        color: Colors.white.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildStat('500+', 'Active Projects', isMobile),
+          _buildStat('500+', 'Projects', valueSize, labelSize),
           Container(
             width: 1,
-            height: 40,
+            height: 28,
             color: Colors.white.withOpacity(0.3),
           ),
-          _buildStat('95%', 'On-Time Delivery', isMobile),
+          _buildStat('95%', 'On-Time', valueSize, labelSize),
           Container(
             width: 1,
-            height: 40,
+            height: 28,
             color: Colors.white.withOpacity(0.3),
           ),
-          _buildStat('1000+', 'Happy Clients', isMobile),
+          _buildStat('1000+', 'Clients', valueSize, labelSize),
         ],
       ),
     );
   }
 
-  Widget _buildStat(String value, String label, bool isMobile) {
+  Widget _buildStat(String value, String label, double valueSize, double labelSize) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           value,
           style: TextStyle(
-            fontSize: isMobile ? 20 : 28,
+            fontSize: valueSize,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 2),
         Text(
           label,
-          textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: isMobile ? 10 : 12,
-            color: Colors.white.withOpacity(0.85),
+            fontSize: labelSize,
+            color: Colors.white.withOpacity(0.9),
           ),
         ),
       ],
@@ -320,49 +260,40 @@ class _GuestWelcomeScreenState extends State<GuestWelcomeScreen>
   }
 
   Widget _buildCTAButton(bool isMobile) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: isMobile ? double.infinity : 400),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: widget.onLoginPressed,
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                vertical: isMobile ? 18 : 20,
-                horizontal: 32,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
+    return SizedBox(
+      width: double.infinity,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.onLoginPressed,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Login to Continue',
+                  style: TextStyle(
+                    fontSize: isMobile ? 16 : 17,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFFE74C3C),
                   ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Login to Continue',
-                    style: TextStyle(
-                      fontSize: isMobile ? 16 : 18,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFFE74C3C),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Icon(
-                    Icons.arrow_forward_rounded,
-                    color: Color(0xFFE74C3C),
-                    size: 20,
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 10),
+                const Icon(Icons.arrow_forward_rounded, color: Color(0xFFE74C3C), size: 20),
+              ],
             ),
           ),
         ),

@@ -130,27 +130,34 @@ class _LoginScreenState extends State<LoginScreen> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final bool isDesktop = Responsive.isDesktop(context);
     final bool isTablet = Responsive.isTablet(context);
+    final size = MediaQuery.sizeOf(context);
+    final bool isSmallHeight = size.height < 720;
+    final bool isVerySmallHeight = size.height < 600;
 
     // Responsive logo size
-    final double logoSize = isDesktop ? 120 : (isTablet ? 100 : 80);
-    final double headerPadding = isDesktop ? 60 : (isTablet ? 50 : 40);
+    final double logoSize = isDesktop
+        ? 120
+        : (isTablet
+            ? (isVerySmallHeight ? 56 : (isSmallHeight ? 70 : 100))
+            : (isVerySmallHeight ? 48 : (isSmallHeight ? 56 : 80)));
+    final double headerPadding = isDesktop
+        ? 60
+        : (isTablet
+            ? (isVerySmallHeight ? 12 : (isSmallHeight ? 20 : 50))
+            : (isVerySmallHeight ? 10 : (isSmallHeight ? 16 : 40)));
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Center(
-          child: SingleChildScrollView(
-            child: ResponsiveContainer(
-              maxWidth: 1200,
-              child: Responsive(
-                // Mobile Layout
-                mobile: _buildMobileLayout(
-                    context, isDark, logoSize, headerPadding),
-                // Tablet Layout
-                tablet: _buildMobileLayout(
-                    context, isDark, logoSize, headerPadding),
-                // Desktop Layout
-                desktop: _buildDesktopLayout(context, isDark),
-              ),
+          child: ResponsiveContainer(
+            maxWidth: 1200,
+            child: Responsive(
+              mobile: _buildMobileLayout(context, isDark, logoSize, headerPadding,
+                  isSmallHeight, isVerySmallHeight, size),
+              tablet: _buildMobileLayout(context, isDark, logoSize, headerPadding,
+                  isSmallHeight, isVerySmallHeight, size),
+              desktop: _buildDesktopLayout(context, isDark, size),
             ),
           ),
         ),
@@ -158,25 +165,48 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Mobile and Tablet Layout (Single Column)
+  // Mobile and Tablet Layout - no scroll, viewport-fit (same as Guest Welcome)
   Widget _buildMobileLayout(BuildContext context, bool isDark, double logoSize,
-      double headerPadding) {
-    return Column(
-      children: [
-        // Professional Header with Logo
-        _buildHeader(context, isDark, logoSize, headerPadding),
+      double headerPadding, bool isSmallHeight, bool isVerySmallHeight, Size size) {
+    final padding = ResponsiveSpacing.getPadding(context);
+    final vPad = isVerySmallHeight ? 6.0 : (isSmallHeight ? 10.0 : padding * 0.4);
+    final hPad = isVerySmallHeight ? 12.0 : (isSmallHeight ? 16.0 : padding);
 
-        // Login Form Section
-        Padding(
-          padding: EdgeInsets.all(ResponsiveSpacing.getPadding(context) * 1.5),
-          child: _buildLoginForm(context, isDark),
-        ),
-      ],
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Flexible(
+            flex: 1,
+            fit: FlexFit.tight,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: _buildHeader(context, isDark, logoSize, headerPadding, isVerySmallHeight),
+            ),
+          ),
+          SizedBox(height: isVerySmallHeight ? 6 : (isSmallHeight ? 10 : 16)),
+          Flexible(
+            flex: 2,
+            fit: FlexFit.tight,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                width: MediaQuery.sizeOf(context).width - hPad * 2,
+                child: _buildLoginForm(context, isDark, isSmallHeight || isVerySmallHeight),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   // Desktop Layout (Two Column - Image + Form)
-  Widget _buildDesktopLayout(BuildContext context, bool isDark) {
+  Widget _buildDesktopLayout(BuildContext context, bool isDark, Size size) {
     return Row(
       children: [
         // Left Side - Branding
@@ -250,15 +280,15 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
 
-        // Right Side - Login Form
+        // Right Side - Login Form (no scroll, viewport-fit)
         Expanded(
           flex: 5,
           child: Center(
-            child: SingleChildScrollView(
+            child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 500),
-                child: _buildLoginForm(context, isDark),
+                child: _buildLoginForm(context, isDark, false),
               ),
             ),
           ),
@@ -267,9 +297,9 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Header Widget (for mobile/tablet)
+  // Header Widget (for mobile/tablet) - overflow-safe with FittedBox
   Widget _buildHeader(BuildContext context, bool isDark, double logoSize,
-      double headerPadding) {
+      double headerPadding, bool isVerySmallHeight) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -311,25 +341,32 @@ class _LoginScreenState extends State<LoginScreen> {
               fit: BoxFit.contain,
             ),
           ),
-          const SizedBox(height: 24),
-          // Company Name
-          Text(
-            "WALLDOT BUILDERS",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: ResponsiveFontSize.getHeadline(context),
-              fontWeight: FontWeight.w900,
-              letterSpacing: 2.5,
+          SizedBox(height: isVerySmallHeight ? 12 : 24),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              "WALLDOT BUILDERS",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: ResponsiveFontSize.getHeadline(context),
+                fontWeight: FontWeight.w900,
+                letterSpacing: 2.5,
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            "Building Your Dreams",
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.8),
-              fontSize: ResponsiveFontSize.getBody(context),
-              fontWeight: FontWeight.w400,
-              letterSpacing: 1.2,
+          SizedBox(height: isVerySmallHeight ? 4 : 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              "Building Your Dreams",
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: ResponsiveFontSize.getBody(context),
+                fontWeight: FontWeight.w400,
+                letterSpacing: 1.2,
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
           SizedBox(height: headerPadding),
@@ -338,39 +375,54 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Login Form Widget (reusable for all layouts)
-  Widget _buildLoginForm(BuildContext context, bool isDark) {
+  // Login Form Widget (reusable for all layouts) - compact for viewport-fit
+  Widget _buildLoginForm(BuildContext context, bool isDark, bool isSmallHeight) {
     final cardPadding = ResponsiveSpacing.getCardPadding(context);
+    final headlineSize =
+        isSmallHeight ? ResponsiveFontSize.getTitle(context) - 2 : ResponsiveFontSize.getHeadline(context);
+    final bodySize = ResponsiveFontSize.getBody(context);
+    final titleGap = isSmallHeight ? 2.0 : 8.0;
+    final sectionGap = isSmallHeight ? 12.0 : 32.0;
+    final cardInnerPadding = isSmallHeight ? cardPadding * 0.8 : cardPadding * 1.5;
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 8),
-        Text(
-          "Welcome Back",
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontSize: ResponsiveFontSize.getHeadline(context),
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.5,
-              ),
+        SizedBox(height: isSmallHeight ? 2 : 8),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            "Welcome Back",
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontSize: headlineSize,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                ),
+          ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: titleGap),
         Text(
           "Sign in to continue managing your projects",
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontSize: ResponsiveFontSize.getBody(context),
+                fontSize: isSmallHeight ? bodySize - 1 : bodySize,
                 color: Theme.of(context)
                     .textTheme
                     .bodyMedium!
                     .color!
                     .withOpacity(0.6),
               ),
+          softWrap: true,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
-        const SizedBox(height: 32),
+        SizedBox(height: sectionGap),
 
         // Form Card
         Container(
-          padding: EdgeInsets.all(cardPadding * 1.5),
+          padding: EdgeInsets.all(cardInnerPadding),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E1E2E) : Colors.white,
             borderRadius: BorderRadius.circular(16),
@@ -389,6 +441,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 formKey: _formKey,
                 onEmailChanged: (value) => _email = value,
                 onPasswordChanged: (value) => _password = value,
+                compact: isSmallHeight,
               ),
               const SizedBox(height: 8),
               Align(
@@ -411,12 +464,12 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
 
-        const SizedBox(height: 32),
+        SizedBox(height: sectionGap),
 
         // Login Button
         SizedBox(
           width: double.infinity,
-          height: 56,
+          height: isSmallHeight ? 48 : 56,
           child: ElevatedButton(
             onPressed: _isLoading ? null : _handleLogin,
             style: ElevatedButton.styleFrom(
@@ -440,7 +493,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 : Text(
                     "Sign In",
                     style: TextStyle(
-                      fontSize: ResponsiveFontSize.getBody(context) + 2,
+                      fontSize: (isSmallHeight ? ResponsiveFontSize.getBody(context) : ResponsiveFontSize.getBody(context) + 2),
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1,
                     ),
@@ -448,57 +501,24 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
 
-        const SizedBox(height: 24),
+        SizedBox(height: isSmallHeight ? 8 : 24),
 
-        // Sign up link
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "Don't have an account? ",
+        // Professional footer
+        Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              "© 2024 Walldot Builders. All rights reserved.",
               style: TextStyle(
-                fontSize: ResponsiveFontSize.getBody(context),
+                fontSize: (isSmallHeight ? ResponsiveFontSize.getBody(context) - 3 : ResponsiveFontSize.getBody(context) - 2),
                 color: Theme.of(context)
                     .textTheme
                     .bodyMedium!
                     .color!
-                    .withOpacity(0.7),
+                    .withOpacity(0.4),
               ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, signUpScreenRoute);
-              },
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(0, 0),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text(
-                "Sign Up",
-                style: TextStyle(
-                  fontSize: ResponsiveFontSize.getBody(context),
-                  fontWeight: FontWeight.w700,
-                  color: logoRed,
-                ),
-              ),
-            )
-          ],
-        ),
-
-        const SizedBox(height: 16),
-
-        // Professional footer
-        Center(
-          child: Text(
-            "© 2024 Walldot Builders. All rights reserved.",
-            style: TextStyle(
-              fontSize: ResponsiveFontSize.getBody(context) - 2,
-              color: Theme.of(context)
-                  .textTheme
-                  .bodyMedium!
-                  .color!
-                  .withOpacity(0.4),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ),

@@ -9,11 +9,13 @@ class LogInForm extends StatefulWidget {
     required this.formKey,
     required this.onEmailChanged,
     required this.onPasswordChanged,
+    this.compact = false,
   });
 
   final GlobalKey<FormState> formKey;
   final Function(String) onEmailChanged;
   final Function(String) onPasswordChanged;
+  final bool compact;
 
   @override
   State<LogInForm> createState() => _LogInFormState();
@@ -44,7 +46,7 @@ class _LogInFormState extends State<LogInForm> {
                   .withOpacity(0.8),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: widget.compact ? 4 : 8),
           TextFormField(
             onChanged: widget.onEmailChanged,
             onSaved: (email) {
@@ -77,8 +79,8 @@ class _LogInFormState extends State<LogInForm> {
                     .withOpacity(0.4),
               ),
               prefixIcon: Container(
-                margin: const EdgeInsets.only(right: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                margin: EdgeInsets.only(right: widget.compact ? 8 : 12),
+                padding: EdgeInsets.symmetric(horizontal: widget.compact ? 12 : 16),
                 decoration: BoxDecoration(
                   border: Border(
                     right: BorderSide(
@@ -93,7 +95,7 @@ class _LogInFormState extends State<LogInForm> {
                 ),
                 child: Icon(
                   Icons.email_rounded,
-                  size: 22,
+                  size: widget.compact ? 20 : 22,
                   color: logoRed,
                 ),
               ),
@@ -136,13 +138,13 @@ class _LogInFormState extends State<LogInForm> {
                   width: 2,
                 ),
               ),
-              contentPadding: const EdgeInsets.symmetric(
+              contentPadding: EdgeInsets.symmetric(
                 horizontal: 16,
-                vertical: 16,
+                vertical: widget.compact ? 12 : 16,
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: widget.compact ? 12 : 20),
 
           // Password Label
           Text(
@@ -157,7 +159,7 @@ class _LogInFormState extends State<LogInForm> {
                   .withOpacity(0.8),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: widget.compact ? 4 : 8),
           TextFormField(
             onChanged: widget.onPasswordChanged,
             onSaved: (password) {
@@ -179,8 +181,8 @@ class _LogInFormState extends State<LogInForm> {
                     .withOpacity(0.4),
               ),
               prefixIcon: Container(
-                margin: const EdgeInsets.only(right: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                margin: EdgeInsets.only(right: widget.compact ? 8 : 12),
+                padding: EdgeInsets.symmetric(horizontal: widget.compact ? 12 : 16),
                 decoration: BoxDecoration(
                   border: Border(
                     right: BorderSide(
@@ -195,7 +197,7 @@ class _LogInFormState extends State<LogInForm> {
                 ),
                 child: Icon(
                   Icons.lock_rounded,
-                  size: 22,
+                  size: widget.compact ? 20 : 22,
                   color: logoRed,
                 ),
               ),
@@ -204,7 +206,7 @@ class _LogInFormState extends State<LogInForm> {
                   _obscurePassword
                       ? Icons.visibility_off_rounded
                       : Icons.visibility_rounded,
-                  size: 22,
+                  size: widget.compact ? 20 : 22,
                   color: Theme.of(context)
                       .textTheme
                       .bodyLarge!
@@ -256,9 +258,9 @@ class _LogInFormState extends State<LogInForm> {
                   width: 2,
                 ),
               ),
-              contentPadding: const EdgeInsets.symmetric(
+              contentPadding: EdgeInsets.symmetric(
                 horizontal: 16,
-                vertical: 16,
+                vertical: widget.compact ? 12 : 16,
               ),
             ),
           ),

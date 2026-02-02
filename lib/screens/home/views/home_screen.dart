@@ -29,9 +29,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Timer? _liveActivityTimer;
 
   final List<Map<String, String>> liveActivities = [
-    {'name': 'Bijeeshmon', 'location': 'Arnattukara', 'action': 'Project Completed'},
-    {'name': 'Akhil Johnson', 'location': 'Poochinipadam', 'action': 'Foundation Started'},
-    {'name': 'Sarah Thomas', 'location': 'Thrissur', 'action': 'Design Approved'},
+    {
+      'name': 'Bijeeshmon',
+      'location': 'Arnattukara',
+      'action': 'Project Completed'
+    },
+    {
+      'name': 'Akhil Johnson',
+      'location': 'Poochinipadam',
+      'action': 'Foundation Started'
+    },
+    {
+      'name': 'Sarah Thomas',
+      'location': 'Thrissur',
+      'action': 'Design Approved'
+    },
   ];
 
   @override
@@ -51,7 +63,8 @@ class _HomeScreenState extends State<HomeScreen> {
     _liveActivityTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (mounted) {
         setState(() {
-          _currentLiveActivityIndex = (_currentLiveActivityIndex + 1) % liveActivities.length;
+          _currentLiveActivityIndex =
+              (_currentLiveActivityIndex + 1) % liveActivities.length;
         });
       }
     });
@@ -72,114 +85,161 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = Responsive.isDesktop(context);
+    final isTablet = Responsive.isTablet(context);
+    final padding = ResponsiveSpacing.getPadding(context);
+    final horizontalPadding = ResponsiveSpacing.getHorizontalPadding(context);
+    final gridSpacing = ResponsiveSpacing.getGridSpacing(context);
+    final featuredHeight = isDesktop ? 320.0 : (isTablet ? 280.0 : 240.0);
+    final projectCardWidth = isDesktop ? 280.0 : (isTablet ? 260.0 : 240.0);
+    final fabPadding = isDesktop ? 16.0 : (isTablet ? 14.0 : 12.0);
+    final fabIconSize = isDesktop ? 28.0 : (isTablet ? 26.0 : 24.0);
+
     return Scaffold(
-      backgroundColor: surfaceColor, // Light grey specialized background
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          // 1. Premium Hero App Bar
-          _buildHeroAppBar(),
-
-          // 2. Welcome & CTA Section
-          SliverToBoxAdapter(
-            child: FadeEntry(
-              delay: 200.ms,
-              child: _buildWelcomeSection(context),
-            ),
+      backgroundColor: surfaceColor,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: isDesktop ? 1200 : double.infinity,
           ),
-
-          // 3. Stats Grid (Glassmorphism)
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            sliver: SliverToBoxAdapter(
-              child: FadeEntry(delay: 300.ms, child: _buildStatsGrid(context)),
-            ),
-          ),
-          
-          const SliverToBoxAdapter(child: SizedBox(height: 30)),
-
-          // 4. Live Activity Ticker
-          SliverToBoxAdapter(child: _buildLiveActivityTicker()),
-
-           const SliverToBoxAdapter(child: SizedBox(height: 30)),
-
-          // 5. Services Grid
-          _buildSectionHeader("Our Services", "Comprehensive solutions for your dream project"),
-          SliverPadding(
-             padding: const EdgeInsets.all(20),
-             sliver: SliverGrid.count(
-               crossAxisCount: Responsive.isDesktop(context) ? 4 : 2,
-               mainAxisSpacing: 16,
-               crossAxisSpacing: 16,
-               childAspectRatio: 1.1,
-               children: [
-                 _buildServiceCard("Residential", Icons.home_rounded, Colors.orange),
-                 _buildServiceCard("Commercial", Icons.business_rounded, Colors.blue),
-                 _buildServiceCard("Industrial", Icons.factory_rounded, Colors.grey),
-                 _buildServiceCard("Renovation", Icons.handyman_rounded, Colors.purple),
-               ],
-             ),
-          ),
-
-          // 6. Featured Projects
-          _buildSectionHeader("Featured Projects", "Award-winning excellence across Kerala"),
-           SliverToBoxAdapter(
-            child: SizedBox(
-              height: 280,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                physics: const BouncingScrollPhysics(),
-                children: [
-                   _buildProjectCard("Modern Villa", "Residential", "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800"),
-                   _buildProjectCard("Skyline Tower", "Commercial", "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800"),
-                   _buildProjectCard("Green Park", "Landscape", "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800"),
-                ],
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              _buildHeroAppBar(context),
+              SliverToBoxAdapter(
+                child: FadeEntry(
+                  delay: 200.ms,
+                  child: _buildWelcomeSection(context),
+                ),
               ),
-            ),
-          ),
-
-          // 7. Referral Banner (High Conversion)
-          SliverToBoxAdapter(
-            child: FadeEntry(
-              delay: 400.ms,
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: HoverCard(
-                  child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: [logoRed, logoPink]),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: logoRed.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text("Refer & Earn ₹50,000", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22)),
-                              const SizedBox(height: 8),
-                              Text("Join Kerala's biggest referral program today.", style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14)),
-                            ],
-                          ),
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                sliver: SliverToBoxAdapter(
+                  child:
+                      FadeEntry(delay: 300.ms, child: _buildStatsGrid(context)),
+                ),
+              ),
+              SliverToBoxAdapter(child: SizedBox(height: padding * 2)),
+              SliverToBoxAdapter(child: _buildLiveActivityTicker(context)),
+              SliverToBoxAdapter(child: SizedBox(height: padding * 2)),
+              _buildSectionHeader(context, "Our Services",
+                  "Comprehensive solutions for your dream project"),
+              SliverPadding(
+                padding: EdgeInsets.all(padding),
+                sliver: SliverGrid.count(
+                  crossAxisCount: ResponsiveGrid.getCrossAxisCount(context),
+                  mainAxisSpacing: gridSpacing,
+                  crossAxisSpacing: gridSpacing,
+                  childAspectRatio: isDesktop ? 1.0 : 1.1,
+                  children: [
+                    _buildServiceCard(context, "Residential",
+                        Icons.home_rounded, Colors.orange),
+                    _buildServiceCard(context, "Commercial",
+                        Icons.business_rounded, Colors.blue),
+                    _buildServiceCard(context, "Industrial",
+                        Icons.factory_rounded, Colors.grey),
+                    _buildServiceCard(context, "Renovation",
+                        Icons.handyman_rounded, Colors.purple),
+                  ],
+                ),
+              ),
+              _buildSectionHeader(context, "Featured Projects",
+                  "Award-winning excellence across Kerala"),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: featuredHeight,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding, vertical: padding),
+                    physics: const BouncingScrollPhysics(),
+                    children: [
+                      _buildProjectCard(
+                          context,
+                          "Modern Villa",
+                          "Residential",
+                          "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800",
+                          projectCardWidth),
+                      _buildProjectCard(
+                          context,
+                          "Skyline Tower",
+                          "Commercial",
+                          "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800",
+                          projectCardWidth),
+                      _buildProjectCard(
+                          context,
+                          "Green Park",
+                          "Landscape",
+                          "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800",
+                          projectCardWidth),
+                    ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: FadeEntry(
+                  delay: 400.ms,
+                  child: Padding(
+                    padding: EdgeInsets.all(padding),
+                    child: HoverCard(
+                      child: Container(
+                        padding: EdgeInsets.all(isDesktop ? 24 : padding + 4),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(colors: [logoRed, logoPink]),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                                color: logoRed.withOpacity(0.3),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10))
+                          ],
                         ),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
-                          child: const Icon(Icons.arrow_forward, color: Colors.white),
-                        )
-                      ],
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Refer & Earn ₹50,000",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize:
+                                          ResponsiveFontSize.getTitle(context),
+                                    ),
+                                  ),
+                                  SizedBox(height: padding * 0.5),
+                                  Text(
+                                    "Join Kerala's biggest referral program today.",
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.9),
+                                      fontSize:
+                                          ResponsiveFontSize.getBody(context),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  shape: BoxShape.circle),
+                              child: const Icon(Icons.arrow_forward,
+                                  color: Colors.white),
+                            )
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
+              SliverToBoxAdapter(child: SizedBox(height: padding * 6)),
+            ],
           ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
-        ],
+        ),
       ),
       floatingActionButton: ScaleButton(
         onTap: () async {
@@ -187,30 +247,48 @@ class _HomeScreenState extends State<HomeScreen> {
           if (await canLaunchUrl(uri)) await launchUrl(uri);
         },
         child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: const Color(0xFF25D366), shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.green.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))]),
-          child: const Icon(Icons.call, color: Colors.white, size: 28),
+          padding: EdgeInsets.all(fabPadding),
+          decoration: BoxDecoration(
+            color: const Color(0xFF25D366),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.green.withOpacity(0.4),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4))
+            ],
+          ),
+          child: Icon(Icons.call, color: Colors.white, size: fabIconSize),
         ),
       ),
     );
   }
 
-  Widget _buildHeroAppBar() {
+  Widget _buildHeroAppBar(BuildContext context) {
+    final isDesktop = Responsive.isDesktop(context);
+    final isTablet = Responsive.isTablet(context);
+    final horizontalPadding = ResponsiveSpacing.getHorizontalPadding(context);
+    final padding = ResponsiveSpacing.getPadding(context);
+    final expandedHeight = isDesktop ? 320.0 : (isTablet ? 280.0 : 240.0);
+    final badgeFontSize = ResponsiveFontSize.getBody(context) - 3;
+    final titleFontSize = ResponsiveFontSize.getHeadline(context);
+
     return SliverAppBar(
-      expandedHeight: 300,
+      expandedHeight: expandedHeight,
       floating: false,
       pinned: true,
       backgroundColor: surfaceColor,
       elevation: 0,
-       flexibleSpace: FlexibleSpaceBar(
+      flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,
           children: [
             CachedNetworkImage(
-              imageUrl: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200",
+              imageUrl:
+                  "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200",
               fit: BoxFit.cover,
             ).animate().fadeIn(duration: 800.ms),
-             Container(
+            Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
@@ -220,40 +298,41 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Positioned(
-              left: 20,
-              bottom: 40,
+              left: horizontalPadding,
+              bottom: padding * 2,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   Container(
-                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                     decoration: BoxDecoration(
-                       color: primaryColor,
-                       borderRadius: BorderRadius.circular(30),
-                       boxShadow: [
-                         BoxShadow(
-                           color: primaryColor.withOpacity(0.4),
-                           blurRadius: 12,
-                           offset: const Offset(0, 4),
-                         ),
-                       ],
-                     ),
-                     child: const Text(
-                       "CRAFTING ICONIC SPACES",
-                       style: TextStyle(
-                         color: Colors.white,
-                         fontSize: 11,
-                         fontWeight: FontWeight.w800,
-                         letterSpacing: 1.2,
-                       ),
-                     ),
-                   ).animate().slideX(),
-                   const SizedBox(height: 16),
-                   const Text(
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: primaryColor,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: primaryColor.withOpacity(0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      "CRAFTING ICONIC SPACES",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: badgeFontSize.clamp(10.0, 12.0),
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ).animate().slideX(),
+                  SizedBox(height: padding),
+                  Text(
                     "Building Your Vision,\nDelivering Excellence",
                     style: TextStyle(
                       fontFamily: grandisExtendedFont,
-                      fontSize: 32,
+                      fontSize: titleFontSize,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       height: 1.1,
@@ -269,8 +348,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildWelcomeSection(BuildContext context) {
+    final padding = ResponsiveSpacing.getPadding(context);
+    final titleSize = ResponsiveFontSize.getTitle(context);
+    final bodySize = ResponsiveFontSize.getBody(context);
+
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(padding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -282,20 +365,30 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(
                     "Hi, ${isLoggedIn ? (currentUser?.name ?? 'User') : 'Guest'}",
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: blackColor),
+                    style: TextStyle(
+                        fontSize: titleSize,
+                        fontWeight: FontWeight.bold,
+                        color: blackColor),
                   ),
-                  const Text("Welcome back to Walldot", style: TextStyle(color: blackColor60)),
+                  Text("Welcome back to Walldot",
+                      style:
+                          TextStyle(color: blackColor60, fontSize: bodySize)),
                 ],
               ),
               ScaleButton(
                 onTap: _openContactForm,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: padding + 4, vertical: 12),
                   decoration: BoxDecoration(
                     color: blackColor,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Text("Get Free Quote", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: Text("Get Free Quote",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: bodySize + 1)),
                 ),
               ),
             ],
@@ -306,45 +399,76 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildStatsGrid(BuildContext context) {
+    final gridSpacing = ResponsiveSpacing.getGridSpacing(context);
+
     return Row(
       children: [
-        Expanded(child: _buildStatCard("25k+", "Sq.Ft.\nCrafted", Colors.blue)),
-        const SizedBox(width: 12),
-        Expanded(child: _buildStatCard("100%", "On-Time\nRecord", Colors.green)),
-        const SizedBox(width: 12),
-        Expanded(child: _buildStatCard("Zero", "Hidden\nCosts", Colors.orange)),
+        Expanded(
+            child: _buildStatCard(
+                context, "25k+", "Sq.Ft.\nCrafted", Colors.blue)),
+        SizedBox(width: gridSpacing),
+        Expanded(
+            child: _buildStatCard(
+                context, "100%", "On-Time\nRecord", Colors.green)),
+        SizedBox(width: gridSpacing),
+        Expanded(
+            child: _buildStatCard(
+                context, "Zero", "Hidden\nCosts", Colors.orange)),
       ],
     );
   }
 
-  Widget _buildStatCard(String value, String label, Color color) {
+  Widget _buildStatCard(
+      BuildContext context, String value, String label, Color color) {
+    final cardPadding = ResponsiveSpacing.getCardPadding(context);
+    final titleSize = ResponsiveFontSize.getTitle(context);
+    final bodySize = ResponsiveFontSize.getBody(context) - 2;
+
     return HoverCard(
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(cardPadding),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: blackColor.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [
+            BoxShadow(
+                color: blackColor.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4))
+          ],
         ),
         child: Column(
           children: [
-            Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: color)),
+            Text(value,
+                style: TextStyle(
+                    fontSize: titleSize,
+                    fontWeight: FontWeight.w900,
+                    color: color)),
             const SizedBox(height: 4),
-            Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: blackColor60, height: 1.2)),
+            Text(label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: bodySize.clamp(10.0, 12.0),
+                    color: blackColor60,
+                    height: 1.2)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildLiveActivityTicker() {
+  Widget _buildLiveActivityTicker(BuildContext context) {
     final activity = liveActivities[_currentLiveActivityIndex];
+    final horizontalPadding = ResponsiveSpacing.getHorizontalPadding(context);
+    final padding = ResponsiveSpacing.getPadding(context);
+    final bodySize = ResponsiveFontSize.getBody(context);
+
     return AnimatedSwitcher(
       duration: 500.ms,
       child: Container(
         key: ValueKey(_currentLiveActivityIndex),
-        margin: const EdgeInsets.symmetric(horizontal: 20),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        margin: EdgeInsets.symmetric(horizontal: horizontalPadding),
+        padding: EdgeInsets.symmetric(horizontal: padding, vertical: 12),
         decoration: BoxDecoration(
           color: blackColor5,
           borderRadius: BorderRadius.circular(12),
@@ -353,16 +477,23 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           children: [
             const Icon(Icons.bolt, color: Colors.amber, size: 20),
-            const SizedBox(width: 12),
+            SizedBox(width: padding),
             Expanded(
               child: RichText(
                 text: TextSpan(
-                  style: const TextStyle(color: blackColor, fontSize: 13),
+                  style: TextStyle(color: blackColor, fontSize: bodySize),
                   children: [
-                    TextSpan(text: "${activity['name']} ", style: const TextStyle(fontWeight: FontWeight.bold)),
+                    TextSpan(
+                        text: "${activity['name']} ",
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
                     const TextSpan(text: "from "),
-                    TextSpan(text: "${activity['location']}: ", style: const TextStyle(fontWeight: FontWeight.w600)),
-                    TextSpan(text: "${activity['action']}", style: const TextStyle(color: successColor, fontWeight: FontWeight.bold)),
+                    TextSpan(
+                        text: "${activity['location']}: ",
+                        style: const TextStyle(fontWeight: FontWeight.w600)),
+                    TextSpan(
+                        text: "${activity['action']}",
+                        style: const TextStyle(
+                            color: successColor, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -373,82 +504,124 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title, String subtitle) {
+  Widget _buildSectionHeader(
+      BuildContext context, String title, String subtitle) {
+    final horizontalPadding = ResponsiveSpacing.getHorizontalPadding(context);
+    final padding = ResponsiveSpacing.getPadding(context);
+    final titleSize = ResponsiveFontSize.getTitle(context);
+    final bodySize = ResponsiveFontSize.getBody(context);
+
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+        padding: EdgeInsets.fromLTRB(horizontalPadding, padding * 0.625,
+            horizontalPadding, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-             Text(title, style: const TextStyle(fontFamily: grandisExtendedFont, fontSize: 18, fontWeight: FontWeight.bold)),
-             const SizedBox(height: 4),
-             Text(subtitle, style: const TextStyle(color: blackColor60, fontSize: 13)),
+            Text(title,
+                style: TextStyle(
+                    fontFamily: grandisExtendedFont,
+                    fontSize: titleSize,
+                    fontWeight: FontWeight.bold)),
+            SizedBox(height: padding * 0.25),
+            Text(subtitle,
+                style: TextStyle(color: blackColor60, fontSize: bodySize)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildServiceCard(String title, IconData icon, Color color) {
+  Widget _buildServiceCard(
+      BuildContext context, String title, IconData icon, Color color) {
+    final bodySize = ResponsiveFontSize.getBody(context);
+    final padding = ResponsiveSpacing.getPadding(context);
+
     return HoverCard(
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: blackColor.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [
+            BoxShadow(
+                color: blackColor.withOpacity(0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4))
+          ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+              padding: EdgeInsets.all(padding * 0.75),
+              decoration: BoxDecoration(
+                  color: color.withOpacity(0.1), shape: BoxShape.circle),
               child: Icon(icon, color: color, size: 24),
             ),
-            const SizedBox(height: 12),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            SizedBox(height: padding * 0.75),
+            Text(title,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: bodySize)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProjectCard(String title, String type, String imageUrl) {
+  Widget _buildProjectCard(BuildContext context, String title, String type,
+      String imageUrl, double width) {
+    final padding = ResponsiveSpacing.getPadding(context);
+    final gridSpacing = ResponsiveSpacing.getGridSpacing(context);
+    final bodySize = ResponsiveFontSize.getBody(context) - 4;
+    final titleSize = ResponsiveFontSize.getTitle(context) - 2;
+
     return HoverCard(
       child: Container(
-        width: 260,
-        margin: const EdgeInsets.only(right: 16),
+        width: width,
+        margin: EdgeInsets.only(right: gridSpacing),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           color: Colors.white,
-          boxShadow: [BoxShadow(color: blackColor.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [
+            BoxShadow(
+                color: blackColor.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4))
+          ],
         ),
         child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                child: CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  height: 160,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(color: blackColor5),
-                ),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
+                height: 160,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(color: blackColor5),
               ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(type.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: primaryColor)),
-                    const SizedBox(height: 4),
-                    Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  ],
-                ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(padding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(type.toUpperCase(),
+                      style: TextStyle(
+                          fontSize: bodySize.clamp(9.0, 11.0),
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor)),
+                  SizedBox(height: padding * 0.25),
+                  Text(title,
+                      style: TextStyle(
+                          fontSize: titleSize,
+                          fontWeight: FontWeight.bold)),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
+        ),
       ),
     );
   }

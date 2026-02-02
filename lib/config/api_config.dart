@@ -1,11 +1,12 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class ApiConfig {
-  // Base URL for the API
+  // Base URL from .env (API_BASE_URL)
+  // Dev: http://localhost:8080
+  // Staging: https://cust-api-staging.walldotbuilders.com
   // Production: https://cust-api.walldotbuilders.com
-  // For Android emulator use: http://10.0.2.2:8080
-  // For iOS simulator use: http://localhost:8080
-  // For physical device use: http://YOUR_IP_ADDRESS:8080
-  static const String baseUrl = 'http://localhost:8080';
-  //static const String baseUrl = 'https://cust-api.walldotbuilders.com';
+  static String get baseUrl =>
+      dotenv.get('API_BASE_URL', fallback: 'http://localhost:8080');
 
   // API endpoints
   static const String loginEndpoint = '/auth/login';

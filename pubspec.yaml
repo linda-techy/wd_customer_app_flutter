@@ -32,6 +32,7 @@ dependencies:
   permission_handler: ^11.0.1  # For handling file permissions
   mime: ^1.0.4  # For detecting file MIME types
   flutter_animate: ^4.5.2
+  flutter_dotenv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -53,6 +54,9 @@ flutter:
   uses-material-design: true
 
   assets:
+    - .env
+    - .env.staging
+    - .env.production
     - assets/images/
     - assets/icons/
     - assets/Illustration/
