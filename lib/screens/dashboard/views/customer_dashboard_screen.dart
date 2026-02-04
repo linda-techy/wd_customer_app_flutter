@@ -156,7 +156,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
               children: [
                 // "Live Site Look" Background Image (Placeholder)
                 Image.network(
-                  "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800",
+                  "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800",
                   fit: BoxFit.cover,
                 ).animate().fadeIn(duration: 800.ms),
                 // Premium Gradient Overlay
@@ -303,9 +303,12 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "Your Projects",
-                        style: Theme.of(context).textTheme.titleLarge,
+                      Expanded(
+                        child: Text(
+                          "Your Projects",
+                          style: Theme.of(context).textTheme.titleLarge,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       if (projects.totalProjects > 0)
                         TextButton(
