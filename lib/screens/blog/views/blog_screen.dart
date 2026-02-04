@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../constants.dart';
-import '../../../design_tokens/app_typography.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/scale_button.dart';
@@ -48,8 +47,8 @@ class BlogScreen extends StatelessWidget {
         background: Stack(
            fit: StackFit.expand,
            children: [
-             Image.network(
-               "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800",
+             Image.asset(
+               "assets/construction/hero_indian.png",
                fit: BoxFit.cover,
              ).animate().fadeIn(duration: 800.ms),
              Container(
@@ -69,17 +68,17 @@ class BlogScreen extends StatelessWidget {
                        color: primaryColor,
                        borderRadius: BorderRadius.circular(20),
                      ),
-                     child: const Text("INSIGHTS", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                     child: const Text("KERALA & INDIA", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
                    ).animate().slideX(begin: -0.2),
                    const SizedBox(height: 12),
                    const Text(
-                     "Construction\nTrends & News",
+                     "Construction Insights\nനിർമ്മാണ ട്രെൻഡ്സ് ആൻഡ് ടിപ്സ്",
                      style: TextStyle(
                        fontFamily: grandisExtendedFont,
-                       fontSize: 32,
+                       fontSize: 28,
                        fontWeight: FontWeight.bold,
                        color: Colors.white,
-                       height: 1.1,
+                       height: 1.15,
                      ),
                    ).animate().fadeIn().slideY(begin: 0.1),
                  ],
@@ -94,52 +93,58 @@ class BlogScreen extends StatelessWidget {
   Widget _buildBlogCard(BuildContext context, int index) {
     final blogData = [
       {
-        'title': 'Modern Construction Techniques for 2024',
-        'category': 'Industry News',
-        'date': 'March 15, 2024',
-        'readTime': '5 min read',
-        'description': 'Discover the latest construction methods and technologies that are revolutionizing the industry.',
-        'image': 'https://images.unsplash.com/photo-1581094794329-cdac82aadbcc?w=800',
-      },
-      {
-        'title': 'Sustainable Building Materials Guide',
-        'category': 'Sustainability',
-        'date': 'March 12, 2024',
-        'readTime': '8 min read',
-        'description': 'Learn about eco-friendly materials that are both durable and environmentally responsible.',
-        'image': 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800',
-      },
-      {
-        'title': 'Project Management Best Practices',
-        'category': 'Management',
-        'date': 'March 10, 2024',
+        'title': 'Kerala-Style Home Design: Traditional Nalukettu to Modern',
+        'category': 'Kerala Homes',
+        'date': '15 മാർച് 2025',
         'readTime': '6 min read',
-        'description': 'Essential tips for managing construction projects efficiently and on budget.',
-        'image': 'https://images.unsplash.com/photo-1507537297725-24a1c434b6b8?w=800',
+        'description': 'From nalukettu and sloping roofs to contemporary Kerala villas—design ideas and cost per sq ft that suit Kerala climate and culture.',
+        'image': 'assets/construction/residential_indian.png',
+        'isAsset': true,
       },
       {
-        'title': 'Safety Protocols on Construction Sites',
-        'category': 'Safety',
-        'date': 'March 8, 2024',
-        'readTime': '4 min read',
-        'description': 'Comprehensive guide to maintaining safety standards in construction environments.',
-        'image': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800',
+        'title': 'Monsoon-Proofing Your Building in Kerala',
+        'category': 'Kerala Tips',
+        'date': '12 മാർച് 2025',
+        'readTime': '5 min read',
+        'description': 'Waterproofing, drainage, and material choices that stand up to heavy rains—essential for every builder and homeowner in Kerala.',
+        'image': 'assets/construction/construction_site.jpg',
+        'isAsset': true,
       },
       {
-        'title': 'Cost-Effective Home Renovation Ideas',
-        'category': 'Renovation',
-        'date': 'March 5, 2024',
+        'title': 'Construction Cost in Kerala & India 2025: Per Sq Ft Guide',
+        'category': 'Cost & Budget',
+        'date': '10 മാർച് 2025',
+        'readTime': '8 min read',
+        'description': 'Latest rates for residential and commercial construction across Kerala and major Indian cities. Plan your budget with real numbers.',
+        'image': 'assets/construction/hero_indian.png',
+        'isAsset': true,
+      },
+      {
+        'title': 'RERA & Building Rules in Kerala: What You Must Know',
+        'category': 'Regulations',
+        'date': '8 മാർച് 2025',
         'readTime': '7 min read',
-        'description': 'Smart renovation strategies that add value without breaking the bank.',
-        'image': 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800',
+        'description': 'RERA registration, local body approvals, and Kerala building rules—stay compliant and avoid delays and penalties.',
+        'image': 'assets/construction/commercial_indian.png',
+        'isAsset': true,
       },
       {
-        'title': 'Commercial Building Design Trends',
-        'category': 'Design',
-        'date': 'March 3, 2024',
-        'readTime': '9 min read',
-        'description': 'Explore the latest trends in commercial architecture and interior design.',
-        'image': 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800',
+        'title': 'Eco-Friendly Materials Popular in South India',
+        'category': 'Sustainability',
+        'date': '5 മാർച് 2025',
+        'readTime': '6 min read',
+        'description': 'Laterite, bamboo, recycled aggregates, and low-carbon options that work well in Kerala and Tamil Nadu climates.',
+        'image': 'assets/construction/landscape_indian.png',
+        'isAsset': true,
+      },
+      {
+        'title': 'Commercial Construction Trends in Kerala',
+        'category': 'Commercial',
+        'date': '3 മാർച് 2025',
+        'readTime': '5 min read',
+        'description': 'Office spaces, retail, and mixed-use projects—trends and best practices for developers and investors in Kerala.',
+        'image': 'assets/construction/commercial_project.jpg',
+        'isAsset': true,
       },
     ];
 
@@ -167,12 +172,19 @@ class BlogScreen extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                  child: Image.network(
-                    data['image'] as String,
-                    height: 200,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+                  child: (data['isAsset'] == true)
+                      ? Image.asset(
+                          data['image'] as String,
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.network(
+                          data['image'] as String,
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                 ),
                 Positioned(
                   top: 16,

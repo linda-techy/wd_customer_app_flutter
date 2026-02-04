@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:async';
 
 import '../../../constants.dart';
@@ -132,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisSpacing: gridSpacing,
                   childAspectRatio: isDesktop ? 1.0 : 1.1,
                   children: [
-                    _buildServiceCard(context, "Residential",
+                    _buildServiceCard(context, "Luxury Living",
                         Icons.home_rounded, Colors.orange),
                     _buildServiceCard(context, "Commercial",
                         Icons.business_rounded, Colors.blue),
@@ -158,19 +159,19 @@ class _HomeScreenState extends State<HomeScreen> {
                           context,
                           "Modern Villa",
                           "Residential",
-                          "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800",
+                          "assets/construction/residential_indian.png",
                           projectCardWidth),
                       _buildProjectCard(
                           context,
                           "Skyline Tower",
                           "Commercial",
-                          "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800",
+                          "assets/construction/commercial_indian.png",
                           projectCardWidth),
                       _buildProjectCard(
                           context,
                           "Green Park",
                           "Landscape",
-                          "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800",
+                          "assets/construction/landscape_indian.png",
                           projectCardWidth),
                     ],
                   ),
@@ -258,7 +259,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   offset: const Offset(0, 4))
             ],
           ),
-          child: Icon(Icons.call, color: Colors.white, size: fabIconSize),
+          child: Icon(
+            FontAwesomeIcons.whatsapp,
+            color: Colors.white,
+            size: fabIconSize,
+          ),
         ),
       ),
     );
@@ -283,9 +288,8 @@ class _HomeScreenState extends State<HomeScreen> {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            CachedNetworkImage(
-              imageUrl:
-                  "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200",
+            Image.asset(
+              "assets/construction/hero_indian.png",
               fit: BoxFit.cover,
             ).animate().fadeIn(duration: 800.ms),
             Container(
@@ -329,7 +333,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ).animate().slideX(),
                   SizedBox(height: padding),
                   Text(
-                    "Building Your Vision,\nDelivering Excellence",
+                    "Designed for the Few.\nCrafted to Perfection.",
                     style: TextStyle(
                       fontFamily: grandisExtendedFont,
                       fontSize: titleFontSize,
@@ -405,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Expanded(
             child: _buildStatCard(
-                context, "25k+", "Sq.Ft.\nCrafted", Colors.blue)),
+                context, "5", "Signature\nProjects", Colors.blue)),
         SizedBox(width: gridSpacing),
         Expanded(
             child: _buildStatCard(
@@ -594,13 +598,21 @@ class _HomeScreenState extends State<HomeScreen> {
             ClipRRect(
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(20)),
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                height: 160,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(color: blackColor5),
-              ),
+              child: imageUrl.startsWith('http')
+                  ? CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      height: 160,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) =>
+                          Container(color: blackColor5),
+                    )
+                  : Image.asset(
+                      imageUrl,
+                      height: 160,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
             ),
             Padding(
               padding: EdgeInsets.all(padding),

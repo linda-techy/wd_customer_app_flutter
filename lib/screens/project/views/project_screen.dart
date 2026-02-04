@@ -45,7 +45,10 @@ class _ProjectScreenState extends State<ProjectScreen> {
     if (!isLoggedIn) {
       return GuestWelcomeScreen(
         onLoginPressed: () {
-          Navigator.pushNamed(context, logInScreenRoute);
+          // Use root navigator so login replaces the entire shell (works with nested MaterialApp)
+          Navigator.of(context, rootNavigator: true).pushReplacementNamed(
+            logInScreenRoute,
+          );
         },
       );
     }

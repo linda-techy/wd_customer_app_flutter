@@ -10,13 +10,13 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Load .env based on APP_ENV (--dart-define=APP_ENV=staging|production)
-  final appEnv = String.fromEnvironment('APP_ENV', defaultValue: '');
+  const appEnv = String.fromEnvironment('APP_ENV', defaultValue: '');
   if (appEnv == 'staging') {
-    await dotenv.load(fileName: '.env', overrideWithFiles: ['.env.staging']);
+    await dotenv.load(fileName: 'assets/env/.env', overrideWithFiles: ['assets/env/.env.staging']);
   } else if (appEnv == 'production') {
-    await dotenv.load(fileName: '.env', overrideWithFiles: ['.env.production']);
+    await dotenv.load(fileName: 'assets/env/.env', overrideWithFiles: ['assets/env/.env.production']);
   } else {
-    await dotenv.load(fileName: '.env');
+    await dotenv.load(fileName: 'assets/env/.env');
   }
 
   // Web-specific initialization

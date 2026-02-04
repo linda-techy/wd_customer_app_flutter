@@ -42,8 +42,8 @@ class _AuthGuardState extends State<AuthGuard> {
   }
 
   void _handleLogin() {
-    Navigator.pushReplacementNamed(
-      context,
+    // Use root navigator so login works with nested MaterialApp
+    Navigator.of(context, rootNavigator: true).pushReplacementNamed(
       widget.redirectRoute ?? logInScreenRoute,
     );
   }

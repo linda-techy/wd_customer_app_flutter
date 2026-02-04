@@ -184,7 +184,10 @@ class _LoginScreenState extends State<LoginScreen> {
             child: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.center,
-              child: _buildHeader(context, isDark, logoSize, headerPadding, isVerySmallHeight),
+              child: SizedBox(
+                width: MediaQuery.sizeOf(context).width,
+                child: _buildHeader(context, isDark, logoSize, headerPadding, isVerySmallHeight),
+              ),
             ),
           ),
           SizedBox(height: isVerySmallHeight ? 6 : (isSmallHeight ? 10 : 16)),

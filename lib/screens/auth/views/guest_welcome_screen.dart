@@ -123,7 +123,7 @@ class _GuestWelcomeScreenState extends State<GuestWelcomeScreen>
         ),
         SizedBox(height: isSmallHeight ? 12 : 16),
         Text(
-          'Your Project Awaits',
+          'Excellence. Transparency. Trust.',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: titleSize,
@@ -135,7 +135,7 @@ class _GuestWelcomeScreenState extends State<GuestWelcomeScreen>
         ),
         SizedBox(height: isSmallHeight ? 4 : 8),
         Text(
-          'Login to track progress, view documents & collaborate',
+          'A boutique collective for the top 0.1% of homeowners.',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: subtitleSize,
@@ -217,19 +217,19 @@ class _GuestWelcomeScreenState extends State<GuestWelcomeScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildStat('500+', 'Projects', valueSize, labelSize),
+          _buildStat('5', 'Signature\nProjects', valueSize, labelSize),
           Container(
             width: 1,
             height: 28,
             color: Colors.white.withOpacity(0.3),
           ),
-          _buildStat('95%', 'On-Time', valueSize, labelSize),
+          _buildStat('100%', 'Transparency\nGuaranteed', valueSize, labelSize),
           Container(
             width: 1,
             height: 28,
             color: Colors.white.withOpacity(0.3),
           ),
-          _buildStat('1000+', 'Clients', valueSize, labelSize),
+          _buildStat('Top 0.1%', 'Elite\nFocus', valueSize, labelSize),
         ],
       ),
     );
