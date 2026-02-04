@@ -290,6 +290,49 @@ class ApiService {
     }
   }
 
+  /// Server-side project search. Empty/null [query] returns recent projects (backend default).
+  Future<ApiResponse<List<ProjectCard>>> searchProjects(String accessToken, [String? query]) async {
+    try {
+      final path = query != null && query.trim().isNotEmpty
+          ? '/api/dashboard/search-projects?q=${Uri.encodeQueryComponent(query.trim())}'
+          : '/api/dashboard/search-projects';
+      final uri = Uri.parse('${ApiConfig.baseUrl}$path');
+
+      final response = await http
+          .get(
+            uri,
+            headers: ApiConfig.getAuthHeaders(accessToken),
+          )
+          .timeout(ApiConfig.connectionTimeout);
+
+      if (response.statusCode == 200) {
+        final list = jsonDecode(response.body) as List<dynamic>?;
+        final projects = (list ?? [])
+            .map((e) => ProjectCard.fromJson(e as Map<String, dynamic>))
+            .toList();
+        return ApiResponse.success(projects);
+      } else {
+        final body = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+        final error = body != null ? ApiError.fromJson(body as Map<String, dynamic>) : ApiError(
+          message: 'Search failed (${response.statusCode})',
+          statusCode: response.statusCode,
+        );
+        return ApiResponse.error(error);
+      }
+    } on SocketException {
+      return ApiResponse.error(
+        ApiError(message: 'No internet connection.', statusCode: 0),
+      );
+    } catch (e) {
+      return ApiResponse.error(
+        ApiError(
+          message: 'Failed to search projects: ${e.toString()}',
+          statusCode: 0,
+        ),
+      );
+    }
+  }
+
   // Test connection method
   Future<ApiResponse<String>> testConnection() async {
     try {

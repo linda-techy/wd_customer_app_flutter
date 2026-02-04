@@ -165,6 +165,10 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         builder: (context) => const ProjectScreen(),
       );
+    case projectsListScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => const ProjectsListScreen(),
+      );
     case projectDetailsScreenRoute:
       final project = settings.arguments as ProjectCard?;
       if (project != null) {

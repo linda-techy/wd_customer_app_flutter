@@ -55,6 +55,50 @@ class DashboardService {
     }
   }
 
+  /// Server-side project search. [query] null or empty returns recent projects.
+  static Future<ApiResponse<List<ProjectCard>>> searchProjects([String? query]) async {
+    try {
+      final accessToken = await AuthService.getAccessToken();
+      if (accessToken == null) {
+        return ApiResponse.error(
+          ApiError(
+            message: 'No access token found. Please login again.',
+            statusCode: 401,
+          ),
+        );
+      }
+      if (await AuthService.isTokenExpired()) {
+        final refreshed = await AuthService.refreshAccessToken();
+        if (!refreshed) {
+          return ApiResponse.error(
+            ApiError(
+              message: 'Session expired. Please login again.',
+              statusCode: 401,
+            ),
+          );
+        }
+        final newToken = await AuthService.getAccessToken();
+        if (newToken == null) {
+          return ApiResponse.error(
+            ApiError(
+              message: 'Failed to get new access token.',
+              statusCode: 401,
+            ),
+          );
+        }
+        return await _apiService.searchProjects(newToken, query);
+      }
+      return await _apiService.searchProjects(accessToken, query);
+    } catch (e) {
+      return ApiResponse.error(
+        ApiError(
+          message: 'Failed to search projects: ${e.toString()}',
+          statusCode: 0,
+        ),
+      );
+    }
+  }
+
   // Get user info for dashboard
   static Future<UserSummary?> getUserSummary() async {
     try {

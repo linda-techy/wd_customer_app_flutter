@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../widgets/auth_guard.dart';
 import '../../../services/dashboard_service.dart';
 import '../../../models/api_models.dart';
 import '../../../route/route_constants.dart';
 import '../../../components/molecules/responsive_project_card.dart';
-import '../../../design_tokens/app_colors.dart';
 import '../../../constants.dart';
 import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/fade_entry.dart';
@@ -25,10 +23,69 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
   bool _isLoading = true;
   String? _errorMessage;
 
+  // Server-side project search
+  final TextEditingController _searchController = TextEditingController();
+  List<ProjectCard> _searchResults = [];
+  bool _isSearching = false;
+  String _lastSearchQuery = '';
+  static const _searchDebounceMs = 400;
+
   @override
   void initState() {
     super.initState();
     _loadDashboardData();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    setState(() {}); // Update section title and clear button
+    final q = _searchController.text.trim();
+    if (q == _lastSearchQuery) return;
+    _lastSearchQuery = q;
+    _debounceSearch();
+  }
+
+  void _debounceSearch() {
+    Future.delayed(const Duration(milliseconds: _searchDebounceMs), () {
+      if (!mounted) return;
+      if (_searchController.text.trim() != _lastSearchQuery) return;
+      _runSearch(_searchController.text.trim());
+    });
+  }
+
+  Future<void> _runSearch(String query) async {
+    setState(() {
+      _isSearching = true;
+      _lastSearchQuery = query;
+    });
+    try {
+      final response = await DashboardService.searchProjects(
+        query.isEmpty ? null : query,
+      );
+      if (!mounted) return;
+      setState(() {
+        _isSearching = false;
+        if (response.success && response.data != null) {
+          _searchResults = response.data!;
+        } else {
+          _searchResults = [];
+        }
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isSearching = false;
+          _searchResults = [];
+        });
+      }
+    }
   }
 
   Future<void> _loadDashboardData() async {
@@ -257,45 +314,14 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
-
-                // Quick Actions
-                FadeEntry(
-                  delay: 350.ms,
-                  child: SizedBox(
-                    height: 100,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        _buildQuickAction(
-                          context,
-                          "Payments",
-                          Icons.account_balance_wallet,
-                          Colors.purple,
-                          () => Navigator.pushNamed(context, paymentsScreenRoute),
-                        ),
-                        const SizedBox(width: 12),
-                        _buildQuickAction(
-                          context,
-                          "Site Updates",
-                          Icons.camera_alt,
-                          Colors.blue,
-                          () => Navigator.pushNamed(context, siteUpdatesScreenRoute),
-                        ),
-                        const SizedBox(width: 12),
-                        _buildQuickAction(
-                          context,
-                          "Support",
-                          Icons.headset_mic,
-                          Colors.orange,
-                          () {},
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
                 const SizedBox(height: 30),
+                
+                // Project search (server-side)
+                FadeEntry(
+                  delay: 380.ms,
+                  child: _buildProjectSearchBar(),
+                ),
+                const SizedBox(height: 20),
                 
                 // Section Title with Action
                 FadeEntry(
@@ -305,7 +331,9 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          "Your Projects",
+                          _searchController.text.trim().isEmpty
+                              ? "Your Projects"
+                              : "Search results",
                           style: Theme.of(context).textTheme.titleLarge,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -313,8 +341,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
                       if (projects.totalProjects > 0)
                         TextButton(
                           onPressed: () {
-                             // Navigate with fade
-                             Navigator.pushNamed(context, projectScreenRoute);
+                            Navigator.pushNamed(context, projectsListScreenRoute);
                           },
                           child: const Text("View All"),
                         ),
@@ -323,8 +350,8 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
                 ),
                 const SizedBox(height: 16),
                 
-                // Project List
-                _buildProjectList(projects),
+                // Project List (server-rendered when searching, else dashboard recent)
+                _buildProjectListWithSearch(projects),
               ],
             ),
           ),
@@ -385,6 +412,123 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildProjectSearchBar() {
+    final isSearchActive = _searchController.text.trim().isNotEmpty;
+    return TextField(
+      controller: _searchController,
+      decoration: InputDecoration(
+        hintText: 'Search by name, code or location...',
+        prefixIcon: const Icon(Icons.search_rounded),
+        suffixIcon: isSearchActive
+            ? IconButton(
+                icon: const Icon(Icons.clear_rounded),
+                onPressed: () {
+                  _searchController.clear();
+                  _lastSearchQuery = '';
+                  _searchResults = [];
+                  setState(() {});
+                },
+              )
+            : null,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: blackColor.withOpacity(0.08)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: blackColor.withOpacity(0.08)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: primaryColor, width: 1.5),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+      onSubmitted: (value) => _runSearch(value.trim()),
+    );
+  }
+
+  Widget _buildProjectListWithSearch(ProjectSummary projects) {
+    final query = _searchController.text.trim();
+    if (query.isNotEmpty) {
+      if (_isSearching) {
+        return const Padding(
+          padding: EdgeInsets.all(24),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                ),
+                SizedBox(height: 12),
+                Text('Searching projects...'),
+              ],
+            ),
+          ),
+        );
+      }
+      if (_searchResults.isEmpty) {
+        return FadeEntry(
+          delay: 0.ms,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: blackColor.withOpacity(0.05)),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.search_off_rounded, size: 48, color: greyColor),
+                const SizedBox(height: 12),
+                const Text(
+                  'No projects match your search',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Try a different name, code or location.',
+                  style: TextStyle(color: greyColor, fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+      return Column(
+        children: _searchResults.asMap().entries.map((entry) {
+          final index = entry.key;
+          final project = entry.value;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: FadeEntry(
+              delay: (100 * index).ms,
+              child: ResponsiveProjectCard(
+                project: project,
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    projectDetailsRoute(project.projectUuid ?? ''),
+                    arguments: project,
+                  );
+                },
+              ),
+            ),
+          );
+        }).toList(),
+      );
+    }
+    return _buildProjectList(projects);
   }
 
   Widget _buildProjectList(ProjectSummary projects) {
@@ -451,50 +595,4 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
   }
 
 
-  Widget _buildQuickAction(
-      BuildContext context, String label, IconData icon, Color color, VoidCallback onTap) {
-    return ScaleButton(
-      onTap: onTap,
-      child: Container(
-        width: 100,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: blackColor.withOpacity(0.05)),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: blackColor80,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
