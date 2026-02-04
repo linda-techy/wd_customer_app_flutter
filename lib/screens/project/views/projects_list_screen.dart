@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../constants.dart';
 import '../../../models/api_models.dart';
+import '../../../models/project_phase.dart';
 import '../../../route/route_constants.dart';
 import '../../../services/dashboard_service.dart';
 import '../../../widgets/auth_guard.dart';
@@ -23,6 +24,7 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
   String _lastQuery = '';
   static const _searchDebounceMs = 400;
   Timer? _debounceTimer;
+  ProjectPhase? _selectedPhase;
 
   @override
   void initState() {
@@ -49,6 +51,31 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
         if (!mounted) return;
         if (q != _lastQuery) _loadProjects(q.isEmpty ? null : q);
       },
+    );
+  }
+
+  List<ProjectCard> _filterByPhase(List<ProjectCard> list) {
+    if (_selectedPhase == null) return list;
+    return list
+        .where((p) => ProjectPhase.fromString(p.projectPhase) == _selectedPhase)
+        .toList();
+  }
+
+  Widget _phaseChip(String label, bool selected, VoidCallback onTap) {
+    return FilterChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onTap(),
+      backgroundColor: Colors.white,
+      selectedColor: primaryColor.withOpacity(0.2),
+      checkmarkColor: primaryColor,
+      labelStyle: TextStyle(
+        fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+        color: selected ? primaryColor : blackColor60,
+      ),
+      side: BorderSide(
+        color: selected ? primaryColor : blackColor.withOpacity(0.15),
+      ),
     );
   }
 
@@ -133,6 +160,26 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                 onSubmitted: (value) => _loadProjects(value.trim().isEmpty ? null : value.trim()),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _phaseChip('All', _selectedPhase == null, () => setState(() => _selectedPhase = null)),
+                    const SizedBox(width: 8),
+                    ...ProjectPhase.values.map((phase) => Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: _phaseChip(
+                            phase.displayName,
+                            _selectedPhase == phase,
+                            () => setState(() => _selectedPhase = phase),
+                          ),
+                        )),
+                  ],
+                ),
+              ),
+            ),
             Expanded(
               child: _isLoading
                   ? const Center(
@@ -171,7 +218,7 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                             ),
                           ),
                         )
-                      : _projects.isEmpty
+                      : _filterByPhase(_projects).isEmpty
                           ? Center(
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
@@ -179,18 +226,22 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                                   Icon(Icons.folder_open_rounded, size: 64, color: greyColor),
                                   const SizedBox(height: 16),
                                   Text(
-                                    _lastQuery.isEmpty
-                                        ? 'No projects yet'
-                                        : 'No projects match your search',
+                                    _selectedPhase != null
+                                        ? 'No ${_selectedPhase!.displayName} projects'
+                                        : _lastQuery.isEmpty
+                                            ? 'No projects yet'
+                                            : 'No projects match your search',
                                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                           fontWeight: FontWeight.w600,
                                         ),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    _lastQuery.isEmpty
-                                        ? 'Your projects will appear here.'
-                                        : 'Try a different name, code or location.',
+                                    _selectedPhase != null
+                                        ? 'Try another phase or tap All.'
+                                        : _lastQuery.isEmpty
+                                            ? 'Your projects will appear here.'
+                                            : 'Try a different name, code or location.',
                                     style: TextStyle(color: greyColor),
                                     textAlign: TextAlign.center,
                                   ),
@@ -206,9 +257,9 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                               color: primaryColor,
                               child: ListView.builder(
                                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                                itemCount: _projects.length,
+                                itemCount: _filterByPhase(_projects).length,
                                 itemBuilder: (context, index) {
-                                  final project = _projects[index];
+                                  final project = _filterByPhase(_projects)[index];
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 16),
                                     child: ResponsiveProjectCard(

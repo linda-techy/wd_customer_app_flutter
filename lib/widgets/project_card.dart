@@ -170,7 +170,7 @@ class ProjectCard extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.schedule,
                           size: 16,
                           color: logoRed,
@@ -210,8 +210,6 @@ class ProjectCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.grey[500],
                           fontSize: ResponsiveFontSize.getBody(context) - 3,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

@@ -172,39 +172,36 @@ class _LoginScreenState extends State<LoginScreen> {
     final vPad = isVerySmallHeight ? 6.0 : (isSmallHeight ? 10.0 : padding * 0.4);
     final hPad = isVerySmallHeight ? 12.0 : (isSmallHeight ? 16.0 : padding);
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          Flexible(
-            flex: 1,
-            fit: FlexFit.tight,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.center,
-              child: SizedBox(
-                width: MediaQuery.sizeOf(context).width,
-                child: _buildHeader(context, isDark, logoSize, headerPadding, isVerySmallHeight),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight,
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+              child: IntrinsicHeight(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.sizeOf(context).width,
+                      child: _buildHeader(context, isDark, logoSize, headerPadding, isVerySmallHeight),
+                    ),
+                    SizedBox(height: isVerySmallHeight ? 6 : (isSmallHeight ? 10 : 16)),
+                    SizedBox(
+                      width: MediaQuery.sizeOf(context).width - hPad * 2,
+                      child: _buildLoginForm(context, isDark, isSmallHeight || isVerySmallHeight),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-          SizedBox(height: isVerySmallHeight ? 6 : (isSmallHeight ? 10 : 16)),
-          Flexible(
-            flex: 2,
-            fit: FlexFit.tight,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.topCenter,
-              child: SizedBox(
-                width: MediaQuery.sizeOf(context).width - hPad * 2,
-                child: _buildLoginForm(context, isDark, isSmallHeight || isVerySmallHeight),
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 

@@ -9,6 +9,7 @@ import '../../../constants.dart';
 import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/scale_button.dart';
+import '../../../models/project_phase.dart';
 
 class CustomerDashboardScreen extends StatefulWidget {
   const CustomerDashboardScreen({super.key});
@@ -29,6 +30,9 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
   bool _isSearching = false;
   String _lastSearchQuery = '';
   static const _searchDebounceMs = 400;
+
+  // Phase filter (null = All)
+  ProjectPhase? _selectedPhase;
 
   @override
   void initState() {
@@ -348,6 +352,12 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 12),
+                // Phase filter chips
+                FadeEntry(
+                  delay: 420.ms,
+                  child: _buildPhaseChips(),
+                ),
                 const SizedBox(height: 16),
                 
                 // Project List (server-rendered when searching, else dashboard recent)
@@ -414,6 +424,56 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
     );
   }
 
+  List<ProjectCard> _filterByPhase(List<ProjectCard> list) {
+    if (_selectedPhase == null) return list;
+    return list
+        .where((p) =>
+            ProjectPhase.fromString(p.projectPhase) == _selectedPhase)
+        .toList();
+  }
+
+  Widget _buildPhaseChips() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _buildPhaseChip(label: 'All', selected: _selectedPhase == null, onTap: () => setState(() => _selectedPhase = null)),
+          const SizedBox(width: 8),
+          ...ProjectPhase.values.map((phase) => Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: _buildPhaseChip(
+                  label: phase.displayName,
+                  selected: _selectedPhase == phase,
+                  onTap: () => setState(() => _selectedPhase = phase),
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPhaseChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return FilterChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onTap(),
+      backgroundColor: Colors.white,
+      selectedColor: primaryColor.withOpacity(0.2),
+      checkmarkColor: primaryColor,
+      labelStyle: TextStyle(
+        fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+        color: selected ? primaryColor : blackColor60,
+      ),
+      side: BorderSide(
+        color: selected ? primaryColor : blackColor.withOpacity(0.15),
+      ),
+    );
+  }
+
   Widget _buildProjectSearchBar() {
     final isSearchActive = _searchController.text.trim().isNotEmpty;
     return TextField(
@@ -472,7 +532,8 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
           ),
         );
       }
-      if (_searchResults.isEmpty) {
+      final filtered = _filterByPhase(_searchResults);
+      if (filtered.isEmpty) {
         return FadeEntry(
           delay: 0.ms,
           child: Container(
@@ -487,16 +548,20 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
               children: [
                 Icon(Icons.search_off_rounded, size: 48, color: greyColor),
                 const SizedBox(height: 12),
-                const Text(
-                  'No projects match your search',
-                  style: TextStyle(
+                Text(
+                  _selectedPhase != null
+                      ? 'No ${_selectedPhase!.displayName} projects in search'
+                      : 'No projects match your search',
+                  style: const TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Try a different name, code or location.',
+                  _selectedPhase != null
+                      ? 'Try another phase or clear the phase filter.'
+                      : 'Try a different name, code or location.',
                   style: TextStyle(color: greyColor, fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
@@ -506,7 +571,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
         );
       }
       return Column(
-        children: _searchResults.asMap().entries.map((entry) {
+        children: filtered.asMap().entries.map((entry) {
           final index = entry.key;
           final project = entry.value;
           return Padding(
@@ -532,6 +597,39 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
   }
 
   Widget _buildProjectList(ProjectSummary projects) {
+    final recent = _filterByPhase(projects.recentProjects);
+    if (recent.isEmpty && projects.totalProjects > 0) {
+      return FadeEntry(
+        delay: 500.ms,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: blackColor.withOpacity(0.05)),
+          ),
+          child: Column(
+            children: [
+              Icon(Icons.filter_list_rounded, size: 48, color: greyColor),
+              const SizedBox(height: 12),
+              Text(
+                'No projects in ${_selectedPhase?.displayName ?? "this phase"}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => setState(() => _selectedPhase = null),
+                child: const Text('Show all'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     if (projects.totalProjects == 0) {
       return FadeEntry(
         delay: 500.ms,
@@ -571,7 +669,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
     }
 
     return Column(
-      children: projects.recentProjects.asMap().entries.map((entry) {
+      children: recent.asMap().entries.map((entry) {
         final index = entry.key;
         final project = entry.value;
         return Padding(

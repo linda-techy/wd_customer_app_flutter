@@ -2,15 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../models/api_models.dart';
 import '../../../route/route_constants.dart';
-import '../../../design_tokens/app_colors.dart';
-import '../../../design_tokens/app_spacing.dart';
-import '../../../design_tokens/app_typography.dart';
-import '../../../responsive/responsive_builder.dart';
 import '../../../services/dashboard_service.dart';
 import '../../../constants.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/scale_button.dart';
+import '../../../models/project_phase.dart';
 import 'design_package_selection_screen.dart';
 
 class ProjectDetailsScreen extends StatefulWidget {
@@ -165,29 +162,55 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (_projectDetails?.status != null || p?.status?.isNotEmpty == true)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: _getStatusColor(_projectDetails?.status ?? p?.status ?? '').withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: _getStatusColor(_projectDetails?.status ?? p?.status ?? '').withOpacity(0.5)),
-                      ),
-                      child: Text(
-                        (_projectDetails?.status ?? p?.status ?? 'UNKNOWN').toUpperCase(),
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
+                  Row(
+                    children: [
+                      if (_projectDetails?.phase != null || p?.projectPhase != null) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.25),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.white.withOpacity(0.5)),
+                          ),
+                          child: Text(
+                            ProjectPhase.fromString(_projectDetails?.phase ?? p?.projectPhase).displayName.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
                         ),
-                      ),
-                    ).animate().slideX(begin: -0.2, curve: Curves.easeOut),
+                        const SizedBox(width: 8),
+                      ],
+                      if (_projectDetails?.status != null || p?.status?.isNotEmpty == true)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(_projectDetails?.status ?? p?.status ?? '').withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: _getStatusColor(_projectDetails?.status ?? p?.status ?? '').withOpacity(0.5)),
+                          ),
+                          child: Text(
+                            (_projectDetails?.status ?? p?.status ?? 'UNKNOWN').toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ).animate().slideX(begin: -0.2, curve: Curves.easeOut),
                   
                   const SizedBox(height: 12),
                   
                   Text(
                     _projectDetails?.name ?? p?.name ?? 'Project Details',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Colors.white,
                       fontFamily: grandisExtendedFont,
@@ -203,11 +226,15 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                     children: [
                       const Icon(Icons.location_on, size: 14, color: Colors.white70),
                       const SizedBox(width: 4),
-                      Text(
-                        _projectDetails?.location ?? p?.location ?? 'Location not specified',
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
+                      Expanded(
+                        child: Text(
+                          _projectDetails?.location ?? p?.location ?? 'Location not specified',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ],
@@ -225,6 +252,12 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Phase stepper (Planning → Design → Construction → Completed)
+        FadeEntry(
+          delay: 380.ms,
+          child: _buildPhaseStepper(p),
+        ),
+        const SizedBox(height: 20),
         // Progress Section
         FadeEntry(
           delay: 400.ms,
@@ -248,9 +281,107 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
     );
   }
 
+  Widget _buildPhaseStepper(ProjectCard? p) {
+    final phaseValue = _projectDetails?.phase ?? p?.projectPhase;
+    final current = ProjectPhase.fromString(phaseValue);
+    final allPhases = ProjectPhase.values;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: blackColor.withOpacity(0.06)),
+        boxShadow: [
+          BoxShadow(
+            color: blackColor.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          for (int i = 0; i < allPhases.length; i++) ...[
+            if (i > 0)
+              Expanded(
+                child: Container(
+                  height: 2,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  color: current.order > i ? successColor.withOpacity(0.7) : blackColor10,
+                ),
+              ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: allPhases[i] == current
+                        ? _getPhaseColor(phaseValue)
+                        : allPhases[i].order < current.order
+                            ? successColor.withOpacity(0.5)
+                            : blackColor10,
+                    border: Border.all(
+                      color: allPhases[i] == current
+                          ? _getPhaseColor(phaseValue)
+                          : blackColor20,
+                      width: allPhases[i] == current ? 2.5 : 1,
+                    ),
+                  ),
+                  child: Center(
+                    child: allPhases[i].order < current.order
+                        ? const Icon(Icons.check_rounded, color: Colors.white, size: 20)
+                        : Text(
+                            '${allPhases[i].order}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: allPhases[i] == current
+                                  ? Colors.white
+                                  : blackColor60,
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                SizedBox(
+                  width: 70,
+                  child: Text(
+                    allPhases[i].displayName,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: allPhases[i] == current ? FontWeight.bold : FontWeight.w500,
+                      color: allPhases[i] == current ? _getPhaseColor(phaseValue) : blackColor60,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (i < allPhases.length - 1)
+              Expanded(
+                child: Container(
+                  height: 2,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  color: current.order > i + 1 ? successColor.withOpacity(0.7) : blackColor10,
+                ),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildPhaseCard(BuildContext context, ProjectCard? p) {
     final progress = _projectDetails?.progress ?? p?.progress ?? 0;
-    
+    final phaseValue = _projectDetails?.phase ?? p?.projectPhase;
+    final phase = ProjectPhase.fromString(phaseValue);
+
     return HoverCard(
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -266,7 +397,39 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           ],
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Current phase row
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _getPhaseColor(phaseValue).withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: _getPhaseColor(phaseValue).withOpacity(0.4)),
+                  ),
+                  child: Text(
+                    phase.displayName,
+                    style: TextStyle(
+                      color: _getPhaseColor(phaseValue),
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    phase.shortDescription,
+                    style: const TextStyle(color: blackColor60, fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -285,7 +448,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: Text(
-                    "$progress%",
+                    "${progress.toStringAsFixed(0)}%",
                     style: const TextStyle(
                       color: primaryColor,
                       fontWeight: FontWeight.bold,
@@ -299,7 +462,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
-                value: progress / 100.0,
+                value: (progress / 100.0).clamp(0.0, 1.0),
                 minHeight: 8,
                 backgroundColor: blackColor5,
                 valueColor: const AlwaysStoppedAnimation<Color>(primaryColor),
@@ -311,13 +474,36 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
     );
   }
 
+  Color _getPhaseColor(String? phaseValue) {
+    if (phaseValue == null || phaseValue.isEmpty) return primaryColor;
+    final p = phaseValue.trim().toUpperCase();
+    switch (p) {
+      case 'PLANNING': return Colors.blue;
+      case 'DESIGN': return Colors.purple;
+      case 'EXECUTION':
+      case 'CONSTRUCTION': return warningColor;
+      case 'COMPLETION':
+      case 'HANDOVER':
+      case 'WARRANTY':
+      case 'COMPLETED': return successColor;
+      default: return primaryColor;
+    }
+  }
+
   Widget _buildOverviewSection(BuildContext context) {
+    final startStr = _projectDetails?.startDate;
+    final endStr = _projectDetails?.endDate;
+    final startDate = _parseDate(startStr);
+    final endDate = _parseDate(endStr);
+    final startDisplay = startDate != null ? _formatDate(startDate) : (startStr ?? '—');
+    final endDisplay = endDate != null ? _formatDate(endDate) : (endStr ?? '—');
+
     return Row(
       children: [
         Expanded(
           child: _buildInfoCard(
             "Start Date",
-            "Oct 24, 2023",
+            startDisplay,
             Icons.calendar_today_outlined,
             Colors.blue,
           ),
@@ -326,13 +512,23 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         Expanded(
           child: _buildInfoCard(
             "Est. Completion",
-            "Aug 15, 2024",
+            endDisplay,
             Icons.flag_outlined,
             Colors.orange,
           ),
         ),
       ],
     );
+  }
+
+  DateTime? _parseDate(String? value) {
+    if (value == null || value.isEmpty) return null;
+    return DateTime.tryParse(value);
+  }
+
+  String _formatDate(DateTime d) {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return '${months[d.month - 1]} ${d.day}, ${d.year}';
   }
 
   Widget _buildInfoCard(String label, String value, IconData icon, Color color) {
@@ -357,56 +553,63 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   }
 
   Widget _buildActionGrid(BuildContext context) {
+    final projectId = _getProjectId() ?? '';
+    final phase = ProjectPhase.fromString(_projectDetails?.phase ?? _getProjectCard()?.projectPhase);
+    final actions = _getPhaseActions(phase, projectId);
+
+    if (actions.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionTile(
-                "Timeline",
-                Icons.timeline,
-                Colors.purple,
-                () {
-                  // TODO: Navigate or show Timeline
-                  // Since timeline is a widget, maybe open a bottom sheet or new screen
-                },
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildActionTile(
-                "Documents",
-                Icons.folder_outlined,
-                Colors.blue,
-                 () => Navigator.pushNamed(context, documentsScreenRoute),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionTile(
-                "Site Updates",
-                Icons.camera_alt_outlined,
-                Colors.green,
-                () => Navigator.pushNamed(context, siteUpdatesScreenRoute),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildActionTile(
-                "Payments",
-                Icons.account_balance_wallet_outlined,
-                Colors.orange,
-                () => Navigator.pushNamed(context, paymentsScreenRoute),
-              ),
-            ),
-          ],
-        ),
+        for (int i = 0; i < actions.length; i += 2) ...[
+          if (i > 0) const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: _buildActionTile(actions[i].label, actions[i].icon, actions[i].color, actions[i].onTap)),
+              if (i + 1 < actions.length) ...[
+                const SizedBox(width: 16),
+                Expanded(child: _buildActionTile(actions[i + 1].label, actions[i + 1].icon, actions[i + 1].color, actions[i + 1].onTap)),
+              ] else
+                const Expanded(child: SizedBox()),
+            ],
+          ),
+        ],
       ],
     );
+  }
+
+  List<_ActionItem> _getPhaseActions(ProjectPhase phase, String projectId) {
+    final list = <_ActionItem>[];
+    final nav = Navigator.of(context);
+
+    switch (phase) {
+      case ProjectPhase.planning:
+        list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectId.isNotEmpty ? projectDocumentsRoute(projectId) : documentsScreenRoute)));
+        list.add(_ActionItem('Timeline', Icons.timeline, Colors.purple, () { /* TODO: timeline screen */ }));
+        break;
+      case ProjectPhase.design:
+        list.add(_ActionItem('Design Package', Icons.design_services_outlined, Colors.purple, () {
+          if (projectId.isNotEmpty) {
+            final sqFeet = _projectDetails?.sqFeet ?? 0.0;
+            nav.push(MaterialPageRoute(builder: (_) => DesignPackageSelectionScreen(projectId: projectId, sqFeet: sqFeet)));
+          }
+        }));
+        list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectId.isNotEmpty ? projectDocumentsRoute(projectId) : documentsScreenRoute)));
+        break;
+      case ProjectPhase.construction:
+        list.add(_ActionItem('Site Updates', Icons.camera_alt_outlined, Colors.green, () => nav.pushNamed(projectId.isNotEmpty ? siteUpdatesScreenRoute : siteUpdatesScreenRoute)));
+        list.add(_ActionItem('Gallery', Icons.photo_library_outlined, Colors.teal, () => nav.pushNamed(projectId.isNotEmpty ? projectGalleryRoute(projectId) : projectGalleryScreenRoute)));
+        list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectId.isNotEmpty ? projectDocumentsRoute(projectId) : documentsScreenRoute)));
+        list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.orange, () => nav.pushNamed(paymentsScreenRoute)));
+        break;
+      case ProjectPhase.completed:
+        list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectId.isNotEmpty ? projectDocumentsRoute(projectId) : documentsScreenRoute)));
+        list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.orange, () => nav.pushNamed(paymentsScreenRoute)));
+        break;
+    }
+    return list;
   }
 
   Widget _buildActionTile(String label, IconData icon, Color color, VoidCallback onTap) {
@@ -477,4 +680,13 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
       default: return Colors.grey;
     }
   }
+}
+
+class _ActionItem {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  _ActionItem(this.label, this.icon, this.color, this.onTap);
 }

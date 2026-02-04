@@ -34,11 +34,13 @@ class ProfileCard extends StatelessWidget {
       ),
       title: Row(
         children: [
-          Text(
-            isShowHi ? "Hi, $name" : name,
-            style: const TextStyle(fontWeight: FontWeight.w500),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          Flexible(
+            child: Text(
+              isShowHi ? "Hi, $name" : name,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           const SizedBox(width: defaultPadding / 2),
           if (isPro)
@@ -64,7 +66,11 @@ class ProfileCard extends StatelessWidget {
             ),
         ],
       ),
-      subtitle: Text(email),
+      subtitle: Text(
+        email,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
       trailing: isShowArrow
           ? SvgPicture.asset(
               "assets/icons/miniRight.svg",

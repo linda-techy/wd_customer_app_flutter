@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../constants.dart';
-import '../../../utils/responsive.dart';
-import '../../../design_tokens/app_typography.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/scale_button.dart';

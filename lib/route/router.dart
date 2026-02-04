@@ -24,8 +24,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     // Project detail routes with ID parameter
     if (segments.length == 2) {
       final projectIdStr = segments[1];
-      final projectIdInt = int.tryParse(projectIdStr);
-      
+
       switch (basePath) {
         case 'project_details':
           if (projectIdStr.isNotEmpty) {

@@ -97,4 +97,26 @@ class AppColors {
     if (progress < 70) return warning;
     return success;
   }
+
+  // Phase colors (for project phase badges/steppers)
+  static Color getPhaseColor(String? phaseValue) {
+    if (phaseValue == null || phaseValue.isEmpty) return info;
+    final p = phaseValue.trim().toUpperCase();
+    switch (p) {
+      case 'PLANNING':
+        return info;
+      case 'DESIGN':
+        return secondary;
+      case 'EXECUTION':
+      case 'CONSTRUCTION':
+        return warning;
+      case 'COMPLETION':
+      case 'HANDOVER':
+      case 'WARRANTY':
+      case 'COMPLETED':
+        return success;
+      default:
+        return info;
+    }
+  }
 }

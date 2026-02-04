@@ -4,6 +4,7 @@ import '../../design_tokens/app_spacing.dart';
 import '../../design_tokens/app_typography.dart';
 import '../../responsive/responsive_builder.dart';
 import '../../models/api_models.dart';
+import '../../models/project_phase.dart';
 
 /// Responsive project card that adapts to different screen sizes
 ///
@@ -78,7 +79,7 @@ class _MobileProjectCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with name and status
+              // Header with name, phase and status
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -90,7 +91,17 @@ class _MobileProjectCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  _StatusBadge(status: project.status ?? 'UNKNOWN'),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (project.projectPhase != null && project.projectPhase!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(right: AppSpacing.xs),
+                          child: _PhaseBadge(phaseValue: project.projectPhase!),
+                        ),
+                      _StatusBadge(status: project.status ?? 'UNKNOWN'),
+                    ],
+                  ),
                 ],
               ),
 
@@ -218,7 +229,17 @@ class _TabletProjectCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        _StatusBadge(status: project.status ?? 'UNKNOWN'),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (project.projectPhase != null && project.projectPhase!.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(right: AppSpacing.xs),
+                                child: _PhaseBadge(phaseValue: project.projectPhase!),
+                              ),
+                            _StatusBadge(status: project.status ?? 'UNKNOWN'),
+                          ],
+                        ),
                       ],
                     ),
                     if (project.code != null && project.code!.isNotEmpty) ...[
@@ -343,7 +364,11 @@ class _DesktopProjectCardState extends State<_DesktopProjectCard> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const SizedBox(width: AppSpacing.md),
+                            if (widget.project.projectPhase != null && widget.project.projectPhase!.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(right: AppSpacing.sm),
+                                child: _PhaseBadge(phaseValue: widget.project.projectPhase!),
+                              ),
                             _StatusBadge(status: widget.project.status ?? 'UNKNOWN'),
                           ],
                         ),
@@ -435,6 +460,41 @@ class _DesktopProjectCardState extends State<_DesktopProjectCard> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Phase badge (Planning, Design, Construction, Completed)
+class _PhaseBadge extends StatelessWidget {
+  final String phaseValue;
+
+  const _PhaseBadge({required this.phaseValue});
+
+  @override
+  Widget build(BuildContext context) {
+    final phase = ProjectPhase.fromString(phaseValue);
+    final color = AppColors.getPhaseColor(phaseValue);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        border: Border.all(
+          color: color.withOpacity(0.4),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        phase.displayName,
+        style: AppTypography.labelSmall(context).copyWith(
+          color: color,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

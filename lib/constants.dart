@@ -109,3 +109,6 @@ final emaildValidator = MultiValidator([
 ]);
 
 const pasNotMatchErrorText = "passwords do not match";
+
+/// Company contact email - use for all mailto, contact, and support links.
+const String companyEmail = 'info@walldotbuilders.com';

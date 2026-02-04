@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../constants.dart';
 import '../animations/hover_card.dart';
@@ -15,7 +14,7 @@ class SiteUpdateCard extends StatelessWidget {
   final VoidCallback? onComment;
 
   const SiteUpdateCard({
-    Key? key,
+    super.key,
     required this.date,
     required this.description,
     required this.imageUrls,
@@ -23,7 +22,7 @@ class SiteUpdateCard extends StatelessWidget {
     this.weather = "28°C Sunny",
     this.onShare,
     this.onComment,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +69,7 @@ class SiteUpdateCard extends StatelessWidget {
                           color: blackColor,
                         ),
                       ),
-                      Text(
+                      const Text(
                         "Daily Site Log",
                         style: TextStyle(
                           fontSize: 12,

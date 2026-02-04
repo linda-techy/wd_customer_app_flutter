@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../constants.dart';
 import '../../../utils/responsive.dart';
 import '../../../components/animations/fade_entry.dart';
@@ -194,7 +195,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
 
   Widget _buildJobSitesList() {
     return ListView.builder(
-      padding: EdgeInsets.only(
+      padding: const EdgeInsets.only(
           left: defaultPadding,
           right: defaultPadding,
           top: defaultPadding,
@@ -287,7 +288,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.business, size: 14, color: blackColor),
+                          const Icon(Icons.business, size: 14, color: blackColor),
                           const SizedBox(width: 4),
                           Text(
                             site['type'].toUpperCase(),
@@ -320,6 +321,8 @@ class _AddressesScreenState extends State<AddressesScreen> {
                       ),
                       child: Row(
                         children: [
+                          Icon(statusIcon, size: 12, color: Colors.white),
+                          const SizedBox(width: 6),
                           if (site['status'] == 'Active')
                             Container(
                               width: 6,
@@ -482,7 +485,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          "info@walldotbuilders.com",
+                          companyEmail,
                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                         ),
                       ),
@@ -638,6 +641,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
   }
 
   void _requestSiteVisit(Map<String, dynamic> site) {
+    final phone = site['contact']?.toString().replaceAll(' ', '') ?? '';
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text("Site visit requested for ${site['name']}"),
@@ -647,8 +651,23 @@ class _AddressesScreenState extends State<AddressesScreen> {
         action: SnackBarAction(
           label: "Call Now",
           textColor: Colors.white,
-          onPressed: () {
-            // TODO: Implement phone call
+          onPressed: () async {
+            if (phone.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('No contact number available')),
+              );
+              return;
+            }
+            final uri = Uri(scheme: 'tel', path: phone);
+            if (await canLaunchUrl(uri)) {
+              await launchUrl(uri);
+            } else {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Cannot call $phone')),
+                );
+              }
+            }
           },
         ),
       ),

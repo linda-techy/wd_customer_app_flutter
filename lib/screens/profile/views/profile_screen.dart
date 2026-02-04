@@ -316,7 +316,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text(
-                      'Call: +91-9074-9548-74 | Email: info@walldotbuilders.com'),
+                      'Call: +91-9074-9548-74 | Email: $companyEmail'),
                   backgroundColor: Color(0xFFD84940),
                 ),
               );
