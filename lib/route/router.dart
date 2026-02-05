@@ -9,6 +9,9 @@ import 'package:wd_cust_mobile_app/screens/project/views/gallery_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/snags_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/site_visits_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/activity_feed_screen.dart';
+import 'package:wd_cust_mobile_app/screens/project/views/boq_screen.dart';
+import 'package:wd_cust_mobile_app/screens/project/views/quality_check_screen.dart';
+import 'package:wd_cust_mobile_app/screens/project/views/view_360_screen.dart';
 import 'fade_slide_page_route.dart';
 import 'screen_export.dart';
 
@@ -106,6 +109,30 @@ Route<dynamic> generateRoute(RouteSettings settings) {
             return MaterialPageRoute(
               settings: settings,
               builder: (context) => ActivityFeedScreen(projectId: projectIdStr),
+            );
+          }
+          break;
+        case 'project_boq':
+          if (projectIdStr.isNotEmpty) {
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => BoqScreen(projectId: projectIdStr),
+            );
+          }
+          break;
+        case 'project_quality_check':
+          if (projectIdStr.isNotEmpty) {
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => QualityCheckScreen(projectId: projectIdStr),
+            );
+          }
+          break;
+        case 'project_360_views':
+          if (projectIdStr.isNotEmpty) {
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => View360Screen(projectId: projectIdStr),
             );
           }
           break;

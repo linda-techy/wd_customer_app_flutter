@@ -64,6 +64,9 @@ const String projectGalleryScreenRoute = "project_gallery";
 const String projectSnagsScreenRoute = "project_snags";
 const String projectSiteVisitsScreenRoute = "project_site_visits";
 const String projectActivityFeedScreenRoute = "project_activity_feed";
+const String projectBoqScreenRoute = "project_boq";
+const String projectQualityCheckScreenRoute = "project_quality_check";
+const String project360ViewsScreenRoute = "project_360_views";
 
 // Helper function to build project detail route with ID
 String projectDetailsRoute(dynamic projectId) => 'project_details/$projectId';
@@ -77,6 +80,9 @@ String projectActivityRoute(dynamic projectId) => 'project_activity/$projectId';
 String projectSnagsRoute(dynamic projectId) => 'project_snags/$projectId';
 String projectSiteVisitsRoute(dynamic projectId) => 'project_site_visits/$projectId';
 String projectActivityFeedRoute(dynamic projectId) => 'project_activity_feed/$projectId';
+String projectBoqRoute(dynamic projectId) => 'project_boq/$projectId';
+String projectQualityCheckRoute(dynamic projectId) => 'project_quality_check/$projectId';
+String project360ViewsRoute(dynamic projectId) => 'project_360_views/$projectId';
 
 // Dashboard Routes
 const String customerDashboardScreenRoute = "customer_dashboard";
