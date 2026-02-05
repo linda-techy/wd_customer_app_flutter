@@ -22,8 +22,10 @@ class _GalleryScreenState extends State<GalleryScreen> {
   bool isLoading = true;
   String? error;
   List<GalleryImage> images = [];
+  Map<DateTime, List<GalleryImage>> groupedImages = {};
   ProjectModuleService? service;
   String? _authToken;
+  bool _isGroupedView = true; // Toggle between grouped and grid view
 
   @override
   void initState() {
@@ -61,9 +63,17 @@ class _GalleryScreenState extends State<GalleryScreen> {
       
       // Sort by date taken (newest first)
       loadedImages.sort((a, b) => b.takenDate.compareTo(a.takenDate));
+      
+      // Group by date
+      final grouped = <DateTime, List<GalleryImage>>{};
+      for (final image in loadedImages) {
+        final dateKey = DateTime(image.takenDate.year, image.takenDate.month, image.takenDate.day);
+        grouped.putIfAbsent(dateKey, () => []).add(image);
+      }
 
       setState(() {
         images = loadedImages;
+        groupedImages = grouped;
         isLoading = false;
       });
     } catch (e) {
@@ -83,13 +93,35 @@ class _GalleryScreenState extends State<GalleryScreen> {
           icon: const Icon(Icons.arrow_back, color: blackColor),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          "Project Gallery", 
-          style: TextStyle(color: blackColor, fontWeight: FontWeight.bold)
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Project Gallery", 
+              style: TextStyle(color: blackColor, fontWeight: FontWeight.bold, fontSize: 18)
+            ),
+            Text(
+              '${images.length} photos',
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            ),
+          ],
         ),
         backgroundColor: surfaceColor,
         elevation: 0,
         actions: [
+          // Toggle view button
+          IconButton(
+            icon: Icon(
+              _isGroupedView ? Icons.grid_view : Icons.calendar_view_day,
+              color: blackColor,
+            ),
+            onPressed: () {
+              setState(() {
+                _isGroupedView = !_isGroupedView;
+              });
+            },
+            tooltip: _isGroupedView ? 'Grid View' : 'Grouped View',
+          ),
           IconButton(
             icon: const Icon(Icons.refresh, color: blackColor),
             onPressed: _loadImages,
@@ -100,7 +132,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
           ? const Center(child: CircularProgressIndicator(color: primaryColor))
           : error != null
               ? _buildErrorState()
-              : _buildGalleryGrid(),
+              : _isGroupedView 
+                  ? _buildGroupedGallery()
+                  : _buildGalleryGrid(),
     );
   }
 
@@ -123,30 +157,214 @@ class _GalleryScreenState extends State<GalleryScreen> {
     );
   }
 
-  Widget _buildGalleryGrid() {
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.05),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.photo_library_outlined, size: 48, color: primaryColor),
+          ),
+          const SizedBox(height: 16),
+          const Text('No images found', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          const SizedBox(height: 8),
+          Text(
+            'Photos from site reports will appear here.',
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGroupedGallery() {
     if (images.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      return _buildEmptyState();
+    }
+
+    // Sort dates in descending order (newest first)
+    final sortedDates = groupedImages.keys.toList()
+      ..sort((a, b) => b.compareTo(a));
+
+    return RefreshIndicator(
+      onRefresh: _loadImages,
+      color: primaryColor,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(defaultPadding),
+        itemCount: sortedDates.length,
+        itemBuilder: (context, dateIndex) {
+          final date = sortedDates[dateIndex];
+          final dateImages = groupedImages[date]!;
+          
+          return _buildDateSection(date, dateImages, dateIndex);
+        },
+      ),
+    );
+  }
+
+  Widget _buildDateSection(DateTime date, List<GalleryImage> dateImages, int dateIndex) {
+    final isToday = _isToday(date);
+    final isYesterday = _isYesterday(date);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Date Header
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isToday 
+                        ? primaryColor.withOpacity(0.1)
+                        : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.calendar_today,
+                        size: 14,
+                        color: isToday ? primaryColor : Colors.grey[600],
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        isToday 
+                            ? 'Today'
+                            : isYesterday
+                                ? 'Yesterday'
+                                : DateFormat('EEEE, MMMM d, y').format(date),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: isToday ? primaryColor : Colors.grey[800],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${dateImages.length} photos',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[500],
+                  ),
+                ),
+              ],
+            ),
+          ).animate().fadeIn(duration: 300.ms, delay: (dateIndex * 50).ms),
+          const SizedBox(height: 8),
+          // Images Grid for this date
+          LayoutBuilder(
+            builder: (context, constraints) {
+              int crossAxisCount = 3;
+              if (constraints.maxWidth > 600) crossAxisCount = 4;
+              if (constraints.maxWidth > 900) crossAxisCount = 5;
+              if (constraints.maxWidth > 1200) crossAxisCount = 6;
+
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  childAspectRatio: 1.0,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                ),
+                itemCount: dateImages.length,
+                itemBuilder: (context, index) {
+                  final image = dateImages[index];
+                  final globalIndex = images.indexOf(image);
+                  return _buildImageThumbnail(image, globalIndex, dateIndex * 10 + index);
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImageThumbnail(GalleryImage image, int globalIndex, int animIndex) {
+    final imageUrl = _resolveUrl(image.thumbnailPath?.isNotEmpty == true ? image.thumbnailPath! : image.imagePath);
+
+    return GestureDetector(
+      onTap: () => _openImageViewer(globalIndex),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: Colors.grey[200],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.05),
-                shape: BoxShape.circle,
+            Hero(
+              tag: 'gallery_image_${image.id}',
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
+                httpHeaders: _authToken != null ? {'Authorization': 'Bearer $_authToken'} : null,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: Colors.grey[200],
+                  child: const Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: primaryColor),
+                    ),
+                  ),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  color: Colors.grey[200],
+                  child: const Center(child: Icon(Icons.broken_image, color: Colors.grey, size: 24)),
+                ),
               ),
-              child: const Icon(Icons.photo_library_outlined, size: 48, color: primaryColor),
             ),
-            const SizedBox(height: 16),
-            const Text('No images found', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-            const SizedBox(height: 8),
-            Text(
-              'Photos uploaded by the team will appear here.',
-              style: TextStyle(color: Colors.grey[600]),
-            ),
+            // Location tag overlay
+            if (image.locationTag != null && image.locationTag!.isNotEmpty)
+              Positioned(
+                left: 4,
+                bottom: 4,
+                right: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    image.locationTag!,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
           ],
         ),
-      );
+      ).animate().fadeIn(duration: 200.ms, delay: (animIndex * 20).ms).scale(begin: const Offset(0.95, 0.95)),
+    );
+  }
+
+  Widget _buildGalleryGrid() {
+    if (images.isEmpty) {
+      return _buildEmptyState();
     }
 
     return LayoutBuilder(
@@ -250,6 +468,16 @@ class _GalleryScreenState extends State<GalleryScreen> {
         ),
       ).animate().fadeIn(duration: 300.ms, delay: (index * 50).ms).scale(begin: const Offset(0.9, 0.9)),
     );
+  }
+
+  bool _isToday(DateTime date) {
+    final now = DateTime.now();
+    return date.year == now.year && date.month == now.month && date.day == now.day;
+  }
+
+  bool _isYesterday(DateTime date) {
+    final yesterday = DateTime.now().subtract(const Duration(days: 1));
+    return date.year == yesterday.year && date.month == yesterday.month && date.day == yesterday.day;
   }
 
   String _resolveUrl(String url) {

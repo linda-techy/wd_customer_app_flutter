@@ -19,7 +19,8 @@ class ActivityFeedScreen extends StatefulWidget {
 class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   bool isLoading = true;
   String? error;
-  List<ActivityFeed> activities = [];
+  List<CombinedActivityItem> activities = [];
+  Map<DateTime, List<CombinedActivityItem>> groupedActivities = {};
   ProjectModuleService? service;
 
   @override
@@ -51,13 +52,22 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
         error = null;
       });
 
-      final loadedActivities = await service!.getActivities(widget.projectId);
+      // Load combined activities (site reports + queries)
+      final loadedActivities = await service!.getCombinedActivities(widget.projectId);
       
       // Sort by newest first
-      loadedActivities.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      loadedActivities.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      
+      // Group by date
+      final grouped = <DateTime, List<CombinedActivityItem>>{};
+      for (final activity in loadedActivities) {
+        final dateKey = DateTime(activity.date.year, activity.date.month, activity.date.day);
+        grouped.putIfAbsent(dateKey, () => []).add(activity);
+      }
 
       setState(() {
         activities = loadedActivities;
+        groupedActivities = grouped;
         isLoading = false;
       });
     } catch (e) {
@@ -78,7 +88,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
-          "Project Activity", 
+          "Activity Feed", 
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)
         ),
         backgroundColor: Colors.white,
@@ -94,7 +104,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
           ? const Center(child: CircularProgressIndicator(color: primaryColor))
           : error != null
               ? _buildErrorState()
-              : _buildActivityList(),
+              : _buildTimelineLayout(),
     );
   }
 
@@ -117,7 +127,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
     );
   }
 
-  Widget _buildActivityList() {
+  Widget _buildTimelineLayout() {
     if (activities.isEmpty) {
       return Center(
         child: Column(
@@ -126,16 +136,16 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: primaryColor.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.timeline, size: 48, color: Colors.blue),
+              child: const Icon(Icons.timeline, size: 48, color: primaryColor),
             ),
             const SizedBox(height: 16),
             const Text('No activity yet', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
             Text(
-              'Project updates will appear here.',
+              'Site reports and queries will appear here.',
               style: TextStyle(color: Colors.grey[600]),
             ),
           ],
@@ -143,199 +153,616 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: activities.length,
-      itemBuilder: (context, index) {
-        final activity = activities[index];
-        final isLast = index == activities.length - 1;
-        return _buildActivityItem(activity, isLast, index);
-      },
+    // Sort dates in descending order (newest first)
+    final sortedDates = groupedActivities.keys.toList()
+      ..sort((a, b) => b.compareTo(a));
+
+    return RefreshIndicator(
+      onRefresh: _loadActivities,
+      color: primaryColor,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: sortedDates.length,
+        itemBuilder: (context, dateIndex) {
+          final date = sortedDates[dateIndex];
+          final dateActivities = groupedActivities[date]!;
+          
+          return _buildDateSection(date, dateActivities, dateIndex);
+        },
+      ),
     );
   }
 
-  Widget _buildActivityItem(ActivityFeed activity, bool isLast, int index) {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Timeline Line & Dot
-          SizedBox(
-            width: 40,
+  Widget _buildDateSection(DateTime date, List<CombinedActivityItem> dateActivities, int dateIndex) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Left side: Date column
+        SizedBox(
+          width: 70,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: _hexToColor(activity.activityTypeColor).withOpacity(0.1),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: _hexToColor(activity.activityTypeColor).withOpacity(0.5),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Icon(
-                    _getIconData(activity.activityTypeIcon),
-                    size: 16,
-                    color: _hexToColor(activity.activityTypeColor),
+                Text(
+                  DateFormat('d').format(date),
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: _isToday(date) ? primaryColor : const Color(0xFF1F2937),
                   ),
                 ),
-                if (!isLast)
-                  Expanded(
-                    child: Container(
-                      width: 2,
-                      color: Colors.grey[300],
+                Text(
+                  DateFormat('MMM').format(date).toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: _isToday(date) ? primaryColor : Colors.grey[600],
+                    letterSpacing: 1,
+                  ),
+                ),
+                Text(
+                  DateFormat('yyyy').format(date),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey[500],
+                  ),
+                ),
+                if (_isToday(date)) ...[
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'TODAY',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        color: primaryColor,
+                      ),
                     ),
                   ),
+                ],
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          // Content
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 24),
-              child: Container(
-                padding: const EdgeInsets.all(16),
+        ).animate().fadeIn(duration: 300.ms, delay: (dateIndex * 100).ms),
+        // Vertical timeline connector
+        Container(
+          width: 24,
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              Container(
+                width: 12,
+                height: 12,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  color: _isToday(date) ? primaryColor : Colors.grey[400],
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 2,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            activity.title,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                              color: Color(0xFF1F2937),
-                            ),
-                          ),
-                        ),
-                        Text(
-                          _formatTime(activity.createdAt),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _formatDate(activity.createdAt),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[400],
-                        fontWeight: FontWeight.w500
-                      ),
-                    ),
-                    if (activity.description != null && activity.description!.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        activity.description!,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF4B5563),
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 10,
-                          backgroundColor: Colors.grey[200],
-                          child: Text(
-                            activity.createdByName.isNotEmpty 
-                                ? activity.createdByName[0].toUpperCase() 
-                                : 'U',
-                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          activity.createdByName,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+                      color: (_isToday(date) ? primaryColor : Colors.grey).withOpacity(0.3),
+                      blurRadius: 4,
                     ),
                   ],
                 ),
               ),
+              Container(
+                width: 2,
+                height: dateActivities.length * 140.0, // Approximate height
+                color: Colors.grey[300],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        // Right side: Activity cards
+        Expanded(
+          child: Column(
+            children: dateActivities.asMap().entries.map((entry) {
+              final index = entry.key;
+              final activity = entry.value;
+              final isLast = index == dateActivities.length - 1;
+              return _buildActivityCard(activity, isLast, dateIndex * 10 + index);
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActivityCard(CombinedActivityItem activity, bool isLast, int index) {
+    final typeColor = _getTypeColor(activity.type);
+    final typeIcon = _getTypeIcon(activity.type);
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 24 : 12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: InkWell(
+          onTap: () => _showActivityDetails(activity),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header: Type badge + Time
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: typeColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(typeIcon, size: 14, color: typeColor),
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatType(activity.type),
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: typeColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      DateFormat('h:mm a').format(activity.timestamp),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                // Title
+                Text(
+                  activity.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+                // Description
+                if (activity.description != null && activity.description!.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    activity.description!,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF4B5563),
+                      height: 1.4,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                const SizedBox(height: 10),
+                // Footer: Status + Created By
+                Row(
+                  children: [
+                    if (activity.status != null) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(activity.status).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          activity.status!.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: _getStatusColor(activity.status),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
+                    const Spacer(),
+                    CircleAvatar(
+                      radius: 10,
+                      backgroundColor: Colors.grey[200],
+                      child: Text(
+                        activity.createdByName.isNotEmpty 
+                            ? activity.createdByName[0].toUpperCase() 
+                            : 'U',
+                        style: const TextStyle(
+                          fontSize: 10, 
+                          fontWeight: FontWeight.bold, 
+                          color: Colors.grey
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        activity.createdByName,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ).animate().fadeIn(duration: 300.ms, delay: (index * 30).ms).slideX(begin: 0.05);
+  }
+
+  void _showActivityDetails(CombinedActivityItem activity) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _ActivityDetailsSheet(activity: activity),
+    );
+  }
+
+  bool _isToday(DateTime date) {
+    final now = DateTime.now();
+    return date.year == now.year && date.month == now.month && date.day == now.day;
+  }
+
+  Color _getTypeColor(String type) {
+    switch (type.toUpperCase()) {
+      case 'SITE_REPORT':
+        return Colors.blue;
+      case 'QUERY':
+        return Colors.orange;
+      default:
+        return primaryColor;
+    }
+  }
+
+  IconData _getTypeIcon(String type) {
+    switch (type.toUpperCase()) {
+      case 'SITE_REPORT':
+        return Icons.description_outlined;
+      case 'QUERY':
+        return Icons.help_outline;
+      default:
+        return Icons.circle;
+    }
+  }
+
+  String _formatType(String type) {
+    switch (type.toUpperCase()) {
+      case 'SITE_REPORT':
+        return 'Site Report';
+      case 'QUERY':
+        return 'Query';
+      default:
+        return type;
+    }
+  }
+
+  Color _getStatusColor(String? status) {
+    if (status == null) return Colors.grey;
+    switch (status.toUpperCase()) {
+      case 'SUBMITTED':
+      case 'APPROVED':
+        return Colors.green;
+      case 'PENDING':
+      case 'IN_PROGRESS':
+        return Colors.orange;
+      case 'REJECTED':
+        return Colors.red;
+      case 'RESOLVED':
+      case 'ANSWERED':
+        return Colors.blue;
+      default:
+        return Colors.grey;
+    }
+  }
+}
+
+class _ActivityDetailsSheet extends StatelessWidget {
+  final CombinedActivityItem activity;
+
+  const _ActivityDetailsSheet({required this.activity});
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Handle
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    // Type Badge
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _getTypeColor(activity.type).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(_getTypeIcon(activity.type), size: 16, color: _getTypeColor(activity.type)),
+                              const SizedBox(width: 6),
+                              Text(
+                                _formatType(activity.type),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: _getTypeColor(activity.type),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Spacer(),
+                        if (activity.status != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _getStatusColor(activity.status).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              activity.status!.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: _getStatusColor(activity.status),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    // Title
+                    Text(
+                      activity.title,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F2937),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Description
+                    if (activity.description != null && activity.description!.isNotEmpty) ...[
+                      const Text(
+                        'Description',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        activity.description!,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Color(0xFF374151),
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                    // Date & Time
+                    _buildDetailRow(
+                      Icons.calendar_today_outlined,
+                      'Date',
+                      DateFormat('MMMM d, y').format(activity.date),
+                    ),
+                    _buildDetailRow(
+                      Icons.access_time,
+                      'Time',
+                      DateFormat('h:mm a').format(activity.timestamp),
+                    ),
+                    // Created By
+                    _buildDetailRow(
+                      Icons.person_outline,
+                      'Created By',
+                      activity.createdByName,
+                    ),
+                    // Additional Metadata
+                    if (activity.metadata != null && activity.metadata!.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      const Divider(),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Additional Details',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ...activity.metadata!.entries.map((entry) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                width: 120,
+                                child: Text(
+                                  _formatMetadataKey(entry.key),
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  '${entry.value}',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: Colors.grey[500]),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                ),
+              ],
             ),
           ),
         ],
       ),
-    ).animate().fadeIn(duration: 400.ms, delay: (index * 50).ms).slideX(begin: 0.1, duration: 400.ms);
+    );
   }
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
+  String _formatMetadataKey(String key) {
+    // Convert camelCase or snake_case to Title Case
+    return key
+        .replaceAllMapped(RegExp(r'([A-Z])'), (m) => ' ${m.group(1)}')
+        .replaceAll('_', ' ')
+        .trim()
+        .split(' ')
+        .map((word) => word.isNotEmpty 
+            ? '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}'
+            : '')
+        .join(' ');
+  }
 
-    if (difference.inDays == 0) {
-      return 'Today';
-    } else if (difference.inDays == 1) {
-      return 'Yesterday';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
-    } else {
-      return DateFormat('MMM d, y').format(date);
+  Color _getTypeColor(String type) {
+    switch (type.toUpperCase()) {
+      case 'SITE_REPORT':
+        return Colors.blue;
+      case 'QUERY':
+        return Colors.orange;
+      default:
+        return primaryColor;
     }
   }
 
-  String _formatTime(DateTime date) {
-    return DateFormat('h:mm a').format(date);
-  }
-
-  Color _hexToColor(String? hexString) {
-    if (hexString == null || hexString.isEmpty) return primaryColor;
-    try {
-      final buffer = StringBuffer();
-      if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
-      buffer.write(hexString.replaceFirst('#', ''));
-      return Color(int.parse(buffer.toString(), radix: 16));
-    } catch (e) {
-      return primaryColor;
+  IconData _getTypeIcon(String type) {
+    switch (type.toUpperCase()) {
+      case 'SITE_REPORT':
+        return Icons.description_outlined;
+      case 'QUERY':
+        return Icons.help_outline;
+      default:
+        return Icons.circle;
     }
   }
 
-  IconData _getIconData(String? iconName) {
-    if (iconName == null) return Icons.circle;
-    switch (iconName.toLowerCase()) {
-      case 'document': return Icons.description_outlined;
-      case 'image': return Icons.image_outlined;
-      case 'comment': return Icons.chat_bubble_outline;
-      case 'check': return Icons.check_circle_outline;
-      case 'alert': return Icons.warning_amber_rounded;
-      case 'info': return Icons.info_outline;
-      case 'upload': return Icons.upload_file;
-      case 'edit': return Icons.edit_outlined;
-      case 'delete': return Icons.delete_outline;
-      case 'money': return Icons.attach_money;
-      case 'schedule': return Icons.calendar_today;
-      case 'user': return Icons.person_outline;
-      case 'settings': return Icons.settings_outlined;
-      default: return Icons.circle;
+  String _formatType(String type) {
+    switch (type.toUpperCase()) {
+      case 'SITE_REPORT':
+        return 'Site Report';
+      case 'QUERY':
+        return 'Query';
+      default:
+        return type;
+    }
+  }
+
+  Color _getStatusColor(String? status) {
+    if (status == null) return Colors.grey;
+    switch (status.toUpperCase()) {
+      case 'SUBMITTED':
+      case 'APPROVED':
+        return Colors.green;
+      case 'PENDING':
+      case 'IN_PROGRESS':
+        return Colors.orange;
+      case 'REJECTED':
+        return Colors.red;
+      case 'RESOLVED':
+      case 'ANSWERED':
+        return Colors.blue;
+      default:
+        return Colors.grey;
     }
   }
 }

@@ -60,6 +60,11 @@ const String projectTimelineScreenRoute = "project_timeline";
 const String projectMilestonesScreenRoute = "project_milestones";
 const String projectGalleryScreenRoute = "project_gallery";
 
+// New Module Routes
+const String projectSnagsScreenRoute = "project_snags";
+const String projectSiteVisitsScreenRoute = "project_site_visits";
+const String projectActivityFeedScreenRoute = "project_activity_feed";
+
 // Helper function to build project detail route with ID
 String projectDetailsRoute(dynamic projectId) => 'project_details/$projectId';
 String projectDocumentsRoute(dynamic projectId) => 'documents/$projectId';
@@ -69,6 +74,9 @@ String projectScheduleRoute(dynamic projectId) => 'schedule/$projectId';
 String projectCctvRoute(dynamic projectId) => 'cctv_surveillance/$projectId';
 String projectGalleryRoute(dynamic projectId) => 'project_gallery/$projectId';
 String projectActivityRoute(dynamic projectId) => 'project_activity/$projectId';
+String projectSnagsRoute(dynamic projectId) => 'project_snags/$projectId';
+String projectSiteVisitsRoute(dynamic projectId) => 'project_site_visits/$projectId';
+String projectActivityFeedRoute(dynamic projectId) => 'project_activity_feed/$projectId';
 
 // Dashboard Routes
 const String customerDashboardScreenRoute = "customer_dashboard";

@@ -181,6 +181,50 @@ class ProjectModuleService {
     }
   }
 
+  /// Get combined activity feed with site reports and queries
+  Future<List<CombinedActivityItem>> getCombinedActivities(String projectId, {String? type}) async {
+    var uri = Uri.parse('$baseUrl/api/projects/$projectId/activities/combined');
+    if (type != null) {
+      uri = uri.replace(queryParameters: {'type': type});
+    }
+
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 200) {
+      final apiResponse = ApiResponse.fromJson(
+        json.decode(response.body),
+        (data) => (data as List).map((e) => CombinedActivityItem.fromJson(e)).toList(),
+      );
+      return apiResponse.data ?? [];
+    } else {
+      throw Exception('Failed to load combined activities');
+    }
+  }
+
+  /// Get combined activities grouped by date
+  Future<Map<DateTime, List<CombinedActivityItem>>> getCombinedActivitiesGrouped(String projectId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/projects/$projectId/activities/combined/grouped'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      if (jsonData['success'] == true && jsonData['data'] != null) {
+        final Map<String, dynamic> data = jsonData['data'];
+        return data.map((key, value) {
+          return MapEntry(
+            DateTime.parse(key),
+            (value as List).map((e) => CombinedActivityItem.fromJson(e)).toList(),
+          );
+        });
+      }
+      return {};
+    } else {
+      throw Exception('Failed to load grouped activities');
+    }
+  }
+
   // ===== GALLERY METHODS =====
 
   Future<List<GalleryImage>> getGalleryImages(String projectId, {DateTime? date}) async {
@@ -199,6 +243,30 @@ class ProjectModuleService {
       return apiResponse.data ?? [];
     } else {
       throw Exception('Failed to load gallery images');
+    }
+  }
+
+  /// Get gallery images grouped by date
+  Future<Map<DateTime, List<GalleryImage>>> getGalleryImagesGrouped(String projectId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/projects/$projectId/gallery/grouped'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      if (jsonData['success'] == true && jsonData['data'] != null) {
+        final Map<String, dynamic> data = jsonData['data'];
+        return data.map((key, value) {
+          return MapEntry(
+            DateTime.parse(key),
+            (value as List).map((e) => GalleryImage.fromJson(e)).toList(),
+          );
+        });
+      }
+      return {};
+    } else {
+      throw Exception('Failed to load grouped gallery images');
     }
   }
 
@@ -245,7 +313,7 @@ class ProjectModuleService {
     }
   }
 
-  // ===== OBSERVATION METHODS =====
+  // ===== OBSERVATION (SNAGS) METHODS =====
 
   Future<List<Observation>> getObservations(String projectId, {String? status}) async {
     var uri = Uri.parse('$baseUrl/api/projects/$projectId/observations');
@@ -263,6 +331,60 @@ class ProjectModuleService {
       return apiResponse.data ?? [];
     } else {
       throw Exception('Failed to load observations');
+    }
+  }
+
+  /// Get active (OPEN, IN_PROGRESS) observations/snags
+  Future<List<Observation>> getActiveObservations(String projectId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/projects/$projectId/observations/active'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final apiResponse = ApiResponse.fromJson(
+        json.decode(response.body),
+        (data) => (data as List).map((e) => Observation.fromJson(e)).toList(),
+      );
+      return apiResponse.data ?? [];
+    } else {
+      throw Exception('Failed to load active observations');
+    }
+  }
+
+  /// Get resolved observations/snags
+  Future<List<Observation>> getResolvedObservations(String projectId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/projects/$projectId/observations/resolved'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final apiResponse = ApiResponse.fromJson(
+        json.decode(response.body),
+        (data) => (data as List).map((e) => Observation.fromJson(e)).toList(),
+      );
+      return apiResponse.data ?? [];
+    } else {
+      throw Exception('Failed to load resolved observations');
+    }
+  }
+
+  /// Get observation counts (active, resolved, total)
+  Future<Map<String, int>> getObservationCounts(String projectId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/projects/$projectId/observations/counts'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      if (jsonData['success'] == true && jsonData['data'] != null) {
+        return Map<String, int>.from(jsonData['data']);
+      }
+      return {};
+    } else {
+      throw Exception('Failed to load observation counts');
     }
   }
 
@@ -478,6 +600,42 @@ class ProjectModuleService {
       return apiResponse.data ?? [];
     } else {
       throw Exception('Failed to load site visits');
+    }
+  }
+
+  /// Get completed site visits (with checkout time)
+  Future<List<SiteVisit>> getCompletedSiteVisits(String projectId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/projects/$projectId/site-visits/completed'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final apiResponse = ApiResponse.fromJson(
+        json.decode(response.body),
+        (data) => (data as List).map((e) => SiteVisit.fromJson(e)).toList(),
+      );
+      return apiResponse.data ?? [];
+    } else {
+      throw Exception('Failed to load completed site visits');
+    }
+  }
+
+  /// Get ongoing site visits (without checkout time)
+  Future<List<SiteVisit>> getOngoingSiteVisits(String projectId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/projects/$projectId/site-visits/ongoing'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final apiResponse = ApiResponse.fromJson(
+        json.decode(response.body),
+        (data) => (data as List).map((e) => SiteVisit.fromJson(e)).toList(),
+      );
+      return apiResponse.data ?? [];
+    } else {
+      throw Exception('Failed to load ongoing site visits');
     }
   }
 

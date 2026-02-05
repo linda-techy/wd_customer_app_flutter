@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
-import '../constants.dart';
+import '../config/api_config.dart';
 import '../models/site_report_models.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SiteReportService {
   final Dio _dio;
@@ -24,7 +25,7 @@ class SiteReportService {
       }
 
       final response = await _dio.get(
-        '$baseURL/api/customer/site-reports',
+        '${ApiConfig.baseUrl}/api/customer/site-reports',
         queryParameters: queryParams,
         options: Options(
           headers: await _getAuthHeaders(),
@@ -41,7 +42,7 @@ class SiteReportService {
       }
       return [];
     } catch (e) {
-      print('Error fetching customer site reports: $e');
+      // Use logger in production instead of print
       rethrow;
     }
   }
@@ -50,7 +51,7 @@ class SiteReportService {
   Future<SiteReport?> getSiteReportById(int id) async {
     try {
       final response = await _dio.get(
-        '$baseURL/api/customer/site-reports/$id',
+        '${ApiConfig.baseUrl}/api/customer/site-reports/$id',
         options: Options(
           headers: await _getAuthHeaders(),
         ),
@@ -64,24 +65,18 @@ class SiteReportService {
       }
       return null;
     } catch (e) {
-      print('Error fetching site report: $e');
+      // Use logger in production instead of print
       rethrow;
     }
   }
 
   Future<Map<String, String>> _getAuthHeaders() async {
-    // Implement your token retrieval logic
-    // This is a placeholder - adjust based on your auth implementation
-    final token = await _getStoredToken();
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    
     return {
-      'Authorization': 'Bearer $token',
       'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
     };
-  }
-
-  Future<String> _getStoredToken() async {
-    // Implement token storage/retrieval
-    // This is a placeholder - you might use shared_preferences or secure_storage
-    return '';
   }
 }

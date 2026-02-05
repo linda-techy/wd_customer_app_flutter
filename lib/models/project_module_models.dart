@@ -661,3 +661,45 @@ class ApiResponse<T> {
   }
 }
 
+/// Combined activity item for timeline display (site reports + queries)
+class CombinedActivityItem {
+  final int id;
+  final String type; // "SITE_REPORT" or "QUERY"
+  final String title;
+  final String? description;
+  final DateTime timestamp;
+  final DateTime date;
+  final String? status;
+  final String createdByName;
+  final Map<String, dynamic>? metadata;
+
+  CombinedActivityItem({
+    required this.id,
+    required this.type,
+    required this.title,
+    this.description,
+    required this.timestamp,
+    required this.date,
+    this.status,
+    required this.createdByName,
+    this.metadata,
+  });
+
+  factory CombinedActivityItem.fromJson(Map<String, dynamic> json) {
+    return CombinedActivityItem(
+      id: json['id'],
+      type: json['type'],
+      title: json['title'],
+      description: json['description'],
+      timestamp: DateTime.parse(json['timestamp']),
+      date: DateTime.parse(json['date']),
+      status: json['status'],
+      createdByName: json['createdByName'],
+      metadata: json['metadata'],
+    );
+  }
+
+  bool get isSiteReport => type == 'SITE_REPORT';
+  bool get isQuery => type == 'QUERY';
+}
+

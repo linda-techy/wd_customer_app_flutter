@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../../design_tokens/app_colors.dart';
 import '../../../../constants.dart';
 import '../../../../components/animations/hover_card.dart';
 import '../../../../components/animations/fade_entry.dart';
@@ -120,7 +119,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                           // Payment Items
                           ..._schedules.asMap().entries.map((entry) {
                             return _buildPaymentItem(entry.value, entry.key);
-                          }).toList(),
+                          }),
                         ],
                       ),
                     ),

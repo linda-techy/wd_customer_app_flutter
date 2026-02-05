@@ -11,6 +11,9 @@ import '../../../models/project_phase.dart';
 import 'design_package_selection_screen.dart';
 import '../../site_reports/site_reports_screen.dart';
 import '../../payments/views/payments_screen.dart';
+import 'activity_feed_screen.dart';
+import 'snags_screen.dart';
+import 'site_visits_screen.dart';
 
 class ProjectDetailsScreen extends StatefulWidget {
   const ProjectDetailsScreen({super.key, this.project, this.projectId});
@@ -588,13 +591,21 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
 
     switch (phase) {
       case ProjectPhase.planning:
+        list.add(_ActionItem('Activity Feed', Icons.timeline, Colors.indigo, () {
+          nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectId)));
+        }));
         list.add(_ActionItem('Site Reports', Icons.assignment_outlined, Colors.orange, () {
           nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: projectId.isNotEmpty ? int.tryParse(projectId) : null)));
         }));
         list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectId.isNotEmpty ? projectDocumentsRoute(projectId) : documentsScreenRoute)));
-        list.add(_ActionItem('Timeline', Icons.timeline, Colors.purple, () { /* TODO: timeline screen */ }));
+        list.add(_ActionItem('Site Visits', Icons.person_pin_circle_outlined, Colors.purple, () {
+          nav.push(MaterialPageRoute(builder: (_) => SiteVisitsScreen(projectId: projectId)));
+        }));
         break;
       case ProjectPhase.design:
+        list.add(_ActionItem('Activity Feed', Icons.timeline, Colors.indigo, () {
+          nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectId)));
+        }));
         list.add(_ActionItem('Design Package', Icons.design_services_outlined, Colors.purple, () {
           if (projectId.isNotEmpty) {
             final sqFeet = _projectDetails?.sqFeet ?? 0.0;
@@ -605,19 +616,38 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: projectId.isNotEmpty ? int.tryParse(projectId) : null)));
         }));
         list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectId.isNotEmpty ? projectDocumentsRoute(projectId) : documentsScreenRoute)));
+        list.add(_ActionItem('Site Visits', Icons.person_pin_circle_outlined, Colors.teal, () {
+          nav.push(MaterialPageRoute(builder: (_) => SiteVisitsScreen(projectId: projectId)));
+        }));
         break;
       case ProjectPhase.construction:
-        list.add(_ActionItem('Site Updates', Icons.camera_alt_outlined, Colors.green, () => nav.pushNamed(projectId.isNotEmpty ? siteUpdatesScreenRoute : siteUpdatesScreenRoute)));
+        list.add(_ActionItem('Activity Feed', Icons.timeline, Colors.indigo, () {
+          nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectId)));
+        }));
+        list.add(_ActionItem('Gallery', Icons.photo_library_outlined, Colors.teal, () => nav.pushNamed(projectId.isNotEmpty ? projectGalleryRoute(projectId) : projectGalleryScreenRoute)));
+        list.add(_ActionItem('Site Visits', Icons.person_pin_circle_outlined, Colors.purple, () {
+          nav.push(MaterialPageRoute(builder: (_) => SiteVisitsScreen(projectId: projectId)));
+        }));
+        list.add(_ActionItem('Snags', Icons.warning_amber_rounded, Colors.red, () {
+          nav.push(MaterialPageRoute(builder: (_) => SnagsScreen(projectId: projectId)));
+        }));
         list.add(_ActionItem('Site Reports', Icons.assignment_outlined, Colors.orange, () {
           nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: projectId.isNotEmpty ? int.tryParse(projectId) : null)));
         }));
-        list.add(_ActionItem('Gallery', Icons.photo_library_outlined, Colors.teal, () => nav.pushNamed(projectId.isNotEmpty ? projectGalleryRoute(projectId) : projectGalleryScreenRoute)));
         list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectId.isNotEmpty ? projectDocumentsRoute(projectId) : documentsScreenRoute)));
         list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
           nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: projectId.isNotEmpty ? projectId : null)));
         }));
+        list.add(_ActionItem('CCTV', Icons.videocam_outlined, Colors.grey, () => nav.pushNamed(projectId.isNotEmpty ? projectCctvRoute(projectId) : cctvSurveillanceScreenRoute)));
         break;
       case ProjectPhase.completed:
+        list.add(_ActionItem('Activity Feed', Icons.timeline, Colors.indigo, () {
+          nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectId)));
+        }));
+        list.add(_ActionItem('Gallery', Icons.photo_library_outlined, Colors.teal, () => nav.pushNamed(projectId.isNotEmpty ? projectGalleryRoute(projectId) : projectGalleryScreenRoute)));
+        list.add(_ActionItem('Snags', Icons.warning_amber_rounded, Colors.red, () {
+          nav.push(MaterialPageRoute(builder: (_) => SnagsScreen(projectId: projectId)));
+        }));
         list.add(_ActionItem('Site Reports', Icons.assignment_outlined, Colors.orange, () {
           nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: projectId.isNotEmpty ? int.tryParse(projectId) : null)));
         }));

@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../constants.dart';
+import '../config/api_config.dart';
 import '../models/payment_models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,7 +25,7 @@ class PaymentService {
       }
 
       final response = await _dio.get(
-        '$baseURL/api/customer/payments',
+        '${ApiConfig.baseUrl}/api/customer/payments',
         queryParameters: queryParams,
         options: Options(
           headers: await _getAuthHeaders(),
@@ -42,7 +42,7 @@ class PaymentService {
       }
       return [];
     } catch (e) {
-      print('Error fetching customer payments: $e');
+      // Use logger in production instead of print
       rethrow;
     }
   }
@@ -51,7 +51,7 @@ class PaymentService {
   Future<PaymentSchedule?> getPaymentScheduleById(int id) async {
     try {
       final response = await _dio.get(
-        '$baseURL/api/customer/payments/$id',
+        '${ApiConfig.baseUrl}/api/customer/payments/$id',
         options: Options(
           headers: await _getAuthHeaders(),
         ),
@@ -65,7 +65,7 @@ class PaymentService {
       }
       return null;
     } catch (e) {
-      print('Error fetching payment schedule: $e');
+      // Use logger in production instead of print
       rethrow;
     }
   }
