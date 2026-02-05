@@ -55,7 +55,7 @@ class _EntryPointState extends State<EntryPoint> {
         _currentIndex = 0; // Ensure Home tab is selected
         _forceHome = false; // consume the flag
       } else if (_forceProjectDashboard) {
-        _currentIndex = 4; // Project tab
+        _currentIndex = 3; // Dashboard tab
         _forceProjectDashboard = false;
       }
     });

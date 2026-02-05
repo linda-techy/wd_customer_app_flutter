@@ -5,7 +5,9 @@ import '../../services/site_report_service.dart';
 import 'site_report_detail_screen.dart';
 
 class SiteReportsScreen extends StatefulWidget {
-  const SiteReportsScreen({super.key});
+  final int? projectId; // Optional: filter by specific project
+  
+  const SiteReportsScreen({super.key, this.projectId});
 
   @override
   State<SiteReportsScreen> createState() => _SiteReportsScreenState();
@@ -30,7 +32,9 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
     });
 
     try {
-      final reports = await _siteReportService.getCustomerSiteReports();
+      final reports = await _siteReportService.getCustomerSiteReports(
+        projectId: widget.projectId,
+      );
       setState(() {
         _reports = reports;
         _isLoading = false;
