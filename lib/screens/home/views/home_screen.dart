@@ -103,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final padding = ResponsiveSpacing.getPadding(context);
     final horizontalPadding = ResponsiveSpacing.getHorizontalPadding(context);
     final gridSpacing = ResponsiveSpacing.getGridSpacing(context);
-    final featuredHeight = isDesktop ? 320.0 : (isTablet ? 280.0 : 240.0);
+    final featuredHeight = isDesktop ? 360.0 : (isTablet ? 320.0 : 280.0);
     final projectCardWidth = isDesktop ? 280.0 : (isTablet ? 260.0 : 240.0);
     final fabPadding = isDesktop ? 16.0 : (isTablet ? 14.0 : 12.0);
     final fabIconSize = isDesktop ? 28.0 : (isTablet ? 26.0 : 24.0);
