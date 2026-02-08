@@ -646,6 +646,8 @@ class ProjectModuleService {
     String? weatherConditions,
     int? visitorRoleId,
     List<String>? attendees,
+    required double latitude,
+    required double longitude,
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/api/projects/$projectId/site-visits/check-in'),
@@ -656,6 +658,8 @@ class ProjectModuleService {
         'weatherConditions': weatherConditions,
         'visitorRoleId': visitorRoleId,
         'attendees': attendees,
+        'latitude': latitude,
+        'longitude': longitude,
       }),
     );
 
@@ -666,7 +670,8 @@ class ProjectModuleService {
       );
       return apiResponse.data!;
     } else {
-      throw Exception('Failed to check in');
+      final body = json.decode(response.body);
+      throw Exception(body['message'] ?? 'Failed to check in');
     }
   }
 
@@ -675,6 +680,8 @@ class ProjectModuleService {
     int visitId, {
     String? notes,
     String? findings,
+    required double latitude,
+    required double longitude,
   }) async {
     final response = await http.put(
       Uri.parse('$baseUrl/api/projects/$projectId/site-visits/$visitId/check-out'),
@@ -682,6 +689,8 @@ class ProjectModuleService {
       body: json.encode({
         'notes': notes,
         'findings': findings,
+        'latitude': latitude,
+        'longitude': longitude,
       }),
     );
 
@@ -692,7 +701,8 @@ class ProjectModuleService {
       );
       return apiResponse.data!;
     } else {
-      throw Exception('Failed to check out');
+      final body = json.decode(response.body);
+      throw Exception(body['message'] ?? 'Failed to check out');
     }
   }
 

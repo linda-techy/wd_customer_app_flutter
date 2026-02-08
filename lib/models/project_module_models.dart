@@ -477,6 +477,12 @@ class SiteVisit {
   final String? location;
   final String? weatherConditions;
   final List<String>? attendees;
+  final double? checkInLatitude;
+  final double? checkInLongitude;
+  final double? checkOutLatitude;
+  final double? checkOutLongitude;
+  final double? distanceFromProjectCheckIn;
+  final double? distanceFromProjectCheckOut;
 
   SiteVisit({
     required this.id,
@@ -493,6 +499,12 @@ class SiteVisit {
     this.location,
     this.weatherConditions,
     this.attendees,
+    this.checkInLatitude,
+    this.checkInLongitude,
+    this.checkOutLatitude,
+    this.checkOutLongitude,
+    this.distanceFromProjectCheckIn,
+    this.distanceFromProjectCheckOut,
   });
 
   factory SiteVisit.fromJson(Map<String, dynamic> json) {
@@ -511,7 +523,30 @@ class SiteVisit {
       location: json['location'],
       weatherConditions: json['weatherConditions'],
       attendees: json['attendees'] != null ? List<String>.from(json['attendees']) : null,
+      checkInLatitude: json['checkInLatitude']?.toDouble(),
+      checkInLongitude: json['checkInLongitude']?.toDouble(),
+      checkOutLatitude: json['checkOutLatitude']?.toDouble(),
+      checkOutLongitude: json['checkOutLongitude']?.toDouble(),
+      distanceFromProjectCheckIn: json['distanceFromProjectCheckIn']?.toDouble(),
+      distanceFromProjectCheckOut: json['distanceFromProjectCheckOut']?.toDouble(),
     );
+  }
+
+  /// Format distance for display (e.g., "1.5 km" or "350 m")
+  String? get formattedCheckInDistance {
+    if (distanceFromProjectCheckIn == null) return null;
+    if (distanceFromProjectCheckIn! < 1.0) {
+      return '${(distanceFromProjectCheckIn! * 1000).round()} m';
+    }
+    return '${distanceFromProjectCheckIn!.toStringAsFixed(1)} km';
+  }
+
+  String? get formattedCheckOutDistance {
+    if (distanceFromProjectCheckOut == null) return null;
+    if (distanceFromProjectCheckOut! < 1.0) {
+      return '${(distanceFromProjectCheckOut! * 1000).round()} m';
+    }
+    return '${distanceFromProjectCheckOut!.toStringAsFixed(1)} km';
   }
 }
 

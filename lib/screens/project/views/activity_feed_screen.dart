@@ -20,8 +20,10 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   bool isLoading = true;
   String? error;
   List<CombinedActivityItem> activities = [];
+  List<CombinedActivityItem> filteredActivities = [];
   Map<DateTime, List<CombinedActivityItem>> groupedActivities = {};
   ProjectModuleService? service;
+  String _selectedFilter = 'ALL'; // ALL, SITE_REPORT, QUERY
 
   @override
   void initState() {
@@ -57,25 +59,44 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
       
       // Sort by newest first
       loadedActivities.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-      
-      // Group by date
-      final grouped = <DateTime, List<CombinedActivityItem>>{};
-      for (final activity in loadedActivities) {
-        final dateKey = DateTime(activity.date.year, activity.date.month, activity.date.day);
-        grouped.putIfAbsent(dateKey, () => []).add(activity);
-      }
 
       setState(() {
         activities = loadedActivities;
-        groupedActivities = grouped;
         isLoading = false;
       });
+      _applyFilter();
     } catch (e) {
       setState(() {
         error = 'Failed to load activities: $e';
         isLoading = false;
       });
     }
+  }
+
+  void _applyFilter() {
+    final filtered = _selectedFilter == 'ALL'
+        ? activities
+        : activities.where((a) => a.type == _selectedFilter).toList();
+
+    // Group by date
+    final grouped = <DateTime, List<CombinedActivityItem>>{};
+    for (final activity in filtered) {
+      final dateKey = DateTime(activity.date.year, activity.date.month, activity.date.day);
+      grouped.putIfAbsent(dateKey, () => []).add(activity);
+    }
+
+    setState(() {
+      filteredActivities = filtered;
+      groupedActivities = grouped;
+    });
+  }
+
+  void _setFilter(String filter) {
+    if (_selectedFilter == filter) return;
+    setState(() {
+      _selectedFilter = filter;
+    });
+    _applyFilter();
   }
 
   @override
@@ -104,7 +125,66 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
           ? const Center(child: CircularProgressIndicator(color: primaryColor))
           : error != null
               ? _buildErrorState()
-              : _buildTimelineLayout(),
+              : Column(
+                  children: [
+                    _buildFilterChips(),
+                    Expanded(child: _buildTimelineLayout()),
+                  ],
+                ),
+    );
+  }
+
+  Widget _buildFilterChips() {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          _buildFilterChip('ALL', 'All', primaryColor, Icons.list),
+          const SizedBox(width: 8),
+          _buildFilterChip('SITE_REPORT', 'Site Reports', Colors.blue, Icons.description_outlined),
+          const SizedBox(width: 8),
+          _buildFilterChip('QUERY', 'Queries', Colors.orange, Icons.help_outline),
+        ],
+      ),
+    ).animate().fadeIn(duration: 300.ms).slideY(begin: -0.1);
+  }
+
+  Widget _buildFilterChip(String value, String label, Color color, IconData icon) {
+    final isSelected = _selectedFilter == value;
+    return GestureDetector(
+      onTap: () => _setFilter(value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withOpacity(0.15) : Colors.grey[100],
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? color.withOpacity(0.4) : Colors.transparent,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: isSelected ? color : Colors.grey[600],
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected ? color : Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -128,7 +208,10 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   }
 
   Widget _buildTimelineLayout() {
-    if (activities.isEmpty) {
+    if (filteredActivities.isEmpty) {
+      final isFiltered = _selectedFilter != 'ALL';
+      final filterLabel = _selectedFilter == 'SITE_REPORT' ? 'site reports' : 
+                          _selectedFilter == 'QUERY' ? 'queries' : 'activities';
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -142,12 +225,24 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
               child: const Icon(Icons.timeline, size: 48, color: primaryColor),
             ),
             const SizedBox(height: 16),
-            const Text('No activity yet', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+            Text(
+              isFiltered ? 'No $filterLabel found' : 'No activity yet',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
             const SizedBox(height: 8),
             Text(
-              'Site reports and queries will appear here.',
+              isFiltered 
+                  ? 'Try changing the filter to see other activities.'
+                  : 'Site reports and queries will appear here.',
               style: TextStyle(color: Colors.grey[600]),
             ),
+            if (isFiltered) ...[
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () => _setFilter('ALL'),
+                child: const Text('Show All Activities', style: TextStyle(color: primaryColor)),
+              ),
+            ],
           ],
         ),
       );

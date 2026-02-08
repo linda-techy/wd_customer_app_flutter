@@ -421,6 +421,27 @@ class _SiteVisitsScreenState extends State<SiteVisitsScreen>
                   ],
                 ),
               ],
+              // GPS Distance Info
+              if (visit.formattedCheckInDistance != null) ...[
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.gps_fixed, size: 14, color: Colors.grey[500]),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Check-in: ${visit.formattedCheckInDistance} from site',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    ),
+                    if (visit.formattedCheckOutDistance != null) ...[
+                      const SizedBox(width: 12),
+                      Text(
+                        'Check-out: ${visit.formattedCheckOutDistance}',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
             ],
           ),
         ),
@@ -641,6 +662,53 @@ class _SiteVisitDetailsSheet extends StatelessWidget {
                         'Notes',
                         visit.notes!,
                       ),
+                    // GPS Location Details
+                    if (visit.checkInLatitude != null && visit.checkInLongitude != null) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.gps_fixed, size: 16, color: Colors.grey[700]),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'GPS Location Data',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            _buildGpsRow(
+                              'Check-in',
+                              visit.checkInLatitude!,
+                              visit.checkInLongitude!,
+                              visit.formattedCheckInDistance,
+                            ),
+                            if (visit.checkOutLatitude != null && visit.checkOutLongitude != null) ...[
+                              const SizedBox(height: 6),
+                              _buildGpsRow(
+                                'Check-out',
+                                visit.checkOutLatitude!,
+                                visit.checkOutLongitude!,
+                                visit.formattedCheckOutDistance,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -678,6 +746,42 @@ class _SiteVisitDetailsSheet extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildGpsRow(String label, double lat, double lng, String? distance) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 70,
+          child: Text(
+            label,
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            '${lat.toStringAsFixed(5)}, ${lng.toStringAsFixed(5)}',
+            style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+          ),
+        ),
+        if (distance != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              distance,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Colors.green,
+              ),
+            ),
+          ),
+      ],
     );
   }
 
