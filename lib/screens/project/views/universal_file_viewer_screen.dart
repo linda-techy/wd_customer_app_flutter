@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -114,7 +114,7 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
 
       return baseUri.resolveUri(uri).toString();
     } catch (e) {
-      print('Failed to resolve file URL $url: $e');
+      debugPrint('Failed to resolve file URL $url: $e');
       return url;
     }
   }
@@ -141,10 +141,10 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
         throw Exception('No authentication token available');
       }
 
-      print('=== LOADING FILE ===');
-      print('URL: $_resolvedFileUrl');
-      print('Token: ${token.substring(0, 20)}...');
-      print('Filename: ${widget.filename}');
+      debugPrint('=== LOADING FILE ===');
+      debugPrint('URL: $_resolvedFileUrl');
+      debugPrint('Token: ${token.substring(0, 20)}...');
+      debugPrint('Filename: ${widget.filename}');
 
       final dio = Dio();
 
@@ -165,7 +165,7 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
             'Accept': 'application/pdf, application/octet-stream, */*',
           },
           validateStatus: (status) {
-            print('Response status: $status');
+            debugPrint('Response status: $status');
             return status != null && status < 500;
           },
         ),
@@ -174,18 +174,18 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
             setState(() {
               _downloadProgress = received / total;
             });
-            print(
+            debugPrint(
                 'Download progress: ${(received / total * 100).toStringAsFixed(1)}%');
           }
         },
       );
 
-      print('Response status code: ${response.statusCode}');
-      print('Response headers: ${response.headers}');
-      print('Content-Type: ${response.headers.value('content-type')}');
-      print('Content-Length: ${response.headers.value('content-length')}');
-      print('Response data type: ${response.data.runtimeType}');
-      print('Response data length: ${response.data?.length ?? 0}');
+      debugPrint('Response status code: ${response.statusCode}');
+      debugPrint('Response headers: ${response.headers}');
+      debugPrint('Content-Type: ${response.headers.value('content-type')}');
+      debugPrint('Content-Length: ${response.headers.value('content-length')}');
+      debugPrint('Response data type: ${response.data.runtimeType}');
+      debugPrint('Response data length: ${response.data?.length ?? 0}');
 
       if (response.statusCode == 401 || response.statusCode == 403) {
         throw Exception('Authentication failed. Please log in again.');
@@ -197,14 +197,14 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
         if (response.data != null) {
           try {
             final errorText = String.fromCharCodes(response.data);
-            print('Error response body: $errorText');
+            debugPrint('Error response body: $errorText');
 
             // Try to parse JSON error
             if (errorText.trim().startsWith('{')) {
               errorMsg = errorText;
             }
           } catch (e) {
-            print('Could not decode error response');
+            debugPrint('Could not decode error response');
           }
         }
         throw Exception(errorMsg);
@@ -225,37 +225,37 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
             'Unexpected response data type: ${response.data.runtimeType}');
       }
 
-      print('Converted to bytes: ${bytes.length}');
+      debugPrint('Converted to bytes: ${bytes.length}');
 
       // Verify file type by checking header
       if (bytes.length > 4) {
         final header = String.fromCharCodes(bytes.sublist(0, 4));
-        print('File header: $header');
+        debugPrint('File header: $header');
 
         // Also check first 20 bytes for debugging
         final first20 = bytes.length >= 20
             ? String.fromCharCodes(bytes.sublist(0, 20))
             : String.fromCharCodes(bytes);
-        print('First 20 bytes: $first20');
+        debugPrint('First 20 bytes: $first20');
 
         // Check if it's HTML error page
         if (header.toLowerCase().contains('<!do') ||
             header.toLowerCase().contains('<htm')) {
-          print('ERROR: Received HTML instead of file!');
+          debugPrint('ERROR: Received HTML instead of file!');
           final htmlContent = String.fromCharCodes(
               bytes.length > 1000 ? bytes.sublist(0, 1000) : bytes);
-          print('HTML content preview: $htmlContent');
+          debugPrint('HTML content preview: $htmlContent');
           throw Exception(
               'Server returned HTML error page instead of file. Check authentication and URL.');
         }
 
         // For PDFs, verify header
         if (_detectedFileType == FileType.pdf && header != '%PDF') {
-          print('WARNING: File does not appear to be a valid PDF');
-          print('Expected: %PDF, Got: $header');
+          debugPrint('WARNING: File does not appear to be a valid PDF');
+          debugPrint('Expected: %PDF, Got: $header');
           // Don't throw, let the PDF viewer handle it
         } else if (_detectedFileType == FileType.pdf) {
-          print('✓ Valid PDF header detected');
+          debugPrint('✓ Valid PDF header detected');
         }
       } else {
         throw Exception('File too small to be valid: ${bytes.length} bytes');
@@ -267,7 +267,7 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
           _fileBytes = bytes;
           _isLoading = false;
         });
-        print('✓ File loaded successfully (web): ${bytes.length} bytes');
+        debugPrint('✓ File loaded successfully (web): ${bytes.length} bytes');
       } else {
         // On mobile, save to file system
         final filePath = await saveFileToDevice(bytes, widget.filename);
@@ -276,13 +276,13 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
           _fileBytes = bytes; // Also keep in memory as fallback
           _isLoading = false;
         });
-        print('✓ File loaded successfully (mobile): $filePath');
+        debugPrint('✓ File loaded successfully (mobile): $filePath');
       }
     } on DioException catch (e, stackTrace) {
-      print('ERROR: DioException - ${e.type}');
-      print('Message: ${e.message}');
-      print('Response: ${e.response?.data}');
-      print('Stack trace: $stackTrace');
+      debugPrint('ERROR: DioException - ${e.type}');
+      debugPrint('Message: ${e.message}');
+      debugPrint('Response: ${e.response?.data}');
+      debugPrint('Stack trace: $stackTrace');
 
       String errorMsg = 'Failed to load file';
       if (e.type == DioExceptionType.connectionTimeout) {
@@ -306,8 +306,8 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
         _isLoading = false;
       });
     } catch (e, stackTrace) {
-      print('ERROR loading file: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('ERROR loading file: $e');
+      debugPrint('Stack trace: $stackTrace');
       setState(() {
         _error = 'Failed to load file: $e';
         _isLoading = false;
@@ -327,7 +327,7 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
     try {
       // If we already have the bytes, just download them
       if (_fileBytes != null) {
-        print(
+        debugPrint(
             'Using cached file bytes for download: ${_fileBytes!.length} bytes');
         await downloadFileToDevice(_fileBytes!, widget.filename);
 
@@ -352,8 +352,8 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
         throw Exception('No authentication token available');
       }
 
-      print('=== DOWNLOADING FILE ===');
-      print('URL: $_resolvedFileUrl');
+      debugPrint('=== DOWNLOADING FILE ===');
+      debugPrint('URL: $_resolvedFileUrl');
 
       final dio = Dio();
       dio.options.connectTimeout = const Duration(seconds: 30);
@@ -394,7 +394,7 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
             'Unexpected response data type: ${response.data.runtimeType}');
       }
 
-      print('Downloaded ${bytes.length} bytes');
+      debugPrint('Downloaded ${bytes.length} bytes');
 
       await downloadFileToDevice(bytes, widget.filename);
 
@@ -414,10 +414,10 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
         );
       }
     } on DioException catch (e, stackTrace) {
-      print('ERROR: DioException - ${e.type}');
-      print('Message: ${e.message}');
-      print('Response: ${e.response?.data}');
-      print('Stack trace: $stackTrace');
+      debugPrint('ERROR: DioException - ${e.type}');
+      debugPrint('Message: ${e.message}');
+      debugPrint('Response: ${e.response?.data}');
+      debugPrint('Stack trace: $stackTrace');
 
       String errorMsg = 'Download failed';
       if (e.type == DioExceptionType.connectionTimeout) {
@@ -445,8 +445,8 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
         );
       }
     } catch (e, stackTrace) {
-      print('ERROR downloading file: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('ERROR downloading file: $e');
+      debugPrint('Stack trace: $stackTrace');
 
       setState(() {
         _isDownloading = false;
@@ -628,13 +628,13 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
     // For PDFs, we MUST download the bytes first with authentication
     // SfPdfViewer.network doesn't handle auth headers reliably
     if (_fileBytes != null) {
-      print('=== PDF VIEWER ===');
-      print('Loading PDF from memory: ${_fileBytes!.length} bytes');
+      debugPrint('=== PDF VIEWER ===');
+      debugPrint('Loading PDF from memory: ${_fileBytes!.length} bytes');
 
       // Debug: Check first few bytes
       if (_fileBytes!.length >= 10) {
         final preview = String.fromCharCodes(_fileBytes!.sublist(0, 10));
-        print('PDF bytes preview: $preview');
+        debugPrint('PDF bytes preview: $preview');
       }
 
       // On web, use iframe to embed PDF (browser's native viewer)
@@ -649,12 +649,12 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
         canShowScrollStatus: true,
         enableDoubleTapZooming: true,
         onDocumentLoaded: (details) {
-          print(
+          debugPrint(
               '✓ PDF loaded successfully: ${details.document.pages.count} pages');
         },
         onDocumentLoadFailed: (details) {
-          print('✗ PDF load failed: ${details.description}');
-          print('Error details: ${details.error}');
+          debugPrint('✗ PDF load failed: ${details.description}');
+          debugPrint('Error details: ${details.error}');
 
           setState(() {
             _error = 'Failed to load PDF: ${details.description}\n\n'
@@ -684,7 +684,7 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
 
   Widget _buildWebPdfViewer() {
     // Create a blob URL from the PDF bytes and embed in iframe
-    print('Building web PDF viewer with ${_fileBytes!.length} bytes');
+    debugPrint('Building web PDF viewer with ${_fileBytes!.length} bytes');
     return buildWebPdfViewer(_fileBytes!, widget.filename);
   }
 
@@ -811,7 +811,7 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
         ),
       );
     } catch (e) {
-      print('Error parsing CSV: $e');
+      debugPrint('Error parsing CSV: $e');
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -852,11 +852,11 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               kIsWeb
                   ? 'Office documents can be downloaded and opened locally.'
                   : 'This file will be opened with an external app.',
-              style: const TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: 16),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),

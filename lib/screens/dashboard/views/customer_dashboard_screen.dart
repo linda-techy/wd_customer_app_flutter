@@ -546,7 +546,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
             ),
             child: Column(
               children: [
-                Icon(Icons.search_off_rounded, size: 48, color: greyColor),
+                const Icon(Icons.search_off_rounded, size: 48, color: greyColor),
                 const SizedBox(height: 12),
                 Text(
                   _selectedPhase != null
@@ -562,7 +562,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
                   _selectedPhase != null
                       ? 'Try another phase or clear the phase filter.'
                       : 'Try a different name, code or location.',
-                  style: TextStyle(color: greyColor, fontSize: 14),
+                  style: const TextStyle(color: greyColor, fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -611,7 +611,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
           ),
           child: Column(
             children: [
-              Icon(Icons.filter_list_rounded, size: 48, color: greyColor),
+              const Icon(Icons.filter_list_rounded, size: 48, color: greyColor),
               const SizedBox(height: 12),
               Text(
                 'No projects in ${_selectedPhase?.displayName ?? "this phase"}',
@@ -645,7 +645,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: lightGreyColor,
                   shape: BoxShape.circle,
                 ),

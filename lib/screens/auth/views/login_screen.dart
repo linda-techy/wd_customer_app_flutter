@@ -56,27 +56,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       // Debug: Print the credentials being sent
-      print('Attempting login with:');
-      print('Email: $_email');
-      print('Password: ${_password.length > 0 ? '***' : 'empty'}');
+      debugPrint('Attempting login with:');
+      debugPrint('Email: $_email');
+      debugPrint('Password: ${_password.isNotEmpty ? '***' : 'empty'}');
 
       final response = await AuthService.loginWithApi(_email, _password);
 
       if (!mounted) return;
 
       // Debug: Print the response details
-      print('Login response:');
-      print('Success: ${response.success}');
-      print('Error: ${response.error?.message}');
-      print('Status Code: ${response.error?.statusCode}');
+      debugPrint('Login response:');
+      debugPrint('Success: ${response.success}');
+      debugPrint('Error: ${response.error?.message}');
+      debugPrint('Status Code: ${response.error?.statusCode}');
 
       if (response.success && response.data != null) {
         _showSuccessSnackBar('Login successful!');
 
         // Check redirect URL from API response
         final redirectUrl = response.data!.redirectUrl;
-        print('Login successful! Redirect URL: $redirectUrl');
-        print('Project count: ${response.data!.projectCount}');
+        debugPrint('Login successful! Redirect URL: $redirectUrl');
+        debugPrint('Project count: ${response.data!.projectCount}');
 
         // Navigate based on redirect URL
         if (redirectUrl == '/dashboard') {
@@ -113,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
-        print('Login exception: $e');
+        debugPrint('Login exception: $e');
         _showErrorDialog('An unexpected error occurred: ${e.toString()}');
       }
     } finally {

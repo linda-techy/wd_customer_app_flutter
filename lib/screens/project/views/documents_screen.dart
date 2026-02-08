@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:dio/dio.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:typed_data';
@@ -10,7 +9,6 @@ import '../../../models/project_module_models.dart';
 import '../../../services/project_module_service.dart';
 import '../../../config/api_config.dart';
 import 'universal_file_viewer_screen.dart';
-import 'file_test_screen.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/scale_button.dart';
@@ -335,7 +333,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         sizeStr = '${(doc.fileSize! / (1024 * 1024)).toStringAsFixed(1)} MB';
       }
     }
-    String dateStr = 'Updated: ${doc.uploadDate.day}/${doc.uploadDate.month}/${doc.uploadDate.year}';
 
     return HoverCard(
       child: GestureDetector(

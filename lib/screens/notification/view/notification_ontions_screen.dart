@@ -17,7 +17,7 @@ class NotificationOptionsScreen extends StatelessWidget {
         child: Column(
           children: [
             ListTile(
-              leading: Icon(Icons.notifications, color: logoRed),
+              leading: const Icon(Icons.notifications, color: logoRed),
               title: const Text('Project Updates'),
               subtitle: const Text('Get notified about construction progress'),
               trailing: Switch(
@@ -27,7 +27,7 @@ class NotificationOptionsScreen extends StatelessWidget {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.construction, color: logoRed),
+              leading: const Icon(Icons.construction, color: logoRed),
               title: const Text('Site Visits'),
               subtitle: const Text('Notifications for scheduled site visits'),
               trailing: Switch(
@@ -37,7 +37,7 @@ class NotificationOptionsScreen extends StatelessWidget {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.payment, color: logoRed),
+              leading: const Icon(Icons.payment, color: logoRed),
               title: const Text('Payment Reminders'),
               subtitle: const Text('Payment due dates and invoices'),
               trailing: Switch(
@@ -47,7 +47,7 @@ class NotificationOptionsScreen extends StatelessWidget {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.document_scanner, color: logoRed),
+              leading: const Icon(Icons.document_scanner, color: logoRed),
               title: const Text('Document Updates'),
               subtitle: const Text('New documents and approvals'),
               trailing: Switch(

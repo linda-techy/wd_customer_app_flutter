@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import 'dart:typed_data';
+import 'package:dio/dio.dart';
 import '../../../services/auth_service.dart';
 import '../../../constants.dart';
 
@@ -36,7 +36,7 @@ class _FileTestScreenState extends State<FileTestScreen> {
     setState(() {
       _logs.add('[${DateTime.now().toString().split('.')[0]}] $message');
     });
-    print(message);
+    debugPrint(message);
   }
 
   Future<void> _testDownload() async {

@@ -7,10 +7,10 @@ class MilestoneTimeline extends StatelessWidget {
   final int currentMilestoneIndex;
 
   const MilestoneTimeline({
-    Key? key,
+    super.key,
     required this.milestones,
     required this.currentMilestoneIndex,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +67,7 @@ class MilestoneTimeline extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: isCompleted ? successColor : blackColor10,
                                   gradient: isCurrent
-                                      ? LinearGradient(
+                                      ? const LinearGradient(
                                           begin: Alignment.topCenter,
                                           end: Alignment.bottomCenter,
                                           colors: [successColor, blackColor10],

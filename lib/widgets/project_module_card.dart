@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../design_tokens/app_colors.dart';
-import '../design_tokens/app_spacing.dart';
 
 class ProjectModuleCard extends StatelessWidget {
   final IconData icon;
@@ -11,14 +10,14 @@ class ProjectModuleCard extends StatelessWidget {
   final Color? iconColor;
 
   const ProjectModuleCard({
-    Key? key,
+    super.key,
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.onTap,
     this.badgeCount,
     this.iconColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -91,9 +90,9 @@ class ProjectModuleCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 8),
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: const [
+                children: [
                   Icon(
                     Icons.arrow_forward_ios,
                     size: 16,

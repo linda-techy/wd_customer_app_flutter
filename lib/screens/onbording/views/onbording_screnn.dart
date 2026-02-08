@@ -32,66 +32,66 @@ class _OnbordingScrennState extends State<OnbordingScrenn>
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this, duration: _duration);
-    final curve = Curves.easeOutCubic;
-    final logoCurve = Curves.easeOutBack;
+    const curve = Curves.easeOutCubic;
+    const logoCurve = Curves.easeOutBack;
     _logoAnim = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Interval(0.0, 0.22, curve: logoCurve),
+        curve: const Interval(0.0, 0.22, curve: logoCurve),
       ),
     );
     _headlineAnim = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Interval(0.08, 0.28, curve: curve),
+        curve: const Interval(0.08, 0.28, curve: curve),
       ),
     );
     _taglineAnim = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Interval(0.14, 0.34, curve: curve),
+        curve: const Interval(0.14, 0.34, curve: curve),
       ),
     );
     _storyAnim = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Interval(0.20, 0.42, curve: curve),
+        curve: const Interval(0.20, 0.42, curve: curve),
       ),
     );
     _chip1Anim = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Interval(0.28, 0.50, curve: curve),
+        curve: const Interval(0.28, 0.50, curve: curve),
       ),
     );
     _chip2Anim = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Interval(0.36, 0.58, curve: curve),
+        curve: const Interval(0.36, 0.58, curve: curve),
       ),
     );
     _chip3Anim = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Interval(0.44, 0.66, curve: curve),
+        curve: const Interval(0.44, 0.66, curve: curve),
       ),
     );
     _ctaAnim = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Interval(0.52, 0.78, curve: curve),
+        curve: const Interval(0.52, 0.78, curve: curve),
       ),
     );
     _footerAnim = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Interval(0.60, 0.84, curve: curve),
+        curve: const Interval(0.60, 0.84, curve: curve),
       ),
     );
     _skipAnim = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Interval(0.0, 0.18, curve: curve),
+        curve: const Interval(0.0, 0.18, curve: curve),
       ),
     );
     _controller.forward();
@@ -103,8 +103,7 @@ class _OnbordingScrennState extends State<OnbordingScrenn>
     super.dispose();
   }
 
-  Widget _slideFade(Animation<double> anim, Widget child,
-      {double slideY = 0.12}) {
+  Widget _slideFade(Animation<double> anim, Widget child) {
     return AnimatedBuilder(
       animation: anim,
       builder: (context, child) {
@@ -142,14 +141,14 @@ class _OnbordingScrennState extends State<OnbordingScrenn>
     return Scaffold(
       backgroundColor: Colors.white,
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
               Colors.white,
-              const Color(0xFFFAFAFA),
-              const Color(0xFFF5F5F5),
+              Color(0xFFFAFAFA),
+              Color(0xFFF5F5F5),
             ],
           ),
         ),
@@ -207,8 +206,9 @@ class _OnbordingScrennState extends State<OnbordingScrenn>
                   _skipAnim,
                   TextButton(
                   onPressed: () async {
-                    print('Onboarding: Skip button clicked');
+                    debugPrint('Onboarding: Skip button clicked');
                     await AuthService.setWelcomeSeen();
+                    if (!context.mounted) return;
                     // Navigate to entry shell and force Home tab (preserve login state)
                     Navigator.pushReplacementNamed(
                       context,
@@ -279,7 +279,7 @@ class _OnbordingScrennState extends State<OnbordingScrenn>
               const SizedBox(height: 32),
 
               // Brand Story
-              Text(
+              const Text(
                 "Building Excellence",
                 style: TextStyle(
                   fontSize: 28,
@@ -292,8 +292,8 @@ class _OnbordingScrennState extends State<OnbordingScrenn>
 
               const SizedBox(height: 16),
 
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
                   "Each dot represents a phase. The connections show our commitment to seamless construction—from vision to reality.",
                   style: TextStyle(
@@ -318,7 +318,7 @@ class _OnbordingScrennState extends State<OnbordingScrenn>
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 "WALLDOT BUILDERS",
                 style: TextStyle(
                   fontSize: 32,
@@ -346,9 +346,10 @@ class _OnbordingScrennState extends State<OnbordingScrenn>
                 height: 56,
                 child: ElevatedButton(
                   onPressed: () async {
-                    print(
+                    debugPrint(
                         'Onboarding: Start Building button clicked (Desktop)');
                     await AuthService.setWelcomeSeen();
+                    if (!context.mounted) return;
                     // Navigate to entry shell and force Home tab (preserve login state)
                     Navigator.pushReplacementNamed(
                       context,
@@ -365,10 +366,10 @@ class _OnbordingScrennState extends State<OnbordingScrenn>
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
+                      Text(
                         "Start Building",
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
@@ -376,8 +377,8 @@ class _OnbordingScrennState extends State<OnbordingScrenn>
                           letterSpacing: 1,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.arrow_forward, size: 20),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward, size: 20),
                     ],
                   ),
                 ),
@@ -385,7 +386,7 @@ class _OnbordingScrennState extends State<OnbordingScrenn>
 
               const SizedBox(height: 16),
 
-              Text(
+              const Text(
                 "Your Vision. Our Expertise.",
                 style: TextStyle(
                   fontSize: 16,
@@ -552,6 +553,7 @@ class _OnbordingScrennState extends State<OnbordingScrenn>
             child: ElevatedButton(
               onPressed: () async {
                 await AuthService.setWelcomeSeen();
+                if (!context.mounted) return;
                 Navigator.pushReplacementNamed(
                   context,
                   entryPointScreenRoute,

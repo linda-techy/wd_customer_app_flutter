@@ -17,7 +17,7 @@ class NoNotificationScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.notifications_off,
               size: 80,
               color: logoGreyDark,

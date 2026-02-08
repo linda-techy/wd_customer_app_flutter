@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
@@ -62,14 +63,14 @@ class FileViewerService {
         filePath,
         onReceiveProgress: (received, total) {
           if (total != -1) {
-            print('Download progress: ${(received / total * 100).toStringAsFixed(0)}%');
+            debugPrint('Download progress: ${(received / total * 100).toStringAsFixed(0)}%');
           }
         },
       );
       
       return filePath;
     } catch (e) {
-      print('Error downloading file: $e');
+      debugPrint('Error downloading file: $e');
       return null;
     }
   }
@@ -80,7 +81,7 @@ class FileViewerService {
       final result = await OpenFilex.open(filePath);
       return result.type == ResultType.done;
     } catch (e) {
-      print('Error opening file with external app: $e');
+      debugPrint('Error opening file with external app: $e');
       return false;
     }
   }

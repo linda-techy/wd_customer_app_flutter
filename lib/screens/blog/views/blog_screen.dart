@@ -252,9 +252,9 @@ class BlogScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   ScaleButton(
                     onTap: () {},
-                    child: Row(
+                    child: const Row(
                       children: [
-                        const Text(
+                        Text(
                           "Read Article",
                           style: TextStyle(
                             color: primaryColor,
@@ -262,8 +262,8 @@ class BlogScreen extends StatelessWidget {
                             fontSize: 14,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward_rounded, size: 16, color: primaryColor),
+                        SizedBox(width: 8),
+                        Icon(Icons.arrow_forward_rounded, size: 16, color: primaryColor),
                       ],
                     ),
                   ),

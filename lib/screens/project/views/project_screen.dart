@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../constants.dart';
 import '../../../services/auth_service.dart';
 import '../../../route/screen_export.dart';
-import '../../../components/walldot_logo.dart';
 import '../../../widgets/auth_guard.dart';
 import '../../dashboard/views/customer_dashboard_screen.dart';
 import '../../auth/views/guest_welcome_screen.dart';
@@ -54,8 +52,8 @@ class _ProjectScreenState extends State<ProjectScreen> {
     }
 
     // Show customer dashboard when logged in with auth guard
-    return AuthGuard(
-      child: const CustomerDashboardScreen(),
+    return const AuthGuard(
+      child: CustomerDashboardScreen(),
     );
   }
 }

@@ -641,11 +641,11 @@ class _SnagDetailsSheet extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
+                            const Row(
                               children: [
-                                const Icon(Icons.check_circle, color: Colors.green, size: 20),
-                                const SizedBox(width: 8),
-                                const Text(
+                                Icon(Icons.check_circle, color: Colors.green, size: 20),
+                                SizedBox(width: 8),
+                                Text(
                                   'Resolution Details',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,

@@ -80,7 +80,7 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
 
       return baseUri.resolveUri(uri).toString();
     } catch (e) {
-      print('Failed to resolve file URL $url: $e');
+      debugPrint('Failed to resolve file URL $url: $e');
       return url;
     }
   }
@@ -477,11 +477,11 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               kIsWeb
                   ? 'Office documents can be downloaded and opened locally.'
                   : 'This file will be opened with an external app.',
-              style: const TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: 16),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),

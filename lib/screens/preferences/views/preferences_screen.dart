@@ -16,7 +16,6 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   bool _analyticsEnabled = true;
   bool _personalizationEnabled = false;
   bool _marketingEnabled = false;
-  bool _socialMediaEnabled = false;
   bool _pushNotifications = true;
   bool _emailNotifications = false;
 
@@ -39,7 +38,6 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                 _analyticsEnabled = true;
                 _personalizationEnabled = false;
                 _marketingEnabled = false;
-                _socialMediaEnabled = false;
                 _pushNotifications = true;
                 _emailNotifications = false;
               });

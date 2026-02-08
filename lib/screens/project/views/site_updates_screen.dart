@@ -31,7 +31,7 @@ class SiteUpdatesScreen extends StatelessWidget {
           return SiteUpdateCard(
             date: dates[index],
             description: descriptions[index],
-            imageUrls: [
+            imageUrls: const [
               "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800",
             ],
             weather: weather[index],

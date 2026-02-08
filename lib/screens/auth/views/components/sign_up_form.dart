@@ -77,7 +77,7 @@ class _SignUpFormState extends State<SignUpForm> {
                     ),
                   ),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.person_rounded,
                   size: 22,
                   color: logoRed,
@@ -103,7 +103,7 @@ class _SignUpFormState extends State<SignUpForm> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
+                borderSide: const BorderSide(
                   color: logoRed,
                   width: 2,
                 ),
@@ -174,7 +174,7 @@ class _SignUpFormState extends State<SignUpForm> {
                     ),
                   ),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.email_rounded,
                   size: 22,
                   color: logoRed,
@@ -200,7 +200,7 @@ class _SignUpFormState extends State<SignUpForm> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
+                borderSide: const BorderSide(
                   color: logoRed,
                   width: 2,
                 ),
@@ -270,7 +270,7 @@ class _SignUpFormState extends State<SignUpForm> {
                     ),
                   ),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.lock_rounded,
                   size: 22,
                   color: logoRed,
@@ -311,7 +311,7 @@ class _SignUpFormState extends State<SignUpForm> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
+                borderSide: const BorderSide(
                   color: logoRed,
                   width: 2,
                 ),
@@ -377,7 +377,7 @@ class _SignUpFormState extends State<SignUpForm> {
                     ),
                   ),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.lock_rounded,
                   size: 22,
                   color: logoRed,
@@ -420,7 +420,7 @@ class _SignUpFormState extends State<SignUpForm> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
+                borderSide: const BorderSide(
                   color: logoRed,
                   width: 2,
                 ),

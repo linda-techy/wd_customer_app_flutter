@@ -13,7 +13,7 @@ class CircularProgressRing extends StatefulWidget {
   final Color? subTextColor;
 
   const CircularProgressRing({
-    Key? key,
+    super.key,
     required this.progress,
     this.size = 120,
     this.strokeWidth = 10,
@@ -23,7 +23,7 @@ class CircularProgressRing extends StatefulWidget {
     this.overrideSubtext,
     this.textColor,
     this.subTextColor,
-  }) : super(key: key);
+  });
 
   @override
   State<CircularProgressRing> createState() => _CircularProgressRingState();

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import '../models/api_models.dart';
@@ -16,15 +17,15 @@ class ApiService {
       final loginRequest = LoginRequest(email: email, password: password);
 
       // Debug: Print the request details
-      print('=== API LOGIN REQUEST ===');
-      print('URL: ${ApiConfig.loginUrl}');
-      print('Headers: ${ApiConfig.defaultHeaders}');
-      print('Body: ${jsonEncode(loginRequest.toJson())}');
-      print('Email: $email');
-      print('Password length: ${password.length}');
-      print(
+      debugPrint('=== API LOGIN REQUEST ===');
+      debugPrint('URL: ${ApiConfig.loginUrl}');
+      debugPrint('Headers: ${ApiConfig.defaultHeaders}');
+      debugPrint('Body: ${jsonEncode(loginRequest.toJson())}');
+      debugPrint('Email: $email');
+      debugPrint('Password length: ${password.length}');
+      debugPrint(
           'Password contains special chars: ${password.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>]'))}');
-      print('========================');
+      debugPrint('========================');
 
       final response = await http
           .post(
@@ -35,11 +36,11 @@ class ApiService {
           .timeout(ApiConfig.connectionTimeout);
 
       // Debug: Print the response details
-      print('=== API LOGIN RESPONSE ===');
-      print('Status Code: ${response.statusCode}');
-      print('Response Headers: ${response.headers}');
-      print('Response Body: ${response.body}');
-      print('=========================');
+      debugPrint('=== API LOGIN RESPONSE ===');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Response Headers: ${response.headers}');
+      debugPrint('Response Body: ${response.body}');
+      debugPrint('=========================');
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
@@ -198,10 +199,10 @@ class ApiService {
   // Get dashboard data method
   Future<ApiResponse<DashboardDto>> getDashboard(String accessToken) async {
     try {
-      print('=== API DASHBOARD REQUEST ===');
-      print('URL: ${ApiConfig.dashboardUrl}');
-      print('Access Token: ${accessToken.substring(0, 20)}...');
-      print('============================');
+      debugPrint('=== API DASHBOARD REQUEST ===');
+      debugPrint('URL: ${ApiConfig.dashboardUrl}');
+      debugPrint('Access Token: ${accessToken.substring(0, 20)}...');
+      debugPrint('============================');
 
       final response = await http
           .get(
@@ -210,10 +211,10 @@ class ApiService {
           )
           .timeout(ApiConfig.connectionTimeout);
 
-      print('=== API DASHBOARD RESPONSE ===');
-      print('Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
-      print('=============================');
+      debugPrint('=== API DASHBOARD RESPONSE ===');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Response Body: ${response.body}');
+      debugPrint('=============================');
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
@@ -246,11 +247,11 @@ class ApiService {
     try {
       final url = '${ApiConfig.baseUrl}/api/dashboard/projects/$projectUuid';
       
-      print('=== API PROJECT DETAILS REQUEST ===');
-      print('URL: $url');
-      print('Project UUID: $projectUuid');
-      print('Access Token: ${accessToken.substring(0, 20)}...');
-      print('==================================');
+      debugPrint('=== API PROJECT DETAILS REQUEST ===');
+      debugPrint('URL: $url');
+      debugPrint('Project UUID: $projectUuid');
+      debugPrint('Access Token: ${accessToken.substring(0, 20)}...');
+      debugPrint('==================================');
 
       final response = await http
           .get(
@@ -259,10 +260,10 @@ class ApiService {
           )
           .timeout(ApiConfig.connectionTimeout);
 
-      print('=== API PROJECT DETAILS RESPONSE ===');
-      print('Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
-      print('===================================');
+      debugPrint('=== API PROJECT DETAILS RESPONSE ===');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Response Body: ${response.body}');
+      debugPrint('===================================');
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
@@ -336,7 +337,7 @@ class ApiService {
   // Test connection method
   Future<ApiResponse<String>> testConnection() async {
     try {
-      print('Testing API connection to: ${ApiConfig.testUrl}');
+      debugPrint('Testing API connection to: ${ApiConfig.testUrl}');
 
       final response = await http
           .get(
@@ -345,8 +346,8 @@ class ApiService {
           )
           .timeout(ApiConfig.connectionTimeout);
 
-      print('Test response status: ${response.statusCode}');
-      print('Test response body: ${response.body}');
+      debugPrint('Test response status: ${response.statusCode}');
+      debugPrint('Test response body: ${response.body}');
 
       if (response.statusCode == 200) {
         return ApiResponse.success(response.body);
@@ -359,7 +360,7 @@ class ApiService {
         );
       }
     } on SocketException {
-      print('SocketException: Cannot connect to server');
+      debugPrint('SocketException: Cannot connect to server');
       return ApiResponse.error(
         ApiError(
           message:
@@ -368,7 +369,7 @@ class ApiService {
         ),
       );
     } catch (e) {
-      print('Test connection error: $e');
+      debugPrint('Test connection error: $e');
       return ApiResponse.error(
         ApiError(
           message: 'Connection test failed: ${e.toString()}',

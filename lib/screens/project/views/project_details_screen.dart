@@ -50,7 +50,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
       final args = ModalRoute.of(context)?.settings.arguments;
       if (args is ProjectCard) return args;
     } catch (e) {
-      print('Error getting project from route: $e');
+      debugPrint('Error getting project from route: $e');
     }
     return null;
   }
@@ -62,7 +62,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
       final args = ModalRoute.of(context)?.settings.arguments;
       if (args is ProjectCard) return args.projectUuid;
     } catch (e) {
-      print('Error getting project from route: $e');
+      debugPrint('Error getting project from route: $e');
     }
     return null;
   }
@@ -293,7 +293,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   Widget _buildPhaseStepper(ProjectCard? p) {
     final phaseValue = _projectDetails?.phase ?? p?.projectPhase;
     final current = ProjectPhase.fromString(phaseValue);
-    final allPhases = ProjectPhase.values;
+    const allPhases = ProjectPhase.values;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),

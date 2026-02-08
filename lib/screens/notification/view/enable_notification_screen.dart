@@ -17,7 +17,7 @@ class EnableNotificationScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.notifications_active,
               size: 80,
               color: logoRed,

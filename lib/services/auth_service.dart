@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/api_models.dart';
 import 'api_service.dart';
@@ -194,11 +195,14 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     final isLoggedInFlag = prefs.getBool(_isLoggedInKey) ?? false;
 
-    print('AuthService.isLoggedIn(): isLoggedInFlag = $isLoggedInFlag');
+    developer.log('AuthService.isLoggedIn(): isLoggedInFlag = $isLoggedInFlag',
+        name: 'AuthService');
 
     // If the flag is false, user is not logged in
     if (!isLoggedInFlag) {
-      print('AuthService.isLoggedIn(): User not logged in (flag is false)');
+      developer.log(
+          'AuthService.isLoggedIn(): User not logged in (flag is false)',
+          name: 'AuthService');
       return false;
     }
 
@@ -206,37 +210,45 @@ class AuthService {
     final accessToken = prefs.getString(_accessTokenKey);
     final userInfo = prefs.getString(_userInfoKey);
 
-    print(
-        'AuthService.isLoggedIn(): accessToken = ${accessToken != null ? "present" : "null"}');
-    print(
-        'AuthService.isLoggedIn(): userInfo = ${userInfo != null ? "present" : "null"}');
+    developer.log(
+        'AuthService.isLoggedIn(): accessToken = ${accessToken != null ? "present" : "null"}',
+        name: 'AuthService');
+    developer.log(
+        'AuthService.isLoggedIn(): userInfo = ${userInfo != null ? "present" : "null"}',
+        name: 'AuthService');
 
     // If no token or user info, user is not logged in
     if (accessToken == null || userInfo == null) {
-      print(
-          'AuthService.isLoggedIn(): Missing token or user info, clearing auth data');
+      developer.log(
+          'AuthService.isLoggedIn(): Missing token or user info, clearing auth data',
+          name: 'AuthService');
       await _clearAuthData(); // Clean up invalid data
       return false;
     }
 
     // Check if token is expired
     final isExpired = await isTokenExpired();
-    print('AuthService.isLoggedIn(): Token expired = $isExpired');
+    developer.log('AuthService.isLoggedIn(): Token expired = $isExpired',
+        name: 'AuthService');
 
     if (isExpired) {
       // Try to refresh the token
-      print('AuthService.isLoggedIn(): Attempting to refresh token');
+      developer.log('AuthService.isLoggedIn(): Attempting to refresh token',
+          name: 'AuthService');
       final refreshSuccess = await refreshAccessToken();
       if (!refreshSuccess) {
-        print(
-            'AuthService.isLoggedIn(): Token refresh failed, clearing auth data');
+        developer.log(
+            'AuthService.isLoggedIn(): Token refresh failed, clearing auth data',
+            name: 'AuthService');
         await _clearAuthData(); // Clean up expired data
         return false;
       }
-      print('AuthService.isLoggedIn(): Token refresh successful');
+      developer.log('AuthService.isLoggedIn(): Token refresh successful',
+          name: 'AuthService');
     }
 
-    print('AuthService.isLoggedIn(): User is logged in');
+    developer.log('AuthService.isLoggedIn(): User is logged in',
+        name: 'AuthService');
     return true;
   }
 

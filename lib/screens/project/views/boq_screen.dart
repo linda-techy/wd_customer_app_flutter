@@ -353,12 +353,12 @@ class _BoqScreenState extends State<BoqScreen> {
               Flexible(
                 child: Row(
                   children: [
-                    Icon(Icons.construction, size: 18, color: primaryColor),
+                    const Icon(Icons.construction, size: 18, color: primaryColor),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
                         workTypeName,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                           color: primaryColor,
@@ -371,7 +371,7 @@ class _BoqScreenState extends State<BoqScreen> {
               ),
               Text(
                 currencyFormat.format(sectionTotal),
-                style: TextStyle(
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
                   color: primaryColor,

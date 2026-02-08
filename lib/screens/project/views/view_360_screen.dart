@@ -460,13 +460,13 @@ class _PanoramaViewerScreenState extends State<_PanoramaViewerScreen> {
                 isLoading = false;
               });
             },
-            onLoadError: (controller, url, code, message) {
+            onReceivedError: (controller, request, error) {
               setState(() {
                 isLoading = false;
               });
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Failed to load panorama: $message'),
+                  content: Text('Failed to load panorama: ${error.description}'),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -507,11 +507,11 @@ class _PanoramaViewerScreenState extends State<_PanoramaViewerScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ),
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.touch_app, size: 16, color: Colors.white54),
-                  const SizedBox(width: 8),
+                  Icon(Icons.touch_app, size: 16, color: Colors.white54),
+                  SizedBox(width: 8),
                   Text(
                     'Drag to look around',
                     style: TextStyle(color: Colors.white54, fontSize: 12),

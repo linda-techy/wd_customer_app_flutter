@@ -201,12 +201,12 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.cloud_off_rounded, size: 48, color: errorColor),
+                                const Icon(Icons.cloud_off_rounded, size: 48, color: errorColor),
                                 const SizedBox(height: 12),
                                 Text(
                                   _errorMessage!,
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(color: blackColor60),
+                                  style: const TextStyle(color: blackColor60),
                                 ),
                                 const SizedBox(height: 16),
                                 TextButton.icon(
@@ -223,7 +223,7 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.folder_open_rounded, size: 64, color: greyColor),
+                                  const Icon(Icons.folder_open_rounded, size: 64, color: greyColor),
                                   const SizedBox(height: 16),
                                   Text(
                                     _selectedPhase != null
@@ -242,7 +242,7 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                                         : _lastQuery.isEmpty
                                             ? 'Your projects will appear here.'
                                             : 'Try a different name, code or location.',
-                                    style: TextStyle(color: greyColor),
+                                    style: const TextStyle(color: greyColor),
                                     textAlign: TextAlign.center,
                                   ),
                                 ],

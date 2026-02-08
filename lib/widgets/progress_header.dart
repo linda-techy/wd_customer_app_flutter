@@ -18,7 +18,7 @@ class ProgressHeader extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(ResponsiveSpacing.getCardPadding(context) * 1.5),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
@@ -242,11 +242,11 @@ class CircularProgressHeader extends StatelessWidget {
             child: Stack(
               children: [
                 // Background circle
-                CircularProgressIndicator(
+                const CircularProgressIndicator(
                   value: 1.0,
                   strokeWidth: 8,
-                  backgroundColor: Colors.grey[200],
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.grey),
+                  backgroundColor: Color(0xFFEEEEEE),
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
                 ),
                 // Progress circle
                 CircularProgressIndicator(

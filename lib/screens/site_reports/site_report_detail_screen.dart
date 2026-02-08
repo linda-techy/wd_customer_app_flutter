@@ -238,27 +238,27 @@ class SiteReportDetailScreen extends StatelessWidget {
     Color textColor;
     
     switch (type) {
-      case ReportType.DAILY_PROGRESS:
+      case ReportType.dailyProgress:
         backgroundColor = Colors.blue.shade50;
         textColor = Colors.blue.shade700;
         break;
-      case ReportType.QUALITY_CHECK:
+      case ReportType.qualityCheck:
         backgroundColor = Colors.green.shade50;
         textColor = Colors.green.shade700;
         break;
-      case ReportType.SAFETY_INCIDENT:
+      case ReportType.safetyIncident:
         backgroundColor = Colors.red.shade50;
         textColor = Colors.red.shade700;
         break;
-      case ReportType.MATERIAL_DELIVERY:
+      case ReportType.materialDelivery:
         backgroundColor = Colors.orange.shade50;
         textColor = Colors.orange.shade700;
         break;
-      case ReportType.SITE_VISIT_SUMMARY:
+      case ReportType.siteVisitSummary:
         backgroundColor = Colors.purple.shade50;
         textColor = Colors.purple.shade700;
         break;
-      case ReportType.OTHER:
+      case ReportType.other:
         backgroundColor = Colors.grey.shade200;
         textColor = Colors.grey.shade700;
         break;

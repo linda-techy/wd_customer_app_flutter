@@ -12,11 +12,11 @@ class DesignPackagePaymentScreen extends StatefulWidget {
   final double sqFeet;
 
   const DesignPackagePaymentScreen({
-    Key? key,
+    super.key,
     required this.projectId,
     required this.packageDetails,
     required this.sqFeet,
-  }) : super(key: key);
+  });
 
   @override
   State<DesignPackagePaymentScreen> createState() =>
@@ -206,8 +206,8 @@ class _DesignPackagePaymentScreenState
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 6),
+                            const Padding(
+                              padding: EdgeInsets.only(top: 6),
                               child: Icon(
                                 Icons.circle,
                                 size: 6,
@@ -480,7 +480,7 @@ class _DesignPackagePaymentScreenState
                       ],
                     ),
                   );
-                }).toList(),
+                }),
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.grey.shade50,
@@ -569,11 +569,11 @@ class _DesignPackagePaymentScreenState
           const SizedBox(height: AppSpacing.md),
           TextButton(
             onPressed: () {},
-            child: const Text('Apply Promo Code'),
             style: TextButton.styleFrom(
               alignment: Alignment.centerLeft,
               padding: EdgeInsets.zero,
             ),
+            child: const Text('Apply Promo Code'),
           ),
         ],
       ],

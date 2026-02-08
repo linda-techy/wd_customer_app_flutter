@@ -3,8 +3,6 @@ import '../../../design_tokens/app_colors.dart';
 import '../../../design_tokens/app_spacing.dart';
 import '../../../design_tokens/app_typography.dart';
 import '../../../responsive/responsive_builder.dart';
-import '../../../models/api_models.dart';
-import '../../../services/dashboard_service.dart';
 import 'design_package_payment_screen.dart';
 
 class DesignPackageSelectionScreen extends StatefulWidget {
@@ -25,7 +23,7 @@ class DesignPackageSelectionScreen extends StatefulWidget {
 class _DesignPackageSelectionScreenState
     extends State<DesignPackageSelectionScreen> {
   String? _selectedPackage;
-  bool _isSubmitting = false;
+  final bool _isSubmitting = false;
 
   final List<Map<String, dynamic>> _packages = [
     {

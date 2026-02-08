@@ -232,7 +232,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
           ),
         ).animate().fadeIn(duration: 300.ms, delay: (dateIndex * 100).ms),
         // Vertical timeline connector
-        Container(
+        SizedBox(
           width: 24,
           child: Column(
             children: [

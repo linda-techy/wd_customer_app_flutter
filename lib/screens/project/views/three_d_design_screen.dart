@@ -4,8 +4,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../constants.dart';
 import '../../../services/auth_service.dart';
 import '../../../components/animations/scale_button.dart';
-import '../../../components/animations/fade_entry.dart';
-import '../../../components/animations/hover_card.dart';
 
 class ThreeDDesignScreen extends StatefulWidget {
   const ThreeDDesignScreen({super.key, this.projectId});
@@ -78,12 +76,12 @@ class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
              minScale: 0.5,
             maxScale: 2.0,
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: RadialGradient(
                   center: Alignment.center,
                   radius: 1.5,
                   colors: [
-                    const Color(0xFF2C3E50),
+                    Color(0xFF2C3E50),
                     Colors.black,
                   ],
                 ),

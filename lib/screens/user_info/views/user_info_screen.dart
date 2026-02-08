@@ -19,7 +19,6 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
 
   // State
   bool _isEditing = false;
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -226,7 +225,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             color: blackColor60,
             fontSize: 13,
             fontWeight: FontWeight.w600,

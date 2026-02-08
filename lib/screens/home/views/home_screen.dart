@@ -306,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ).animate().fadeIn(duration: 800.ms),
             Container(
               decoration: const BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [Colors.black12, Colors.black87],
@@ -752,7 +752,7 @@ class _ContactQuoteSheetState extends State<_ContactQuoteSheet> {
                 ),
               ),
               const SizedBox(height: 20),
-              Text(
+              const Text(
                 'Get Free Quote',
                 style: TextStyle(
                   fontSize: 22,
@@ -761,7 +761,7 @@ class _ContactQuoteSheetState extends State<_ContactQuoteSheet> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
+              const Text(
                 'Share your details and we\'ll get back to you.',
                 style: TextStyle(fontSize: 14, color: blackColor60),
               ),

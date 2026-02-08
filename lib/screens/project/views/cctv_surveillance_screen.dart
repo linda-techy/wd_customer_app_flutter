@@ -347,7 +347,7 @@ class _CctvSurveillanceScreenState extends State<CctvSurveillanceScreen> {
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                               vertical: defaultPadding),
-                          side: BorderSide(color: primaryColor),
+                          side: const BorderSide(color: primaryColor),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),

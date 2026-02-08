@@ -247,7 +247,7 @@ class _GuestWelcomeScreenState extends State<GuestWelcomeScreen>
             color: Colors.white,
           ),
         ),
-        SizedBox(height: 2),
+        const SizedBox(height: 2),
         Text(
           label,
           style: TextStyle(

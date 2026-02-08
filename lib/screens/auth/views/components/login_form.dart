@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../../../constants.dart';
 
@@ -119,7 +118,7 @@ class _LogInFormState extends State<LogInForm> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
+                borderSide: const BorderSide(
                   color: logoRed,
                   width: 2,
                 ),
@@ -239,7 +238,7 @@ class _LogInFormState extends State<LogInForm> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
+                borderSide: const BorderSide(
                   color: logoRed,
                   width: 2,
                 ),

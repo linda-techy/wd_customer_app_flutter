@@ -3,7 +3,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../constants.dart';
 import '../../../services/auth_service.dart';
 import '../../../components/animations/scale_button.dart';
-import '../../../components/animations/fade_entry.dart';
 
 class FloorPlanScreen extends StatefulWidget {
   const FloorPlanScreen({super.key, this.projectId});

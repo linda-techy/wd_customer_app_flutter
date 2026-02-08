@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../models/project_module_models.dart';
 import '../services/project_module_service.dart';
-import '../config/api_config.dart';
 import '../services/auth_service.dart';
 import 'pdf_viewer_screen.dart';
 import '../models/api_models.dart';
 import '../design_tokens/app_colors.dart';
-import '../design_tokens/app_spacing.dart';
-import '../design_tokens/app_typography.dart';
-import '../responsive/responsive_builder.dart';
 import '../services/dashboard_service.dart';
 import 'project/views/design_package_selection_screen.dart';
 import '../widgets/project_module_card.dart';
@@ -21,17 +18,16 @@ class ProjectDetailsScreen extends StatefulWidget {
   final String? projectName;
 
   const ProjectDetailsScreen({
-    Key? key,
+    super.key,
     required this.projectId,
     this.projectName,
-  }) : super(key: key);
+  });
 
   @override
   State<ProjectDetailsScreen> createState() => _ProjectDetailsScreenState();
 }
 
 class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
-  ProjectModuleService? _service;
   ProjectDetails? _projectDetails;
   bool _isLoading = true;
   String? _errorMessage;
@@ -44,16 +40,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
 
   Future<void> _initializeData() async {
     try {
-      final token = await AuthService.getAccessToken();
-      
-      if (mounted) {
-        setState(() {
-          _service = ProjectModuleService(
-            baseUrl: ApiConfig.baseUrl,
-            token: token,
-          );
-        });
-      }
+      await AuthService.getAccessToken();
 
       final response = await DashboardService.getProjectDetails(widget.projectId);
       
@@ -167,7 +154,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
     final location = _projectDetails?.location ?? 'Not specified';
     final phase = _projectDetails?.phase ?? 'Planning';
 
-    final isDesignPhase = phase?.toLowerCase() == 'design';
+    final isDesignPhase = phase.toLowerCase() == 'design';
     final isAgreementPending = !(_projectDetails?.isDesignAgreementSigned ?? false);
     
     // If in design phase and agreement not signed, show "Yet to start"
@@ -184,7 +171,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
     }
 
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -423,10 +410,10 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                 ),
               ),
               const SizedBox(width: 16),
-              Expanded(
+              const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       'Action Required',
                       style: TextStyle(
@@ -555,7 +542,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
 class OverviewTab extends StatefulWidget {
   final String projectId;
 
-  const OverviewTab({Key? key, required this.projectId}) : super(key: key);
+  const OverviewTab({super.key, required this.projectId});
 
   @override
   State<OverviewTab> createState() => _OverviewTabState();
@@ -680,14 +667,14 @@ class _OverviewTabState extends State<OverviewTab> {
           );
           if (result != null) _loadProjectDetails();
         },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        child: const Padding(
+          padding: EdgeInsets.all(16),
           child: Row(
             children: [
-              const Icon(Icons.palette_outlined, color: AppColors.warning),
-              const SizedBox(width: 12),
-              const Expanded(child: Text('Action Required: Select Package & Sign Agreement')),
-              const Icon(Icons.arrow_forward),
+              Icon(Icons.palette_outlined, color: AppColors.warning),
+              SizedBox(width: 12),
+              Expanded(child: Text('Action Required: Select Package & Sign Agreement')),
+              Icon(Icons.arrow_forward),
             ],
           ),
         ),
@@ -776,8 +763,7 @@ class DocumentsTab extends StatefulWidget {
   final String projectId;
   final ProjectModuleService service;
 
-  const DocumentsTab({Key? key, required this.projectId, required this.service})
-      : super(key: key);
+  const DocumentsTab({super.key, required this.projectId, required this.service});
 
   @override
   State<DocumentsTab> createState() => _DocumentsTabState();
@@ -976,8 +962,7 @@ class QualityCheckTab extends StatefulWidget {
   final String projectId;
   final ProjectModuleService service;
 
-  const QualityCheckTab({Key? key, required this.projectId, required this.service})
-      : super(key: key);
+  const QualityCheckTab({super.key, required this.projectId, required this.service});
 
   @override
   State<QualityCheckTab> createState() => _QualityCheckTabState();
@@ -1099,8 +1084,7 @@ class ActivityFeedTab extends StatefulWidget {
   final String projectId;
   final ProjectModuleService service;
 
-  const ActivityFeedTab({Key? key, required this.projectId, required this.service})
-      : super(key: key);
+  const ActivityFeedTab({super.key, required this.projectId, required this.service});
 
   @override
   State<ActivityFeedTab> createState() => _ActivityFeedTabState();
@@ -1147,7 +1131,7 @@ class _ActivityFeedTabState extends State<ActivityFeedTab> {
           child: ListTile(
             leading: CircleAvatar(
               backgroundColor: _getColorFromName(activity.activityTypeColor),
-              child: Icon(Icons.info, color: Colors.white),
+              child: const Icon(Icons.info, color: Colors.white),
             ),
             title: Text(activity.title),
             subtitle: Column(
@@ -1157,7 +1141,7 @@ class _ActivityFeedTabState extends State<ActivityFeedTab> {
                 Text('${activity.createdByName} • ${_formatDateTime(activity.createdAt)}'),
               ],
             ),
-            trailing: Icon(Icons.chevron_right),
+            trailing: const Icon(Icons.chevron_right),
             onTap: () {
               // Navigate to referenced item
             },
@@ -1194,8 +1178,7 @@ class GalleryTab extends StatefulWidget {
   final String projectId;
   final ProjectModuleService service;
 
-  const GalleryTab({Key? key, required this.projectId, required this.service})
-      : super(key: key);
+  const GalleryTab({super.key, required this.projectId, required this.service});
 
   @override
   State<GalleryTab> createState() => _GalleryTabState();
@@ -1251,8 +1234,18 @@ class _GalleryTabState extends State<GalleryTab> {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                // TODO: Replace with actual image
-                Container(color: Colors.grey[300]),
+                CachedNetworkImage(
+                  imageUrl: image.thumbnailPath ?? image.imagePath,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey[200],
+                    child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.broken_image, color: Colors.grey),
+                  ),
+                ),
                 Positioned(
                   bottom: 0,
                   left: 0,
@@ -1281,8 +1274,7 @@ class ObservationsTab extends StatefulWidget {
   final String projectId;
   final ProjectModuleService service;
 
-  const ObservationsTab({Key? key, required this.projectId, required this.service})
-      : super(key: key);
+  const ObservationsTab({super.key, required this.projectId, required this.service});
 
   @override
   State<ObservationsTab> createState() => _ObservationsTabState();
@@ -1362,7 +1354,7 @@ class _ObservationsTabState extends State<ObservationsTab>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.visibility_off, size: 64, color: Colors.grey),
+            const Icon(Icons.visibility_off, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
               isActive ? 'No active observations' : 'No resolved observations',
@@ -1440,7 +1432,7 @@ class _ObservationsTabState extends State<ObservationsTab>
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Description:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Description:', style: TextStyle(fontWeight: FontWeight.bold)),
               Text(obs.description),
               const SizedBox(height: 12),
               Text('Priority: ${obs.priority}'),
@@ -1449,7 +1441,7 @@ class _ObservationsTabState extends State<ObservationsTab>
               if (obs.location != null) Text('Location: ${obs.location}'),
               if (!isActive && obs.resolutionNotes != null) ...[
                 const SizedBox(height: 12),
-                Text('Resolution:', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Resolution:', style: TextStyle(fontWeight: FontWeight.bold)),
                 Text(obs.resolutionNotes!),
               ],
             ],
@@ -1488,8 +1480,7 @@ class QueriesTab extends StatefulWidget {
   final String projectId;
   final ProjectModuleService service;
 
-  const QueriesTab({Key? key, required this.projectId, required this.service})
-      : super(key: key);
+  const QueriesTab({super.key, required this.projectId, required this.service});
 
   @override
   State<QueriesTab> createState() => _QueriesTabState();
@@ -1564,7 +1555,7 @@ class _QueriesTabState extends State<QueriesTab>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.help_outline, size: 64, color: Colors.grey),
+            const Icon(Icons.help_outline, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
               isActive ? 'No active queries' : 'No resolved queries',
@@ -1607,11 +1598,11 @@ class _QueriesTabState extends State<QueriesTab>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Query:', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text('Query:', style: TextStyle(fontWeight: FontWeight.bold)),
                     Text(query.description),
                     if (!isActive && query.resolution != null) ...[
                       const SizedBox(height: 12),
-                      Text('Resolution:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text('Resolution:', style: TextStyle(fontWeight: FontWeight.bold)),
                       Text(query.resolution!),
                       if (query.resolvedByName != null) ...[
                         const SizedBox(height: 8),
@@ -1654,8 +1645,7 @@ class CctvTab extends StatefulWidget {
   final String projectId;
   final ProjectModuleService service;
 
-  const CctvTab({Key? key, required this.projectId, required this.service})
-      : super(key: key);
+  const CctvTab({super.key, required this.projectId, required this.service});
 
   @override
   State<CctvTab> createState() => _CctvTabState();
@@ -1690,20 +1680,20 @@ class _CctvTabState extends State<CctvTab> {
     }
 
     if (cameras == null || cameras!.isEmpty) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.videocam_off, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
               'Not Installed',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey[700]),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF616161)),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               'No CCTV cameras installed for this project',
-              style: TextStyle(color: Colors.grey[600]),
+              style: TextStyle(color: Color(0xFF757575)),
             ),
           ],
         ),
@@ -1717,7 +1707,7 @@ class _CctvTabState extends State<CctvTab> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.videocam_off, size: 64, color: Colors.grey),
+            const Icon(Icons.videocam_off, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
               'Not Installed',
@@ -1769,28 +1759,52 @@ class _CctvTabState extends State<CctvTab> {
                   height: 200,
                   width: double.infinity,
                   color: Colors.black,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.play_circle_outline, size: 64, color: Colors.white),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Live Stream',
-                          style: TextStyle(color: Colors.white),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (camera.snapshotUrl != null)
+                        CachedNetworkImage(
+                          imageUrl: camera.snapshotUrl!,
+                          fit: BoxFit.cover,
+                          color: Colors.black.withOpacity(0.4),
+                          colorBlendMode: BlendMode.darken,
+                          placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) => const SizedBox(),
                         ),
-                        const SizedBox(height: 4),
-                        TextButton(
-                          onPressed: () {
-                            // TODO: Implement video player
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Stream URL: ${camera.streamUrl}')),
-                            );
-                          },
-                          child: const Text('View Stream', style: TextStyle(color: Colors.blue)),
+                      Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.play_circle_outline, size: 64, color: Colors.white),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Live Stream',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            const SizedBox(height: 4),
+                            TextButton(
+                              onPressed: () async {
+                                if (!mounted) return;
+                                final messenger = ScaffoldMessenger.of(context);
+                                final url = camera.streamUrl;
+                                if (url != null) {
+                                  final uri = Uri.parse(url);
+                                  if (await canLaunchUrl(uri)) {
+                                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                  } else {
+                                    if (!mounted) return;
+                                    messenger.showSnackBar(
+                                      const SnackBar(content: Text('Could not launch video player')),
+                                    );
+                                  }
+                                }
+                              },
+                              child: const Text('View Stream', style: TextStyle(color: Colors.blue)),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               const SizedBox(height: 8),
@@ -1807,8 +1821,7 @@ class View360Tab extends StatefulWidget {
   final String projectId;
   final ProjectModuleService service;
 
-  const View360Tab({Key? key, required this.projectId, required this.service})
-      : super(key: key);
+  const View360Tab({super.key, required this.projectId, required this.service});
 
   @override
   State<View360Tab> createState() => _View360TabState();
@@ -1847,7 +1860,7 @@ class _View360TabState extends State<View360Tab> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.vrpano, size: 64, color: Colors.grey),
+            const Icon(Icons.vrpano, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
               'No 360° Views Available',
@@ -1874,14 +1887,23 @@ class _View360TabState extends State<View360Tab> {
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
                   ),
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      // TODO: Load actual thumbnail
-                      Icon(Icons.vrpano, size: 80, color: Colors.grey[600]),
-                      Center(
+                      if (view.thumbnailUrl != null)
+                        CachedNetworkImage(
+                          imageUrl: view.thumbnailUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) => const Icon(Icons.vrpano, size: 80, color: Colors.grey),
+                        )
+                      else
+                        const Center(
+                          child: Icon(Icons.vrpano, size: 80, color: Colors.grey),
+                        ),
+                      const Center(
                         child: Icon(
                           Icons.play_circle_outline,
                           size: 64,
@@ -1919,12 +1941,21 @@ class _View360TabState extends State<View360Tab> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () async {
+                          final messenger = ScaffoldMessenger.of(context);
                           // Increment view count
                           await widget.service.increment360ViewCount(widget.projectId, view.id);
-                          // TODO: Open 360 viewer
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Opening 360° view: ${view.viewUrl}')),
-                          );
+                          if (!mounted) return;
+                          
+                          final url = view.viewUrl;
+                          final uri = Uri.parse(url);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+                          } else {
+                            if (!mounted) return;
+                            messenger.showSnackBar(
+                              const SnackBar(content: Text('Could not open 360 viewer')),
+                            );
+                          }
                         },
                         icon: const Icon(Icons.vrpano),
                         label: const Text('View 360°'),
@@ -1950,8 +1981,7 @@ class SiteVisitsTab extends StatefulWidget {
   final String projectId;
   final ProjectModuleService service;
 
-  const SiteVisitsTab({Key? key, required this.projectId, required this.service})
-      : super(key: key);
+  const SiteVisitsTab({super.key, required this.projectId, required this.service});
 
   @override
   State<SiteVisitsTab> createState() => _SiteVisitsTabState();
@@ -1990,7 +2020,7 @@ class _SiteVisitsTabState extends State<SiteVisitsTab> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.location_off, size: 64, color: Colors.grey),
+            const Icon(Icons.location_off, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
               'No site visits recorded',
@@ -2030,7 +2060,7 @@ class _SiteVisitsTabState extends State<SiteVisitsTab> {
                   Text('Check-out: ${_formatDateTime(visit.checkOutTime!)}'),
                   Text('Duration: ${duration.inHours}h ${duration.inMinutes % 60}m'),
                 ] else
-                  Text('Currently on site', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+                  const Text('Currently on site', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
               ],
             ),
             children: [
@@ -2040,7 +2070,7 @@ class _SiteVisitsTabState extends State<SiteVisitsTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (visit.purpose != null) ...[
-                      Text('Purpose:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text('Purpose:', style: TextStyle(fontWeight: FontWeight.bold)),
                       Text(visit.purpose!),
                       const SizedBox(height: 8),
                     ],
@@ -2053,17 +2083,17 @@ class _SiteVisitsTabState extends State<SiteVisitsTab> {
                       const SizedBox(height: 8),
                     ],
                     if (visit.notes != null) ...[
-                      Text('Notes:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text('Notes:', style: TextStyle(fontWeight: FontWeight.bold)),
                       Text(visit.notes!),
                       const SizedBox(height: 8),
                     ],
                     if (visit.findings != null) ...[
-                      Text('Findings:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text('Findings:', style: TextStyle(fontWeight: FontWeight.bold)),
                       Text(visit.findings!),
                       const SizedBox(height: 8),
                     ],
                     if (visit.attendees != null && visit.attendees!.isNotEmpty) ...[
-                      Text('Attendees:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text('Attendees:', style: TextStyle(fontWeight: FontWeight.bold)),
                       ...visit.attendees!.map((a) => Text('• $a')),
                     ],
                   ],
@@ -2086,8 +2116,7 @@ class FeedbackTab extends StatefulWidget {
   final String projectId;
   final ProjectModuleService service;
 
-  const FeedbackTab({Key? key, required this.projectId, required this.service})
-      : super(key: key);
+  const FeedbackTab({super.key, required this.projectId, required this.service});
 
   @override
   State<FeedbackTab> createState() => _FeedbackTabState();
@@ -2126,7 +2155,7 @@ class _FeedbackTabState extends State<FeedbackTab> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.feedback_outlined, size: 64, color: Colors.grey),
+            const Icon(Icons.feedback_outlined, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
               'No feedback forms available',
@@ -2205,7 +2234,7 @@ class _FeedbackTabState extends State<FeedbackTab> {
                     Text(form.description!),
                     const SizedBox(height: 16),
                   ],
-                  Text('Rating:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text('Rating:', style: TextStyle(fontWeight: FontWeight.bold)),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(5, (index) {
@@ -2224,11 +2253,11 @@ class _FeedbackTabState extends State<FeedbackTab> {
                     }),
                   ),
                   const SizedBox(height: 16),
-                  Text('Comments:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text('Comments:', style: TextStyle(fontWeight: FontWeight.bold)),
                   TextField(
                     controller: commentsController,
                     maxLines: 4,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: 'Enter your feedback here...',
                       border: OutlineInputBorder(),
                     ),
@@ -2245,6 +2274,9 @@ class _FeedbackTabState extends State<FeedbackTab> {
           ),
           ElevatedButton(
             onPressed: () async {
+              final router = Navigator.of(context);
+              final messenger = ScaffoldMessenger.of(context);
+              
               try {
                 await widget.service.submitFeedback(
                   widget.projectId,
@@ -2252,13 +2284,14 @@ class _FeedbackTabState extends State<FeedbackTab> {
                   rating: rating,
                   comments: commentsController.text,
                 );
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
+                
+                router.pop();
+                messenger.showSnackBar(
                   const SnackBar(content: Text('Feedback submitted successfully!')),
                 );
                 _loadData(); // Refresh the list
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                messenger.showSnackBar(
                   SnackBar(content: Text('Error: $e')),
                 );
               }
@@ -2276,8 +2309,7 @@ class BoqTab extends StatefulWidget {
   final String projectId;
   final ProjectModuleService service;
 
-  const BoqTab({Key? key, required this.projectId, required this.service})
-      : super(key: key);
+  const BoqTab({super.key, required this.projectId, required this.service});
 
   @override
   State<BoqTab> createState() => _BoqTabState();
@@ -2320,7 +2352,7 @@ class _BoqTabState extends State<BoqTab> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.receipt_long, size: 64, color: Colors.grey),
+            const Icon(Icons.receipt_long, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
               'No BoQ items available',

@@ -151,7 +151,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   LinearProgressIndicator(
                     value: 0.75,
                     backgroundColor: Colors.grey[200],
-                    valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                    valueColor: const AlwaysStoppedAnimation<Color>(primaryColor),
                     minHeight: 8,
                   ),
                 ],
@@ -261,7 +261,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     style: OutlinedButton.styleFrom(
                       padding:
                           const EdgeInsets.symmetric(vertical: defaultPadding),
-                      side: BorderSide(color: primaryColor),
+                      side: const BorderSide(color: primaryColor),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -459,7 +459,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           LinearProgressIndicator(
             value: (phase['progress'] as int) / 100,
             backgroundColor: Colors.grey[200],
-            valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+            valueColor: const AlwaysStoppedAnimation<Color>(primaryColor),
             minHeight: 8,
           ),
           const SizedBox(height: 8),

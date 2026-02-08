@@ -17,7 +17,7 @@ class PasswordRecoveryScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.lock_reset,
               size: 80,
               color: logoRed,

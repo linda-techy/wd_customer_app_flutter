@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../models/api_models.dart';
 import 'api_service.dart';
 import 'auth_service.dart';
@@ -113,7 +114,7 @@ class DashboardService {
         role: userInfo.role,
       );
     } catch (e) {
-      print('Error getting user summary: $e');
+      debugPrint('Error getting user summary: $e');
       return null;
     }
   }
