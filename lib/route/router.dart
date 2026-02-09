@@ -136,6 +136,14 @@ Route<dynamic> generateRoute(RouteSettings settings) {
             );
           }
           break;
+        case 'site_updates':
+          if (projectIdStr.isNotEmpty) {
+            return FadeSlidePageRoute(
+              settings: settings,
+              page: SiteUpdatesScreen(projectId: projectIdStr),
+            );
+          }
+          break;
       }
     }
   }
@@ -278,8 +286,28 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         page: const PaymentsScreen(),
       );
     case siteUpdatesScreenRoute:
+      // Check if projectId is provided in route arguments or query params
+      final projectId = settings.arguments as String? ?? 
+                       uri.queryParameters['projectId'];
+      if (projectId != null && projectId.isNotEmpty) {
+        return FadeSlidePageRoute(
+          page: SiteUpdatesScreen(projectId: projectId),
+        );
+      }
+      // Fallback: try to get projectId from route path if it's in format site_updates/projectId
+      if (segments.length == 2 && segments[0] == 'site_updates') {
+        return FadeSlidePageRoute(
+          page: SiteUpdatesScreen(projectId: segments[1]),
+        );
+      }
+      // If no projectId, show error or redirect
       return FadeSlidePageRoute(
-        page: const SiteUpdatesScreen(),
+        page: Scaffold(
+          appBar: AppBar(title: const Text('Error')),
+          body: const Center(
+            child: Text('Project ID is required to view site updates'),
+          ),
+        ),
       );
 
     default:

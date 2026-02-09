@@ -9,6 +9,13 @@ import '../models/api_models.dart';
 import '../design_tokens/app_colors.dart';
 import '../services/dashboard_service.dart';
 import 'project/views/design_package_selection_screen.dart';
+import 'project/views/quality_checks_screen.dart';
+import 'project/views/activity_feed_screen.dart';
+import 'project/views/site_visits_list_screen.dart';
+import 'project/views/observations_screen.dart';
+import 'project/views/queries_screen.dart';
+import 'project/views/feedback_screen.dart';
+import 'project/views/boq_screen.dart';
 import '../widgets/project_module_card.dart';
 import '../widgets/circular_progress_ring.dart';
 import '../widgets/shimmer_loading.dart';
@@ -125,21 +132,21 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           ),
           _buildSection('Project Management', [
             _buildModuleCard(Icons.folder_outlined, 'Documents', 'View project files', 'documents'),
-            _buildModuleCard(Icons.fact_check_outlined, 'Quality', 'Track quality', null, color: AppColors.success),
-            _buildModuleCard(Icons.timeline, 'Activity', 'Recent updates', null, color: AppColors.info),
+            _buildModuleCardWithScreen(Icons.fact_check_outlined, 'Quality', 'Track quality', QualityChecksScreen(projectId: widget.projectId), color: AppColors.success),
+            _buildModuleCardWithScreen(Icons.timeline, 'Activity', 'Recent updates', ActivityFeedScreen(projectId: widget.projectId), color: AppColors.info),
             _buildModuleCard(Icons.calendar_today, 'Schedule', 'View timeline', 'schedule', color: AppColors.warning),
           ]),
           _buildSection('Visual Media', [
             _buildModuleCard(Icons.photo_library_outlined, 'Gallery', 'Project photos', 'project_gallery', color: const Color(0xFFEC4899)),
             _buildModuleCard(Icons.videocam_outlined, 'CCTV', 'Live monitoring', 'cctv_surveillance', color: const Color(0xFF8B5CF6)),
             _buildModuleCard(Icons.vrpano_outlined, '360° View', 'Virtual tour', 'three_d_design', color: const Color(0xFF06B6D4)),
-            _buildModuleCard(Icons.location_on_outlined, 'Site Visits', 'Visit history', null, color: const Color(0xFFF59E0B)),
+            _buildModuleCardWithScreen(Icons.location_on_outlined, 'Site Visits', 'Visit history', SiteVisitsListScreen(projectId: widget.projectId), color: const Color(0xFFF59E0B)),
           ]),
           _buildSection('Communication', [
-            _buildModuleCard(Icons.visibility_outlined, 'Observations', 'Track issues', null, badge: 3),
-            _buildModuleCard(Icons.help_outline, 'Queries', 'Ask questions', null, color: const Color(0xFF3B82F6)),
-            _buildModuleCard(Icons.feedback_outlined, 'Feedback', 'Share thoughts', null, color: const Color(0xFF10B981)),
-            _buildModuleCard(Icons.receipt_long_outlined, 'BoQ', 'Bill of quantities', null, color: const Color(0xFF6366F1)),
+            _buildModuleCardWithScreen(Icons.visibility_outlined, 'Observations', 'Track issues', ObservationsScreen(projectId: widget.projectId)),
+            _buildModuleCardWithScreen(Icons.help_outline, 'Queries', 'Ask questions', QueriesScreen(projectId: widget.projectId), color: const Color(0xFF3B82F6)),
+            _buildModuleCardWithScreen(Icons.feedback_outlined, 'Feedback', 'Share thoughts', FeedbackScreen(projectId: widget.projectId), color: const Color(0xFF10B981)),
+            _buildModuleCardWithScreen(Icons.receipt_long_outlined, 'BoQ', 'Bill of quantities', BoqScreen(projectId: widget.projectId), color: const Color(0xFF6366F1)),
           ]),
           const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],
@@ -522,17 +529,30 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
       onTap: () {
         if (route != null) {
           Navigator.pushNamed(context, '/$route/${widget.projectId}');
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$title - Coming Soon!'),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          );
         }
+      },
+    );
+  }
+
+  Widget _buildModuleCardWithScreen(
+    IconData icon,
+    String title,
+    String subtitle,
+    Widget screen, {
+    Color? color,
+    int? badge,
+  }) {
+    return ProjectModuleCard(
+      icon: icon,
+      title: title,
+      subtitle: subtitle,
+      iconColor: color,
+      badgeCount: badge,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => screen),
+        );
       },
     );
   }

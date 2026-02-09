@@ -142,10 +142,18 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            // Background Image
-            Image.network(
-              "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800",
-              fit: BoxFit.cover,
+            // Background Gradient with Icon
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFFD32F2F), Color(0xFF1565C0)],
+                ),
+              ),
+              child: const Center(
+                child: Icon(Icons.construction, size: 80, color: Colors.white24),
+              ),
             ).animate().fadeIn(duration: 800.ms),
             
             // Gradient Overlay

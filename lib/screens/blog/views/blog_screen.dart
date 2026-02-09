@@ -1,9 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
 import '../../../constants.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/scale_button.dart';
+
+String _formatRelativeDate(DateTime date) {
+  final now = DateTime.now();
+  final diff = now.difference(date);
+  if (diff.inDays == 0) return 'Today';
+  if (diff.inDays == 1) return 'Yesterday';
+  if (diff.inDays < 7) return '${diff.inDays} days ago';
+  if (diff.inDays < 30) return '${(diff.inDays / 7).floor()} weeks ago';
+  if (diff.inDays < 365) {
+    final months = (diff.inDays / 30).floor();
+    return months == 1 ? '1 month ago' : '$months months ago';
+  }
+  return DateFormat('MMMM yyyy').format(date);
+}
 
 class BlogScreen extends StatelessWidget {
   const BlogScreen({super.key});
@@ -91,11 +106,12 @@ class BlogScreen extends StatelessWidget {
   }
 
   Widget _buildBlogCard(BuildContext context, int index) {
+    final now = DateTime.now();
     final blogData = [
       {
         'title': 'Kerala-Style Home Design: Traditional Nalukettu to Modern',
         'category': 'Kerala Homes',
-        'date': '15 മാർച് 2025',
+        'date': _formatRelativeDate(now.subtract(const Duration(days: 5))),
         'readTime': '6 min read',
         'description': 'From nalukettu and sloping roofs to contemporary Kerala villas—design ideas and cost per sq ft that suit Kerala climate and culture.',
         'image': 'assets/construction/residential_indian.png',
@@ -104,16 +120,16 @@ class BlogScreen extends StatelessWidget {
       {
         'title': 'Monsoon-Proofing Your Building in Kerala',
         'category': 'Kerala Tips',
-        'date': '12 മാർച് 2025',
+        'date': _formatRelativeDate(now.subtract(const Duration(days: 12))),
         'readTime': '5 min read',
         'description': 'Waterproofing, drainage, and material choices that stand up to heavy rains—essential for every builder and homeowner in Kerala.',
         'image': 'assets/construction/construction_site.jpg',
         'isAsset': true,
       },
       {
-        'title': 'Construction Cost in Kerala & India 2025: Per Sq Ft Guide',
+        'title': 'Construction Cost in Kerala & India ${now.year}: Per Sq Ft Guide',
         'category': 'Cost & Budget',
-        'date': '10 മാർച് 2025',
+        'date': _formatRelativeDate(now.subtract(const Duration(days: 30))),
         'readTime': '8 min read',
         'description': 'Latest rates for residential and commercial construction across Kerala and major Indian cities. Plan your budget with real numbers.',
         'image': 'assets/construction/hero_indian.png',
@@ -122,7 +138,7 @@ class BlogScreen extends StatelessWidget {
       {
         'title': 'RERA & Building Rules in Kerala: What You Must Know',
         'category': 'Regulations',
-        'date': '8 മാർച് 2025',
+        'date': _formatRelativeDate(now.subtract(const Duration(days: 45))),
         'readTime': '7 min read',
         'description': 'RERA registration, local body approvals, and Kerala building rules—stay compliant and avoid delays and penalties.',
         'image': 'assets/construction/commercial_indian.png',
@@ -131,7 +147,7 @@ class BlogScreen extends StatelessWidget {
       {
         'title': 'Eco-Friendly Materials Popular in South India',
         'category': 'Sustainability',
-        'date': '5 മാർച് 2025',
+        'date': _formatRelativeDate(now.subtract(const Duration(days: 60))),
         'readTime': '6 min read',
         'description': 'Laterite, bamboo, recycled aggregates, and low-carbon options that work well in Kerala and Tamil Nadu climates.',
         'image': 'assets/construction/landscape_indian.png',
@@ -140,7 +156,7 @@ class BlogScreen extends StatelessWidget {
       {
         'title': 'Commercial Construction Trends in Kerala',
         'category': 'Commercial',
-        'date': '3 മാർച് 2025',
+        'date': _formatRelativeDate(now.subtract(const Duration(days: 75))),
         'readTime': '5 min read',
         'description': 'Office spaces, retail, and mixed-use projects—trends and best practices for developers and investors in Kerala.',
         'image': 'assets/construction/commercial_project.jpg',

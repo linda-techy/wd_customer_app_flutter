@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 
-// Construction Project Demo Images (placeholders)
-const constructionDemoImg1 =
-    "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800"; // Building construction
-const constructionDemoImg2 =
-    "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800"; // Construction site
-const constructionDemoImg3 =
-    "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800"; // Modern building
-const constructionDemoImg4 =
-    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800"; // Office building
-const constructionDemoImg5 =
-    "https://images.unsplash.com/photo-1590948347862-c1c4e5e0e3de?w=800"; // Industrial
-const constructionDemoImg6 =
-    "https://images.unsplash.com/photo-1513584684374-8bab748fbf90?w=800"; // Residential
+// Construction Project Demo Images (local assets)
+const constructionDemoImg1 = "assets/construction/construction_site.jpg"; // Building construction
+const constructionDemoImg2 = "assets/construction/hero_indian.png"; // Construction site
+const constructionDemoImg3 = "assets/construction/commercial_project.jpg"; // Modern building
+const constructionDemoImg4 = "assets/construction/commercial_indian.png"; // Office building
+const constructionDemoImg5 = "assets/construction/landscape_indian.png"; // Industrial
+const constructionDemoImg6 = "assets/construction/residential_indian.png"; // Residential
 
 // Brand Font
 const grandisExtendedFont = "Grandis Extended";
@@ -112,3 +106,6 @@ const pasNotMatchErrorText = "passwords do not match";
 
 /// Company contact email - use for all mailto, contact, and support links.
 const String companyEmail = 'info@walldotbuilders.com';
+
+/// Support WhatsApp number - use for all WhatsApp contact links.
+const String supportWhatsAppNumber = '919074954874';

@@ -134,7 +134,8 @@ class PortfolioScreen extends StatelessWidget {
         'features': ['25 Stories', 'LEED Certified', 'Smart Building'],
         'icon': Icons.business,
         'color': Colors.blue,
-        'image': 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800',
+        'image': 'assets/construction/commercial_indian.png',
+        'isAsset': true,
       },
       {
         'title': 'Luxury Residential Complex',
@@ -146,7 +147,8 @@ class PortfolioScreen extends StatelessWidget {
         'features': ['50 Units', 'Luxury Finishes', 'Swimming Pool'],
         'icon': Icons.apartment,
         'color': Colors.green,
-        'image': 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800',
+        'image': 'assets/construction/residential_indian.png',
+        'isAsset': true,
       },
       {
         'title': 'Industrial Manufacturing',
@@ -158,7 +160,8 @@ class PortfolioScreen extends StatelessWidget {
         'features': ['100k sq ft', 'Automated', 'Green Certified'],
         'icon': Icons.factory,
         'color': Colors.orange,
-        'image': 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800',
+        'image': 'assets/construction/landscape_indian.png',
+        'isAsset': true,
       },
       {
         'title': 'Modern Shopping Center',
@@ -170,7 +173,8 @@ class PortfolioScreen extends StatelessWidget {
         'features': ['100+ Stores', 'Entertainment', 'Open Air'],
         'icon': Icons.store,
         'color': Colors.purple,
-        'image': 'https://images.unsplash.com/photo-1519567241046-7f570eee3d9f?w=800',
+        'image': 'assets/construction/commercial_project.jpg',
+        'isAsset': true,
       },
     ];
 
@@ -199,7 +203,7 @@ class PortfolioScreen extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                  child: Image.network(
+                  child: Image.asset(
                     data['image'] as String,
                     height: 200,
                     width: double.infinity,

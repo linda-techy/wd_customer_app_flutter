@@ -4,6 +4,11 @@ import '../../../constants.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/scale_button.dart';
+import '../../../services/dashboard_service.dart';
+import '../../../services/project_module_service.dart';
+import '../../../services/auth_service.dart';
+import '../../../config/api_config.dart';
+import '../../../models/project_module_models.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -14,49 +19,9 @@ class NotificationsScreen extends StatefulWidget {
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
   String selectedFilter = 'All';
-
-  final List<ConstructionNotification> notifications = [
-    ConstructionNotification(
-      id: '1',
-      type: NotificationType.projectUpdate,
-      title: 'Project Milestone Achieved',
-      message: 'Foundation work for your villa project has been completed successfully.',
-      timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-      isRead: false,
-      icon: Icons.construction_rounded,
-      color: logoRed,
-    ),
-    ConstructionNotification(
-      id: '2',
-      type: NotificationType.payment,
-      title: 'Payment Due Reminder',
-      message: 'Your next installment of ₹5,00,000 is due on 25th Oct 2025.',
-      timestamp: DateTime.now().subtract(const Duration(hours: 5)),
-      isRead: false,
-      icon: Icons.payments_rounded,
-      color: Colors.orange,
-    ),
-    ConstructionNotification(
-      id: '3',
-      type: NotificationType.siteVisit,
-      title: 'Site Visit Scheduled',
-      message: 'Your site inspection is scheduled for tomorrow at 10:00 AM.',
-      timestamp: DateTime.now().subtract(const Duration(days: 1)),
-      isRead: true,
-      icon: Icons.calendar_today_rounded,
-      color: Colors.blue,
-    ),
-     ConstructionNotification(
-      id: '4',
-      type: NotificationType.document,
-      title: 'New Document Available',
-      message: 'Building plan approval certificate has been uploaded to your account.',
-      timestamp: DateTime.now().subtract(const Duration(days: 1)),
-      isRead: true,
-      icon: Icons.insert_drive_file_rounded,
-      color: successColor,
-    ),
-  ];
+  bool _isLoading = true;
+  String? _error;
+  final List<ConstructionNotification> notifications = [];
 
   List<ConstructionNotification> get filteredNotifications {
     if (selectedFilter == 'All') return notifications;
@@ -92,6 +57,117 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     setState(() {
       notifications.removeWhere((n) => n.id == id);
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifications();
+  }
+
+  Future<void> _loadNotifications() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      // Get access token
+      final token = await AuthService.getAccessToken();
+      if (token == null) {
+        setState(() {
+          _isLoading = false;
+          _error = 'Please log in to view notifications';
+        });
+        return;
+      }
+
+      // Fetch user's projects
+      final projectsResponse = await DashboardService.searchProjects();
+      if (!projectsResponse.success || projectsResponse.data == null || projectsResponse.data!.isEmpty) {
+        setState(() {
+          _isLoading = false;
+          _error = 'No projects found';
+        });
+        return;
+      }
+
+      // Get the first project (most recent)
+      final firstProject = projectsResponse.data!.first;
+      final projectId = firstProject.projectUuid ?? firstProject.id.toString();
+      
+      if (projectId.isEmpty) {
+        setState(() {
+          _isLoading = false;
+          _error = 'Invalid project ID';
+        });
+        return;
+      }
+
+      // Initialize ProjectModuleService
+      final projectModuleService = ProjectModuleService(
+        baseUrl: ApiConfig.baseUrl,
+        token: token,
+      );
+
+      // Fetch combined activities
+      final activities = await projectModuleService.getCombinedActivities(projectId);
+
+      // Transform activities into notifications
+      final transformedNotifications = activities.map((activity) {
+        return _transformActivityToNotification(activity);
+      }).toList();
+
+      setState(() {
+        notifications.clear();
+        notifications.addAll(transformedNotifications);
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _error = 'Failed to load notifications: ${e.toString()}';
+      });
+    }
+  }
+
+  ConstructionNotification _transformActivityToNotification(CombinedActivityItem activity) {
+    NotificationType type;
+    IconData icon;
+    Color color;
+    String title;
+    String message;
+
+    if (activity.isSiteReport) {
+      type = NotificationType.projectUpdate;
+      icon = Icons.construction_rounded;
+      color = logoRed;
+      title = 'Site Report Update';
+      message = activity.description ?? activity.title;
+    } else if (activity.isQuery) {
+      type = NotificationType.alert;
+      icon = Icons.help_outline_rounded;
+      color = Colors.orange;
+      title = 'Project Query';
+      message = activity.description ?? activity.title;
+    } else {
+      type = NotificationType.general;
+      icon = Icons.notifications_rounded;
+      color = primaryColor;
+      title = activity.title;
+      message = activity.description ?? 'New activity update';
+    }
+
+    return ConstructionNotification(
+      id: activity.id.toString(),
+      type: type,
+      title: title,
+      message: message,
+      timestamp: activity.timestamp,
+      isRead: activity.status == 'RESOLVED' || activity.status == 'CLOSED',
+      icon: icon,
+      color: color,
+    );
   }
 
   @override
@@ -169,19 +245,56 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           // List
           SliverPadding(
             padding: const EdgeInsets.all(20),
-            sliver: filteredNotifications.isEmpty
-                ? SliverToBoxAdapter(child: _buildEmptyState())
-                : SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        return FadeEntry(
-                          delay: (index * 50).ms,
-                          child: _buildNotificationItem(filteredNotifications[index]),
-                        );
-                      },
-                      childCount: filteredNotifications.length,
+            sliver: _isLoading
+                ? SliverToBoxAdapter(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(40.0),
+                        child: CircularProgressIndicator(color: primaryColor),
+                      ),
                     ),
-                  ),
+                  )
+                : _error != null
+                    ? SliverToBoxAdapter(
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(40.0),
+                            child: Column(
+                              children: [
+                                Icon(Icons.error_outline, size: 48, color: errorColor),
+                                const SizedBox(height: 16),
+                                Text(
+                                  _error!,
+                                  style: const TextStyle(color: blackColor60),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: _loadNotifications,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: primaryColor,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: const Text('Retry'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                    : filteredNotifications.isEmpty
+                        ? SliverToBoxAdapter(child: _buildEmptyState())
+                        : SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                return FadeEntry(
+                                  delay: (index * 50).ms,
+                                  child: _buildNotificationItem(filteredNotifications[index]),
+                                );
+                              },
+                              childCount: filteredNotifications.length,
+                            ),
+                          ),
           ),
         ],
       ),

@@ -87,43 +87,64 @@ class SiteUpdateCard extends StatelessWidget {
             ),
 
             // Image Carousel (Simple single image for now, can be expanded)
-            if (imageUrls.isNotEmpty)
-              Container(
-                height: 250,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: blackColor5,
-                  image: DecorationImage(
-                    image: CachedNetworkImageProvider(imageUrls.first),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    if (imageUrls.length > 1)
-                      Positioned(
-                        right: 12,
-                        top: 12,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.6),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            "1/${imageUrls.length}",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
+            Container(
+              height: 250,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: blackColor5,
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+                gradient: imageUrls.isEmpty
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          primaryColor.withOpacity(0.6),
+                          primaryColor.withOpacity(0.4),
+                          primaryColor.withOpacity(0.2),
+                        ],
+                      )
+                    : null,
+                image: imageUrls.isNotEmpty
+                    ? DecorationImage(
+                        image: CachedNetworkImageProvider(imageUrls.first),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: imageUrls.isEmpty
+                  ? const Center(
+                      child: Icon(
+                        Icons.construction,
+                        size: 64,
+                        color: Colors.white70,
+                      ),
+                    )
+                  : Stack(
+                      children: [
+                        if (imageUrls.length > 1)
+                          Positioned(
+                            right: 12,
+                            top: 12,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                "1/${imageUrls.length}",
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
+                      ],
+                    ),
+            ),
 
             // Description & Actions
             Padding(

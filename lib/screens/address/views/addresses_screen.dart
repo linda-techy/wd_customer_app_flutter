@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../constants.dart';
 import '../../../utils/responsive.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/scale_button.dart';
+import '../../../services/dashboard_service.dart';
+import '../../../models/api_models.dart';
 
 class AddressesScreen extends StatefulWidget {
   const AddressesScreen({super.key});
@@ -15,39 +16,42 @@ class AddressesScreen extends StatefulWidget {
 }
 
 class _AddressesScreenState extends State<AddressesScreen> {
-  // Sample job sites for construction projects
-  final List<Map<String, dynamic>> jobSites = [
-    {
-      'name': 'Villa Project - Kochi',
-      'address': 'Panampilly Nagar, Kochi, Kerala 682036',
-      'type': 'Residential',
-      'status': 'Active',
-      'contact': '+91 98765 43210',
-      'coordinates': {'lat': 9.9674, 'lng': 76.3166},
-      'image':
-          'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400',
-    },
-    {
-      'name': 'Office Complex - Thiruvananthapuram',
-      'address': 'Technopark, Thiruvananthapuram, Kerala 695581',
-      'type': 'Commercial',
-      'status': 'Planning',
-      'contact': '+91 98765 43211',
-      'coordinates': {'lat': 8.5081, 'lng': 76.9566},
-      'image':
-          'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400',
-    },
-    {
-      'name': 'Industrial Unit - Kozhikode',
-      'address': 'Industrial Area, Kozhikode, Kerala 673001',
-      'type': 'Industrial',
-      'status': 'Completed',
-      'contact': '+91 98765 43212',
-      'coordinates': {'lat': 11.2588, 'lng': 75.7804},
-      'image':
-          'https://images.unsplash.com/photo-1590948347862-c1c4e5e0e3de?w=400',
-    },
-  ];
+  List<ProjectCard> _projects = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProjects();
+  }
+
+  Future<void> _loadProjects() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final response = await DashboardService.searchProjects();
+      if (response.success && response.data != null) {
+        setState(() {
+          _projects = response.data!;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _error = response.error?.message ?? 'Failed to load projects';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _error = 'Error loading projects: ${e.toString()}';
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,51 +70,34 @@ class _AddressesScreenState extends State<AddressesScreen> {
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          jobSites.isEmpty ? _buildEmptyState() : _buildJobSitesList(),
-          
-          // Floating Map Button
-          Positioned(
-            bottom: defaultPadding * 2,
-            right: defaultPadding,
-            child: ScaleButton(
-              onTap: () {
-                 ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Map View coming soon')),
-                  );
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                decoration: BoxDecoration(
-                  color: blackColor,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: blackColor.withOpacity(0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.map, color: Colors.white, size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      "View on Map",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Text(
+                          _error!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: blackColor),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ).animate().slide(begin: const Offset(0, 1), curve: Curves.easeOutBack, duration: 600.ms),
-        ],
-      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadProjects,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                )
+              : _projects.isEmpty
+                  ? _buildEmptyState()
+                  : _buildJobSitesList(),
     );
   }
 
@@ -194,43 +181,63 @@ class _AddressesScreenState extends State<AddressesScreen> {
   }
 
   Widget _buildJobSitesList() {
-    return ListView.builder(
-      padding: const EdgeInsets.only(
-          left: defaultPadding,
-          right: defaultPadding,
-          top: defaultPadding,
-          bottom: defaultPadding * 6), // Space for floating button
-      itemCount: jobSites.length,
-      itemBuilder: (context, index) {
-        final site = jobSites[index];
-        return FadeEntry(
-          delay: (100 * index).ms,
-          child: _buildJobSiteCard(site, index),
-        );
-      },
+    return RefreshIndicator(
+      onRefresh: _loadProjects,
+      child: ListView.builder(
+        padding: const EdgeInsets.only(
+            left: defaultPadding,
+            right: defaultPadding,
+            top: defaultPadding,
+            bottom: defaultPadding),
+        itemCount: _projects.length,
+        itemBuilder: (context, index) {
+          final project = _projects[index];
+          return FadeEntry(
+            delay: (100 * index).ms,
+            child: _buildJobSiteCard(project, index),
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildJobSiteCard(Map<String, dynamic> site, int index) {
+  Widget _buildJobSiteCard(ProjectCard project, int index) {
     Color statusColor;
     IconData statusIcon;
+    String statusText = project.status ?? 'Unknown';
 
-    switch (site['status']) {
-      case 'Active':
+    switch (statusText.toLowerCase()) {
+      case 'active':
+      case 'in_progress':
+      case 'ongoing':
         statusColor = successColor;
         statusIcon = Icons.engineering;
         break;
-      case 'Planning':
+      case 'planning':
+      case 'planned':
         statusColor = warningColor;
         statusIcon = Icons.architecture;
         break;
-      case 'Completed':
+      case 'completed':
+      case 'finished':
         statusColor = Colors.blue;
         statusIcon = Icons.verified;
         break;
       default:
         statusColor = Colors.grey;
         statusIcon = Icons.help;
+    }
+
+    // Determine project type from name or use default
+    String projectType = 'Construction';
+    if (project.name.toLowerCase().contains('villa') || 
+        project.name.toLowerCase().contains('residential')) {
+      projectType = 'Residential';
+    } else if (project.name.toLowerCase().contains('office') || 
+               project.name.toLowerCase().contains('commercial')) {
+      projectType = 'Commercial';
+    } else if (project.name.toLowerCase().contains('industrial')) {
+      projectType = 'Industrial';
     }
 
     return Padding(
@@ -252,16 +259,21 @@ class _AddressesScreenState extends State<AddressesScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with image
+              // Header with placeholder image
               Stack(
                 children: [
                   Container(
                     height: 160,
                     decoration: BoxDecoration(
                       borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                      image: DecorationImage(
-                        image: NetworkImage(site['image']),
-                        fit: BoxFit.cover,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          primaryColor.withOpacity(0.8),
+                          primaryColor.withOpacity(0.6),
+                          primaryColor.withOpacity(0.4),
+                        ],
                       ),
                     ),
                     child: Container(
@@ -273,6 +285,13 @@ class _AddressesScreenState extends State<AddressesScreen> {
                             Colors.transparent,
                             Colors.black.withOpacity(0.7),
                           ],
+                        ),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.construction,
+                          size: 64,
+                          color: Colors.white70,
                         ),
                       ),
                     ),
@@ -291,7 +310,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                           const Icon(Icons.business, size: 14, color: blackColor),
                           const SizedBox(width: 4),
                           Text(
-                            site['type'].toUpperCase(),
+                            projectType.toUpperCase(),
                             style: const TextStyle(
                               fontSize: 10, 
                               fontWeight: FontWeight.w900,
@@ -323,7 +342,8 @@ class _AddressesScreenState extends State<AddressesScreen> {
                         children: [
                           Icon(statusIcon, size: 12, color: Colors.white),
                           const SizedBox(width: 6),
-                          if (site['status'] == 'Active')
+                          if (statusText.toLowerCase() == 'active' || 
+                              statusText.toLowerCase() == 'in_progress')
                             Container(
                               width: 6,
                               height: 6,
@@ -334,7 +354,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                               ),
                             ).animate(onPlay: (c) => c.repeat()).fade(duration: 800.ms),
                           Text(
-                            site['status'],
+                            statusText,
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
@@ -355,7 +375,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      site['name'],
+                      project.name,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -363,6 +383,16 @@ class _AddressesScreenState extends State<AddressesScreen> {
                         height: 1.2,
                       ),
                     ),
+                    if (project.code != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        'Code: ${project.code}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: blackColor60,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -371,7 +401,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            site['address'],
+                            project.location ?? 'Location not specified',
                             style: const TextStyle(
                               fontSize: 14,
                               color: blackColor60,
@@ -386,7 +416,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                       children: [
                         Expanded(
                           child: ScaleButton(
-                            onTap: () => _showSiteDetails(site),
+                            onTap: () => _showSiteDetails(project),
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               decoration: BoxDecoration(
@@ -409,7 +439,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: ScaleButton(
-                            onTap: () => _requestSiteVisit(site),
+                            onTap: () => _requestSiteVisit(project),
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               decoration: BoxDecoration(
@@ -522,7 +552,18 @@ class _AddressesScreenState extends State<AddressesScreen> {
     );
   }
 
-  void _showSiteDetails(Map<String, dynamic> site) {
+  void _showSiteDetails(ProjectCard project) {
+    String projectType = 'Construction';
+    if (project.name.toLowerCase().contains('villa') || 
+        project.name.toLowerCase().contains('residential')) {
+      projectType = 'Residential';
+    } else if (project.name.toLowerCase().contains('office') || 
+               project.name.toLowerCase().contains('commercial')) {
+      projectType = 'Commercial';
+    } else if (project.name.toLowerCase().contains('industrial')) {
+      projectType = 'Industrial';
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -565,11 +606,11 @@ class _AddressesScreenState extends State<AddressesScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              site['name'],
+                              project.name,
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                             ),
                             Text(
-                              site['type'],
+                              projectType,
                               style: const TextStyle(color: blackColor60, fontSize: 14),
                             ),
                           ],
@@ -578,11 +619,15 @@ class _AddressesScreenState extends State<AddressesScreen> {
                     ],
                   ),
                   const Divider(height: 48),
-                   _buildDetailRow("Status", site['status'], isStatus: true),
-                  _buildDetailRow("Address", site['address']),
-                  _buildDetailRow("Contact", site['contact']),
-                  _buildDetailRow("Coordinates",
-                      "${site['coordinates']['lat']}, ${site['coordinates']['lng']}"),
+                   _buildDetailRow("Status", project.status ?? 'Unknown', isStatus: true),
+                  _buildDetailRow("Address", project.location ?? 'Not specified'),
+                  if (project.code != null)
+                    _buildDetailRow("Project Code", project.code!),
+                  if (project.startDate != null)
+                    _buildDetailRow("Start Date", project.startDate!),
+                  if (project.endDate != null)
+                    _buildDetailRow("End Date", project.endDate!),
+                  _buildDetailRow("Progress", "${(project.progress * 100).toStringAsFixed(0)}%"),
                 ],
               ),
             ),
@@ -640,35 +685,17 @@ class _AddressesScreenState extends State<AddressesScreen> {
     );
   }
 
-  void _requestSiteVisit(Map<String, dynamic> site) {
-    final phone = site['contact']?.toString().replaceAll(' ', '') ?? '';
+  void _requestSiteVisit(ProjectCard project) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text("Site visit requested for ${site['name']}"),
+        content: Text("Site visit requested for ${project.name}"),
         backgroundColor: primaryColor,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         action: SnackBarAction(
-          label: "Call Now",
+          label: "OK",
           textColor: Colors.white,
-          onPressed: () async {
-            if (phone.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('No contact number available')),
-              );
-              return;
-            }
-            final uri = Uri(scheme: 'tel', path: phone);
-            if (await canLaunchUrl(uri)) {
-              await launchUrl(uri);
-            } else {
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Cannot call $phone')),
-                );
-              }
-            }
-          },
+          onPressed: () {},
         ),
       ),
     );

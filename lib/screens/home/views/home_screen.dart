@@ -256,7 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: ScaleButton(
         onTap: () async {
-          final uri = Uri.parse("https://wa.me/919074954874");
+          final uri = Uri.parse("https://wa.me/$supportWhatsAppNumber");
           if (await canLaunchUrl(uri)) await launchUrl(uri);
         },
         child: Container(

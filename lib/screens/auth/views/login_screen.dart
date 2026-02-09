@@ -508,7 +508,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              "© 2024 Walldot Builders. All rights reserved.",
+              "© ${DateTime.now().year} Walldot Builders. All rights reserved.",
               style: TextStyle(
                 fontSize: (isSmallHeight ? ResponsiveFontSize.getBody(context) - 3 : ResponsiveFontSize.getBody(context) - 2),
                 color: Theme.of(context)

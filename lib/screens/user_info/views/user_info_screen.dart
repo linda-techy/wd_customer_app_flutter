@@ -119,8 +119,8 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                         ),
                         child: const CircleAvatar(
                           radius: 50,
-                          backgroundColor: Colors.white,
-                          backgroundImage: NetworkImage("https://i.imgur.com/IXnwbLk.png"),
+                          backgroundColor: Color(0xFFD32F2F),
+                          child: Icon(Icons.person, size: 50, color: Colors.white),
                         ),
                       ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
                       if (_isEditing)

@@ -22,16 +22,39 @@ class ProfileCard extends StatelessWidget {
   final bool isPro, isShowHi, isShowArrow;
   final VoidCallback? press;
 
+  String _getInitials(String name) {
+    if (name.isEmpty) return "?";
+    final parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name[0].toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
       onTap: press,
-      leading: CircleAvatar(
-        radius: 28,
-        child: NetworkImageWithLoader(
-          imageUrl: imageSrc,
-        ),
-      ),
+      leading: imageSrc.isEmpty
+          ? CircleAvatar(
+              radius: 28,
+              backgroundColor: primaryColor,
+              child: Text(
+                _getInitials(name),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            )
+          : ClipOval(
+              child: NetworkImageWithLoader(
+                imageUrl: imageSrc,
+                width: 56,
+                height: 56,
+              ),
+            ),
       title: Row(
         children: [
           Flexible(
