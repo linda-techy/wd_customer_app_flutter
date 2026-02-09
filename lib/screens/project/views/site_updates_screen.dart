@@ -190,13 +190,13 @@ class _SiteUpdatesScreenState extends State<SiteUpdatesScreen> {
               : RefreshIndicator(
                   onRefresh: _loadData,
                   child: _siteVisits.isEmpty && _groupedActivities.isEmpty
-                      ? Center(
+                      ? const Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.update_outlined, size: 64, color: blackColor60),
-                              const SizedBox(height: 16),
-                              const Text(
+                              Icon(Icons.update_outlined, size: 64, color: blackColor60),
+                              SizedBox(height: 16),
+                              Text(
                                 'No site updates available',
                                 style: TextStyle(color: blackColor60),
                               ),

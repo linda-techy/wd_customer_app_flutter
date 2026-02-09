@@ -557,21 +557,21 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   _ActivityTypeConfig _getActivityConfig(String type) {
     switch (type.toLowerCase()) {
       case 'site_report':
-        return _ActivityTypeConfig('Site Report', Icons.assignment, const Color(0xFF2563EB));
+        return const _ActivityTypeConfig('Site Report', Icons.assignment, Color(0xFF2563EB));
       case 'query':
-        return _ActivityTypeConfig('Query', Icons.help_outline, const Color(0xFF7C3AED));
+        return const _ActivityTypeConfig('Query', Icons.help_outline, Color(0xFF7C3AED));
       case 'observation':
-        return _ActivityTypeConfig('Observation', Icons.visibility, const Color(0xFFEA580C));
+        return const _ActivityTypeConfig('Observation', Icons.visibility, Color(0xFFEA580C));
       case 'gallery':
-        return _ActivityTypeConfig('Gallery', Icons.photo_library, const Color(0xFFEC4899));
+        return const _ActivityTypeConfig('Gallery', Icons.photo_library, Color(0xFFEC4899));
       case 'quality_check':
-        return _ActivityTypeConfig('Quality Check', Icons.verified, const Color(0xFF059669));
+        return const _ActivityTypeConfig('Quality Check', Icons.verified, Color(0xFF059669));
       case 'site_visit':
-        return _ActivityTypeConfig('Site Visit', Icons.location_on, const Color(0xFFD97706));
+        return const _ActivityTypeConfig('Site Visit', Icons.location_on, Color(0xFFD97706));
       case 'document':
-        return _ActivityTypeConfig('Document', Icons.description, const Color(0xFF0891B2));
+        return const _ActivityTypeConfig('Document', Icons.description, Color(0xFF0891B2));
       case 'all':
-        return _ActivityTypeConfig('All', Icons.list, primaryColor);
+        return const _ActivityTypeConfig('All', Icons.list, primaryColor);
       default:
         return _ActivityTypeConfig(
           type.replaceAll('_', ' ').split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),

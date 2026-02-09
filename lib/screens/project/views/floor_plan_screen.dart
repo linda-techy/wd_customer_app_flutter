@@ -369,7 +369,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
               ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
-                Text('Note: ${ _error}', style: const TextStyle(fontSize: 12, color: Colors.orange)),
+                Text('Note: $_error', style: const TextStyle(fontSize: 12, color: Colors.orange)),
               ],
               const SizedBox(height: 24),
               SizedBox(
