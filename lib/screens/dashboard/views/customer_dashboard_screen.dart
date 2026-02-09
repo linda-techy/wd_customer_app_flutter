@@ -215,10 +215,26 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
             background: Stack(
               fit: StackFit.expand,
               children: [
-                // "Live Site Look" Background Image (Placeholder)
-                Image.network(
-                  "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800",
-                  fit: BoxFit.cover,
+                // Construction-themed gradient background
+                Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF1A237E),
+                        Color(0xFF283593),
+                        Color(0xFF3949AB),
+                      ],
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.construction,
+                      size: 80,
+                      color: Colors.white.withOpacity(0.15),
+                    ),
+                  ),
                 ).animate().fadeIn(duration: 800.ms),
                 // Premium Gradient Overlay
                 Container(

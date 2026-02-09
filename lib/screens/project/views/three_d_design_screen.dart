@@ -3,6 +3,9 @@ import 'dart:ui';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../constants.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/project_module_service.dart';
+import '../../../config/api_config.dart';
+import '../../../models/project_module_models.dart';
 import '../../../components/animations/scale_button.dart';
 
 class ThreeDDesignScreen extends StatefulWidget {
@@ -17,8 +20,10 @@ class ThreeDDesignScreen extends StatefulWidget {
 class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
   bool isLoggedIn = false;
   int selectedView = 0;
+  ProjectModuleService? _service;
+  List<GalleryImage> _designImages = [];
+  bool _isLoading = true;
   
-  // Simulated 3D views
   final List<Map<String, dynamic>> views = [
     {"name": "Exterior", "icon": Icons.home_outlined},
     {"name": "Interior", "icon": Icons.chair_outlined},
@@ -29,18 +34,43 @@ class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
   @override
   void initState() {
     super.initState();
-    _checkAuthStatus();
+    _initialize();
   }
 
-  Future<void> _checkAuthStatus() async {
+  Future<void> _initialize() async {
     final loggedIn = await AuthService.isLoggedIn();
+    if (loggedIn) {
+      final token = await AuthService.getAccessToken();
+      if (token != null) {
+        _service = ProjectModuleService(baseUrl: ApiConfig.baseUrl, token: token);
+        await _loadDesignImages();
+      }
+    }
     setState(() {
       isLoggedIn = loggedIn;
+      _isLoading = false;
     });
+  }
+
+  Future<void> _loadDesignImages() async {
+    if (_service == null || widget.projectId == null) return;
+    try {
+      final images = await _service!.getGalleryImages(widget.projectId!);
+      setState(() => _designImages = images);
+    } catch (_) {
+      // Gallery may be empty - that's ok
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: const Center(child: CircularProgressIndicator(color: Colors.white)),
+      );
+    }
+
     if (!isLoggedIn) {
       return Scaffold(
         appBar: AppBar(title: const Text("3D Design"), backgroundColor: surfaceColor),
@@ -49,7 +79,7 @@ class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.black, // Dark background for cinema feel
+      backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text("3D Virtual Tour", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -58,10 +88,23 @@ class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
         elevation: 0,
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.share, color: Colors.white),
-            onPressed: () {},
-          ),
+          if (_designImages.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.photo_library, color: Colors.white, size: 16),
+                  const SizedBox(width: 4),
+                  Text('${_designImages.length} photos', style: const TextStyle(color: Colors.white, fontSize: 12)),
+                ],
+              ),
+            ),
           IconButton(
             icon: const Icon(Icons.fullscreen, color: Colors.white),
             onPressed: () {},
@@ -71,58 +114,17 @@ class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // 3D Viewport Placeholder
+          // 3D Viewport - show gallery image if available
           InteractiveViewer(
-             minScale: 0.5,
+            minScale: 0.5,
             maxScale: 2.0,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment.center,
-                  radius: 1.5,
-                  colors: [
-                    Color(0xFF2C3E50),
-                    Colors.black,
-                  ],
-                ),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      views[selectedView]['icon'], 
-                      size: 100, 
-                      color: Colors.white.withOpacity(0.2)
-                    ).animate(key: ValueKey(selectedView))
-                    .scale(duration: 600.ms, curve: Curves.easeOutBack)
-                    .fadeIn(),
-                    const SizedBox(height: 20),
-                    Text(
-                      "${views[selectedView]['name']} View",
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 2,
-                      ),
-                    ).animate(key: ValueKey(selectedView)).fadeIn(delay: 200.ms),
-                    const SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.white24),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        "Drag to Rotate • Pinch to Zoom",
-                        style: TextStyle(color: Colors.white54, fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            child: _designImages.isNotEmpty
+                ? Image.network(
+                    '${ApiConfig.baseUrl}${_designImages.first.imagePath}',
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _buildPlaceholderViewport(),
+                  )
+                : _buildPlaceholderViewport(),
           ),
 
           // View Selector - Floating Bottom
@@ -197,11 +199,17 @@ class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
             right: 20,
             child: Column(
               children: [
-                _buildSideButton(Icons.layers, "Layers", () {}),
+                _buildSideButton(Icons.layers, "Layers", () {
+                  _showSnack('Layer controls - Coming in future update');
+                }),
                 const SizedBox(height: 12),
-                _buildSideButton(Icons.wb_sunny, "Lighting", () {}),
+                _buildSideButton(Icons.wb_sunny, "Lighting", () {
+                  _showSnack('Lighting controls - Coming in future update');
+                }),
                 const SizedBox(height: 12),
-                _buildSideButton(Icons.straighten, "Measure", () {}),
+                _buildSideButton(Icons.straighten, "Measure", () {
+                  _showSnack('Measurement tool - Coming in future update');
+                }),
                 const SizedBox(height: 12),
                 _buildSideButton(Icons.info_outline, "Info", _showInfoSheet),
               ],
@@ -209,6 +217,65 @@ class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPlaceholderViewport() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: RadialGradient(
+          center: Alignment.center,
+          radius: 1.5,
+          colors: [
+            Color(0xFF2C3E50),
+            Colors.black,
+          ],
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              views[selectedView]['icon'], 
+              size: 100, 
+              color: Colors.white.withOpacity(0.2)
+            ).animate(key: ValueKey(selectedView))
+            .scale(duration: 600.ms, curve: Curves.easeOutBack)
+            .fadeIn(),
+            const SizedBox(height: 20),
+            Text(
+              "${views[selectedView]['name']} View",
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.5),
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+              ),
+            ).animate(key: ValueKey(selectedView)).fadeIn(delay: 200.ms),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white24),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                _designImages.isEmpty
+                    ? "No 3D designs uploaded yet"
+                    : "Drag to Rotate \u2022 Pinch to Zoom",
+                style: const TextStyle(color: Colors.white54, fontSize: 12),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSnack(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), duration: const Duration(seconds: 2)),
     );
   }
 
@@ -241,21 +308,21 @@ class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Modern Villa Design",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            Text(
+              "Project: ${widget.projectId ?? 'Unknown'}",
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
-              "Version 2.4 • Updated yesterday",
+              "${_designImages.length} design image${_designImages.length == 1 ? '' : 's'} available",
               style: TextStyle(color: blackColor.withOpacity(0.6)),
             ),
             const SizedBox(height: 24),
             Row(
               children: [
-                _buildInfoStat("Area", "2,500 sq ft"),
-                _buildInfoStat("Style", "Modern"),
-                _buildInfoStat("Est. Cost", "\$150k"),
+                _buildInfoStat("View", views[selectedView]['name']),
+                _buildInfoStat("Images", "${_designImages.length}"),
+                _buildInfoStat("Status", _designImages.isEmpty ? "Pending" : "Available"),
               ],
             ),
             const SizedBox(height: 24),

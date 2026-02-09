@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../constants.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/project_module_service.dart';
+import '../../../config/api_config.dart';
+import '../../../models/project_module_models.dart';
 import '../../../components/animations/scale_button.dart';
 
 class FloorPlanScreen extends StatefulWidget {
@@ -16,24 +19,61 @@ class FloorPlanScreen extends StatefulWidget {
 class _FloorPlanScreenState extends State<FloorPlanScreen> {
   bool isLoggedIn = false;
   int selectedFloor = 0;
+  ProjectModuleService? _service;
+  List<GalleryImage> _floorPlanImages = [];
+  bool _isLoading = true;
+  String? _error;
   
   final List<String> floors = ["Ground Floor", "First Floor", "Second Floor"];
 
   @override
   void initState() {
     super.initState();
-    _checkAuthStatus();
+    _initialize();
   }
 
-  Future<void> _checkAuthStatus() async {
+  Future<void> _initialize() async {
     final loggedIn = await AuthService.isLoggedIn();
+    if (loggedIn) {
+      final token = await AuthService.getAccessToken();
+      if (token != null) {
+        _service = ProjectModuleService(baseUrl: ApiConfig.baseUrl, token: token);
+        await _loadFloorPlans();
+      }
+    }
     setState(() {
       isLoggedIn = loggedIn;
+      _isLoading = false;
     });
+  }
+
+  Future<void> _loadFloorPlans() async {
+    if (_service == null || widget.projectId == null) return;
+    try {
+      // Fetch gallery images - floor plans are typically in the gallery
+      final images = await _service!.getGalleryImages(widget.projectId!);
+      // Filter for floor plan related images by caption/description
+      final floorPlans = images.where((img) {
+        final caption = (img.caption ?? '').toLowerCase();
+        return caption.contains('floor') || caption.contains('plan') || caption.contains('layout');
+      }).toList();
+      setState(() {
+        _floorPlanImages = floorPlans.isNotEmpty ? floorPlans : images.take(3).toList();
+      });
+    } catch (e) {
+      setState(() => _error = e.toString());
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: Colors.grey[100],
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     if (!isLoggedIn) {
       return Scaffold(
         appBar: AppBar(title: const Text("Floor Plan"), backgroundColor: surfaceColor),
@@ -50,6 +90,17 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
         iconTheme: const IconThemeData(color: blackColor),
         elevation: 0,
         centerTitle: true,
+        actions: [
+          if (_floorPlanImages.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Chip(
+                label: Text('${_floorPlanImages.length} plan${_floorPlanImages.length == 1 ? '' : 's'}',
+                    style: const TextStyle(fontSize: 12)),
+                backgroundColor: primaryColor.withOpacity(0.1),
+              ),
+            ),
+        ],
       ),
       body: Stack(
         fit: StackFit.expand,
@@ -76,28 +127,21 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                   child: Stack(
                     children: [
                       // Grid Pattern
-                       CustomPaint(
+                      CustomPaint(
                         painter: GridPainter(),
                         size: Size.infinite,
                       ),
-                      // Content Placeholder
-                      Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.map_outlined, size: 80, color: primaryColor.withOpacity(0.2)),
-                            const SizedBox(height: 20),
-                            Text(
-                              floors[selectedFloor],
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: blackColor.withOpacity(0.4),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ).animate(key: ValueKey(selectedFloor)).fadeIn(duration: 400.ms),
+                      // Content - show floor plan image if available
+                      if (_floorPlanImages.isNotEmpty && selectedFloor < _floorPlanImages.length)
+                        Positioned.fill(
+                          child: Image.network(
+                            '${ApiConfig.baseUrl}${_floorPlanImages[selectedFloor].imagePath}',
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => _buildPlaceholderContent(),
+                          ),
+                        )
+                      else
+                        _buildPlaceholderContent(),
                     ],
                   ),
                 ),
@@ -105,7 +149,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
             ),
           ),
 
-          // Floating Controls - Bottom Center
+          // Floor Selector - Floating Bottom
           Positioned(
             bottom: 40,
             left: 20,
@@ -126,28 +170,34 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: List.generate(floors.length, (index) {
-                    final isSelected = selectedFloor == index;
-                    return GestureDetector(
-                      onTap: () => setState(() => selectedFloor = index),
-                      child: AnimatedContainer(
-                        duration: 300.ms,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: isSelected ? Colors.white : Colors.transparent,
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: Text(
-                          "Floor ${index + 1}",
-                          style: TextStyle(
-                            color: isSelected ? blackColor : Colors.white60,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                  children: List.generate(
+                    _floorPlanImages.isNotEmpty ? _floorPlanImages.length : floors.length,
+                    (index) {
+                      final isSelected = selectedFloor == index;
+                      final label = _floorPlanImages.isNotEmpty && index < _floorPlanImages.length
+                          ? _floorPlanImages[index].caption ?? 'Floor ${index + 1}'
+                          : floors[index < floors.length ? index : 0];
+                      return GestureDetector(
+                        onTap: () => setState(() => selectedFloor = index),
+                        child: AnimatedContainer(
+                          duration: 300.ms,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: isSelected ? Colors.white : Colors.transparent,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Text(
+                            label.length > 12 ? '${label.substring(0, 12)}...' : label,
+                            style: TextStyle(
+                              color: isSelected ? blackColor : Colors.white60,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -171,16 +221,25 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
               ),
               child: Column(
                 children: [
-                  _buildToolButton(Icons.add, "Zoom In", () {}),
+                  _buildToolButton(Icons.add, "Zoom In", () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Use pinch gesture to zoom in'), duration: Duration(seconds: 1)),
+                    );
+                  }),
                   const SizedBox(height: 8),
-                  _buildToolButton(Icons.remove, "Zoom Out", () {}),
+                  _buildToolButton(Icons.remove, "Zoom Out", () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Use pinch gesture to zoom out'), duration: Duration(seconds: 1)),
+                    );
+                  }),
                   const SizedBox(height: 8),
-                  _buildToolButton(Icons.refresh, "Reset", () {}),
+                  _buildToolButton(Icons.refresh, "Refresh", () {
+                    setState(() => _isLoading = true);
+                    _loadFloorPlans().then((_) => setState(() => _isLoading = false));
+                  }),
                   const SizedBox(height: 8),
                   const Divider(height: 16),
-                  _buildToolButton(Icons.info_outline, "Details", () {
-                    _showDetailsSheet();
-                  }),
+                  _buildToolButton(Icons.info_outline, "Details", _showDetailsSheet),
                 ],
               ),
             ),
@@ -188,6 +247,36 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildPlaceholderContent() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.map_outlined, size: 80, color: primaryColor.withOpacity(0.2)),
+          const SizedBox(height: 20),
+          Text(
+            selectedFloor < floors.length ? floors[selectedFloor] : 'Floor ${selectedFloor + 1}',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: blackColor.withOpacity(0.4),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _floorPlanImages.isEmpty
+                ? 'No floor plans uploaded yet'
+                : 'Pinch to zoom \u2022 Drag to pan',
+            style: TextStyle(
+              fontSize: 13,
+              color: blackColor.withOpacity(0.3),
+            ),
+          ),
+        ],
+      ),
+    ).animate(key: ValueKey(selectedFloor)).fadeIn(duration: 400.ms);
   }
 
   Widget _buildToolButton(IconData icon, String tooltip, VoidCallback onTap) {
@@ -236,7 +325,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
               Row(
                 children: [
                   Text(
-                    floors[selectedFloor],
+                    selectedFloor < floors.length ? floors[selectedFloor] : 'Floor ${selectedFloor + 1}',
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
                   ),
                   const Spacer(),
@@ -246,9 +335,9 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                       color: primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text(
-                      "2,500 sq ft",
-                      style: TextStyle(
+                    child: Text(
+                      "Project #${widget.projectId ?? 'N/A'}",
+                      style: const TextStyle(
                         color: primaryColor,
                         fontWeight: FontWeight.bold,
                       ),
@@ -256,48 +345,49 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-              const Text("Description", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 8),
-              Text(
-                "Features a spacious open-plan living area, modern kitchen with island, and direct access to the garden patio. Includes a guest bedroom and study.",
-                style: TextStyle(color: blackColor.withOpacity(0.6), height: 1.5),
-              ),
-              const SizedBox(height: 24),
-              const Text("Rooms", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 16),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  _buildRoomChip("Living Room", "24x18"),
-                  _buildRoomChip("Kitchen", "16x14"),
-                  _buildRoomChip("Dining", "14x12"),
-                  _buildRoomChip("Guest Bed", "12x12"),
-                  _buildRoomChip("Study", "10x10"),
-                ],
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: surfaceColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, size: 18, color: primaryColor),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _floorPlanImages.isEmpty
+                            ? 'Floor plan images will appear here once uploaded by your contractor.'
+                            : '${_floorPlanImages.length} floor plan image${_floorPlanImages.length == 1 ? '' : 's'} available. Use pinch to zoom and drag to pan.',
+                        style: TextStyle(color: blackColor.withOpacity(0.6), fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                Text('Note: ${ _error}', style: const TextStyle(fontSize: 12, color: Colors.orange)),
+              ],
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  child: const Text("Close"),
+                ),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildRoomChip(String name, String size) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          Icon(Icons.meeting_room_outlined, color: blackColor.withOpacity(0.6)),
-          const SizedBox(height: 4),
-          Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(size, style: TextStyle(fontSize: 12, color: blackColor.withOpacity(0.5))),
-        ],
       ),
     );
   }
