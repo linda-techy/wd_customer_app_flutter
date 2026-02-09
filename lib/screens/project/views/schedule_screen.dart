@@ -548,7 +548,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   '+ ${items.length - 5} more items',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: primaryColor,
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
