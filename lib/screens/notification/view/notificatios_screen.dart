@@ -246,10 +246,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           SliverPadding(
             padding: const EdgeInsets.all(20),
             sliver: _isLoading
-                ? SliverToBoxAdapter(
+                ? const SliverToBoxAdapter(
                     child: Center(
                       child: Padding(
-                        padding: const EdgeInsets.all(40.0),
+                        padding: EdgeInsets.all(40.0),
                         child: CircularProgressIndicator(color: primaryColor),
                       ),
                     ),
@@ -261,7 +261,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             padding: const EdgeInsets.all(40.0),
                             child: Column(
                               children: [
-                                Icon(Icons.error_outline, size: 48, color: errorColor),
+                                const Icon(Icons.error_outline, size: 48, color: errorColor),
                                 const SizedBox(height: 16),
                                 Text(
                                   _error!,

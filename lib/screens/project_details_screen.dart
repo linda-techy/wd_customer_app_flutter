@@ -11,8 +11,8 @@ import '../services/dashboard_service.dart';
 import 'project/views/design_package_selection_screen.dart';
 import 'project/views/quality_checks_screen.dart';
 import 'project/views/activity_feed_screen.dart';
-import 'project/views/site_visits_list_screen.dart';
-import 'project/views/observations_screen.dart';
+import 'project/views/site_visits_screen.dart';
+import 'project/views/snags_screen.dart';
 import 'project/views/queries_screen.dart';
 import 'project/views/feedback_screen.dart';
 import 'project/views/boq_screen.dart';
@@ -140,10 +140,10 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
             _buildModuleCard(Icons.photo_library_outlined, 'Gallery', 'Project photos', 'project_gallery', color: const Color(0xFFEC4899)),
             _buildModuleCard(Icons.videocam_outlined, 'CCTV', 'Live monitoring', 'cctv_surveillance', color: const Color(0xFF8B5CF6)),
             _buildModuleCard(Icons.vrpano_outlined, '360° View', 'Virtual tour', 'three_d_design', color: const Color(0xFF06B6D4)),
-            _buildModuleCardWithScreen(Icons.location_on_outlined, 'Site Visits', 'Visit history', SiteVisitsListScreen(projectId: widget.projectId), color: const Color(0xFFF59E0B)),
+            _buildModuleCardWithScreen(Icons.location_on_outlined, 'Site Visits', 'Visit history', SiteVisitsScreen(projectId: widget.projectId), color: const Color(0xFFF59E0B)),
           ]),
           _buildSection('Communication', [
-            _buildModuleCardWithScreen(Icons.visibility_outlined, 'Observations', 'Track issues', ObservationsScreen(projectId: widget.projectId)),
+            _buildModuleCardWithScreen(Icons.visibility_outlined, 'Snags', 'Track issues', SnagsScreen(projectId: widget.projectId)),
             _buildModuleCardWithScreen(Icons.help_outline, 'Queries', 'Ask questions', QueriesScreen(projectId: widget.projectId), color: const Color(0xFF3B82F6)),
             _buildModuleCardWithScreen(Icons.feedback_outlined, 'Feedback', 'Share thoughts', FeedbackScreen(projectId: widget.projectId), color: const Color(0xFF10B981)),
             _buildModuleCardWithScreen(Icons.receipt_long_outlined, 'BoQ', 'Bill of quantities', BoqScreen(projectId: widget.projectId), color: const Color(0xFF6366F1)),
