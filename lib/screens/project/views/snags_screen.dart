@@ -153,6 +153,11 @@ class _SnagsScreenState extends State<SnagsScreen>
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showCreateDialog,
+        backgroundColor: primaryColor,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator(color: primaryColor))
           : error != null
@@ -433,7 +438,182 @@ class _SnagsScreenState extends State<SnagsScreen>
     ).animate().fadeIn(duration: 300.ms, delay: (index * 50).ms).slideY(begin: 0.1);
   }
 
+  Future<void> _showCreateDialog() async {
+    if (service == null) return;
+
+    final titleController = TextEditingController();
+    final descController = TextEditingController();
+    final locationController = TextEditingController();
+    String priority = 'MEDIUM';
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Report Snag'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(
+                    labelText: 'Title *',
+                    hintText: 'e.g. Water seepage in bedroom wall',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: descController,
+                  decoration: const InputDecoration(
+                    labelText: 'Description *',
+                    hintText: 'Describe the issue in detail...',
+                  ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: priority,
+                  decoration: const InputDecoration(labelText: 'Priority'),
+                  items: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
+                      .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                      .toList(),
+                  onChanged: (v) => setDialogState(() => priority = v!),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: locationController,
+                  decoration: const InputDecoration(
+                    labelText: 'Location (optional)',
+                    hintText: 'e.g. Master bedroom, 2nd floor',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+              child: const Text('Report', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (result == true && mounted) {
+      if (titleController.text.isEmpty || descController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Title and description are required')),
+        );
+        return;
+      }
+      try {
+        await service!.createObservation(
+          widget.projectId,
+          titleController.text,
+          descController.text,
+          priority,
+          location: locationController.text.isNotEmpty ? locationController.text : null,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Snag reported successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        _loadSnags();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to report: $e'), backgroundColor: errorColor),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _resolveSnag(Observation snag) async {
+    if (service == null) return;
+
+    final notesController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Resolve Snag'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Mark "${snag.title}" as resolved?'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: notesController,
+              decoration: const InputDecoration(
+                labelText: 'Resolution Notes *',
+                hintText: 'Describe how the issue was fixed...',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            child: const Text('Resolve', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && mounted) {
+      if (notesController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Resolution notes are required')),
+        );
+        return;
+      }
+      try {
+        await service!.resolveObservation(
+          widget.projectId,
+          snag.id,
+          notesController.text,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Snag resolved'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        _loadSnags();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to resolve: $e'), backgroundColor: errorColor),
+          );
+        }
+      }
+    }
+  }
+
   void _showSnagDetails(Observation snag) {
+    final isActive = snag.status.toUpperCase() != 'RESOLVED' &&
+        snag.status.toUpperCase() != 'CLOSED';
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -442,6 +622,12 @@ class _SnagsScreenState extends State<SnagsScreen>
         snag: snag,
         authToken: _authToken,
         resolveUrl: _resolveUrl,
+        onResolve: isActive
+            ? () {
+                Navigator.pop(context);
+                _resolveSnag(snag);
+              }
+            : null,
       ),
     );
   }
@@ -502,11 +688,13 @@ class _SnagDetailsSheet extends StatelessWidget {
   final Observation snag;
   final String? authToken;
   final String Function(String) resolveUrl;
+  final VoidCallback? onResolve;
 
   const _SnagDetailsSheet({
     required this.snag,
     this.authToken,
     required this.resolveUrl,
+    this.onResolve,
   });
 
   @override
@@ -667,6 +855,29 @@ class _SnagDetailsSheet extends StatelessWidget {
                                 snag.resolutionNotes!.isNotEmpty)
                               _buildMiniDetailRow('Notes', snag.resolutionNotes!),
                           ],
+                        ),
+                      ),
+                    ],
+                    // Resolve action button
+                    if (onResolve != null) ...[
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: onResolve,
+                          icon: const Icon(Icons.check_circle, color: Colors.white),
+                          label: const Text('Resolve this Snag',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
                         ),
                       ),
                     ],

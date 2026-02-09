@@ -2,7 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'components/sign_up_form.dart';
 import '../../../route/route_constants.dart';
-
+import '../../../services/auth_service.dart';
 import '../../../constants.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -13,6 +13,92 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+  String _name = '';
+  String _email = '';
+  String _password = '';
+  String _confirmPassword = '';
+  bool _isLoading = false;
+  bool _agreedToTerms = false;
+
+  Future<void> _handleSignUp() async {
+    // Validation
+    if (_name.trim().isEmpty) {
+      _showError('Please enter your full name');
+      return;
+    }
+    if (_email.trim().isEmpty) {
+      _showError('Please enter your email address');
+      return;
+    }
+    if (_password.isEmpty) {
+      _showError('Please enter a password');
+      return;
+    }
+    if (_password.length < 6) {
+      _showError('Password must be at least 6 characters');
+      return;
+    }
+    if (_password != _confirmPassword) {
+      _showError('Passwords do not match');
+      return;
+    }
+    if (!_agreedToTerms) {
+      _showError('Please agree to the Terms of Service & Privacy Policy');
+      return;
+    }
+
+    // Parse first and last name
+    final nameParts = _name.trim().split(' ');
+    final firstName = nameParts.first;
+    final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await AuthService.registerWithApi(
+        firstName,
+        lastName.isEmpty ? firstName : lastName,
+        _email.trim(),
+        _password,
+      );
+
+      if (!mounted) return;
+
+      if (response.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Account created successfully! Welcome!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          entryPointScreenRoute,
+          (route) => false,
+        );
+      } else {
+        _showError(response.error?.message ?? 'Registration failed. Please try again.');
+      }
+    } catch (e) {
+      if (mounted) {
+        _showError('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: logoRed,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,7 +117,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Let’s get started!",
+                    "Let's get started!",
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: defaultPadding / 2),
@@ -41,34 +127,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   const SizedBox(height: defaultPadding),
                   SignUpForm(
                     onNameChanged: (name) {
-                      // Handle name change
+                      _name = name;
                     },
                     onEmailChanged: (email) {
-                      // Handle email change
+                      _email = email;
                     },
                     onPasswordChanged: (password) {
-                      // Handle password change
+                      _password = password;
                     },
                     onConfirmPasswordChanged: (confirmPassword) {
-                      // Handle confirm password change
+                      _confirmPassword = confirmPassword;
                     },
-                    onSignUp: () {
-                      // Handle sign up
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Sign up feature coming soon'),
-                          backgroundColor: logoRed,
-                        ),
-                      );
-                    },
-                    isLoading: false,
+                    onSignUp: _handleSignUp,
+                    isLoading: _isLoading,
                   ),
                   const SizedBox(height: defaultPadding),
                   Row(
                     children: [
                       Checkbox(
-                        onChanged: (value) {},
-                        value: false,
+                        onChanged: (value) {
+                          setState(() {
+                            _agreedToTerms = value ?? false;
+                          });
+                        },
+                        value: _agreedToTerms,
+                        activeColor: logoRed,
                       ),
                       Expanded(
                         child: Text.rich(
@@ -97,15 +180,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ],
                   ),
                   const SizedBox(height: defaultPadding * 2),
-                  ElevatedButton(
-                    onPressed: () {
-                      // There is 2 more screens while user complete their profile
-                      // afre sign up, it's available on the pro version get it now
-                      // 🔗 https://theflutterway.gumroad.com/l/fluttershop
-                      Navigator.pushNamed(context, entryPointScreenRoute);
-                    },
-                    child: const Text("Continue"),
-                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

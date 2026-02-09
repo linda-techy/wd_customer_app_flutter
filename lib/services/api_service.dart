@@ -82,6 +82,152 @@ class ApiService {
     }
   }
 
+  // Register method
+  Future<ApiResponse<LoginResponse>> register(
+      String firstName, String lastName, String email, String password) async {
+    try {
+      final body = {
+        'firstName': firstName,
+        'lastName': lastName,
+        'email': email,
+        'password': password,
+      };
+
+      debugPrint('=== API REGISTER REQUEST ===');
+      debugPrint('URL: ${ApiConfig.registerUrl}');
+      debugPrint('Body: ${jsonEncode(body)}');
+      debugPrint('============================');
+
+      final response = await http
+          .post(
+            Uri.parse(ApiConfig.registerUrl),
+            headers: ApiConfig.defaultHeaders,
+            body: jsonEncode(body),
+          )
+          .timeout(ApiConfig.connectionTimeout);
+
+      debugPrint('=== API REGISTER RESPONSE ===');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Response Body: ${response.body}');
+      debugPrint('=============================');
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        final loginResponse = LoginResponse.fromJson(jsonResponse);
+        return ApiResponse.success(loginResponse);
+      } else {
+        final errorBody = response.body;
+        String errorMessage = 'Registration failed';
+        try {
+          final errorJson = jsonDecode(errorBody);
+          if (errorJson is Map) {
+            errorMessage = errorJson['message'] ?? errorJson['error'] ?? errorMessage;
+          }
+        } catch (_) {}
+        return ApiResponse.error(
+          ApiError(message: errorMessage, statusCode: response.statusCode),
+        );
+      }
+    } on SocketException {
+      return ApiResponse.error(
+        ApiError(
+          message: 'No internet connection. Please check your network.',
+          statusCode: 0,
+        ),
+      );
+    } catch (e) {
+      return ApiResponse.error(
+        ApiError(
+          message: 'An unexpected error occurred: ${e.toString()}',
+          statusCode: 0,
+        ),
+      );
+    }
+  }
+
+  // Forgot password method
+  Future<ApiResponse<Map<String, dynamic>>> forgotPassword(String email) async {
+    try {
+      final body = {'email': email};
+
+      final response = await http
+          .post(
+            Uri.parse(ApiConfig.forgotPasswordUrl),
+            headers: ApiConfig.defaultHeaders,
+            body: jsonEncode(body),
+          )
+          .timeout(ApiConfig.connectionTimeout);
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
+        return ApiResponse.success(jsonResponse);
+      } else {
+        String errorMessage = 'Failed to send reset code';
+        try {
+          final errorJson = jsonDecode(response.body);
+          if (errorJson is Map) {
+            errorMessage = errorJson['message'] ?? errorJson['error'] ?? errorMessage;
+          }
+        } catch (_) {}
+        return ApiResponse.error(
+          ApiError(message: errorMessage, statusCode: response.statusCode),
+        );
+      }
+    } on SocketException {
+      return ApiResponse.error(
+        ApiError(message: 'No internet connection.', statusCode: 0),
+      );
+    } catch (e) {
+      return ApiResponse.error(
+        ApiError(message: 'An unexpected error occurred: ${e.toString()}', statusCode: 0),
+      );
+    }
+  }
+
+  // Reset password method
+  Future<ApiResponse<Map<String, dynamic>>> resetPassword(
+      String email, String resetCode, String newPassword) async {
+    try {
+      final body = {
+        'email': email,
+        'resetCode': resetCode,
+        'newPassword': newPassword,
+      };
+
+      final response = await http
+          .post(
+            Uri.parse(ApiConfig.resetPasswordUrl),
+            headers: ApiConfig.defaultHeaders,
+            body: jsonEncode(body),
+          )
+          .timeout(ApiConfig.connectionTimeout);
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
+        return ApiResponse.success(jsonResponse);
+      } else {
+        String errorMessage = 'Failed to reset password';
+        try {
+          final errorJson = jsonDecode(response.body);
+          if (errorJson is Map) {
+            errorMessage = errorJson['message'] ?? errorJson['error'] ?? errorMessage;
+          }
+        } catch (_) {}
+        return ApiResponse.error(
+          ApiError(message: errorMessage, statusCode: response.statusCode),
+        );
+      }
+    } on SocketException {
+      return ApiResponse.error(
+        ApiError(message: 'No internet connection.', statusCode: 0),
+      );
+    } catch (e) {
+      return ApiResponse.error(
+        ApiError(message: 'An unexpected error occurred: ${e.toString()}', statusCode: 0),
+      );
+    }
+  }
+
   // Refresh token method
   Future<ApiResponse<RefreshTokenResponse>> refreshToken(
       String refreshToken) async {

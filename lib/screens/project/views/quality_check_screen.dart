@@ -154,6 +154,11 @@ class _QualityCheckScreenState extends State<QualityCheckScreen>
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showCreateDialog,
+        backgroundColor: primaryColor,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator(color: primaryColor))
           : error != null
@@ -441,20 +446,205 @@ class _QualityCheckScreenState extends State<QualityCheckScreen>
     }
   }
 
+  Future<void> _showCreateDialog() async {
+    if (service == null) return;
+
+    final titleController = TextEditingController();
+    final descController = TextEditingController();
+    final sopController = TextEditingController();
+    String priority = 'MEDIUM';
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Report Quality Issue'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(
+                    labelText: 'Title *',
+                    hintText: 'e.g. Crack in wall plaster',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: descController,
+                  decoration: const InputDecoration(
+                    labelText: 'Description *',
+                    hintText: 'Describe the quality issue...',
+                  ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: priority,
+                  decoration: const InputDecoration(labelText: 'Priority'),
+                  items: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
+                      .map((p) => DropdownMenuItem(
+                            value: p,
+                            child: Text(p),
+                          ))
+                      .toList(),
+                  onChanged: (v) => setDialogState(() => priority = v!),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: sopController,
+                  decoration: const InputDecoration(
+                    labelText: 'SOP Reference (optional)',
+                    hintText: 'e.g. SOP-QC-001',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+              child: const Text('Submit', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (result == true && mounted) {
+      if (titleController.text.isEmpty || descController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Title and description are required')),
+        );
+        return;
+      }
+      try {
+        await service!.createQualityCheck(
+          widget.projectId,
+          titleController.text,
+          descController.text,
+          priority,
+          sopReference: sopController.text.isNotEmpty ? sopController.text : null,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Quality check reported'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        _loadQualityChecks();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to create: $e'), backgroundColor: errorColor),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _resolveCheck(QualityCheck check) async {
+    if (service == null) return;
+
+    final notesController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Resolve Quality Check'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Mark "${check.title}" as resolved?'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: notesController,
+              decoration: const InputDecoration(
+                labelText: 'Resolution Notes *',
+                hintText: 'Describe how the issue was resolved...',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            child: const Text('Resolve', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && mounted) {
+      if (notesController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Resolution notes are required')),
+        );
+        return;
+      }
+      try {
+        await service!.resolveQualityCheck(
+          widget.projectId,
+          check.id,
+          notesController.text,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Quality check resolved'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        _loadQualityChecks();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to resolve: $e'), backgroundColor: errorColor),
+          );
+        }
+      }
+    }
+  }
+
   void _showCheckDetails(QualityCheck check) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _QualityCheckDetailsSheet(check: check),
+      builder: (context) => _QualityCheckDetailsSheet(
+        check: check,
+        onResolve: check.status != 'RESOLVED'
+            ? () {
+                Navigator.pop(context);
+                _resolveCheck(check);
+              }
+            : null,
+      ),
     );
   }
 }
 
 class _QualityCheckDetailsSheet extends StatelessWidget {
   final QualityCheck check;
+  final VoidCallback? onResolve;
 
-  const _QualityCheckDetailsSheet({required this.check});
+  const _QualityCheckDetailsSheet({required this.check, this.onResolve});
 
   @override
   Widget build(BuildContext context) {
@@ -627,6 +817,29 @@ class _QualityCheckDetailsSheet extends StatelessWidget {
                               ),
                             ],
                           ],
+                        ),
+                      ),
+                    ],
+                    // Resolve action button
+                    if (onResolve != null) ...[
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: onResolve,
+                          icon: const Icon(Icons.check_circle, color: Colors.white),
+                          label: const Text('Resolve this Issue',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
                         ),
                       ),
                     ],
