@@ -18,6 +18,27 @@ enum ReportType {
       case ReportType.other: return 'Other';
     }
   }
+
+  // Convert from backend SCREAMING_SNAKE_CASE to camelCase enum
+  static ReportType fromJson(String? json) {
+    if (json == null) return ReportType.dailyProgress;
+    
+    // Normalize string to match enum names
+    const map = {
+      'DAILY_PROGRESS': ReportType.dailyProgress,
+      'QUALITY_CHECK': ReportType.qualityCheck,
+      'SAFETY_INCIDENT': ReportType.safetyIncident,
+      'MATERIAL_DELIVERY': ReportType.materialDelivery,
+      'SITE_VISIT_SUMMARY': ReportType.siteVisitSummary,
+      'OTHER': ReportType.other,
+    };
+
+    return map[json] ?? 
+           ReportType.values.firstWhere(
+             (e) => e.name == json,
+             orElse: () => ReportType.other,
+           );
+  }
 }
 
 class SiteReportPhoto {
@@ -78,23 +99,21 @@ class SiteReport {
 
     return SiteReport(
       id: json['id'] as int?,
-      projectId: json['project'] != null ? (json['project']['id'] as int? ?? 0) : 0,
-      projectName: json['project'] != null ? (json['project']['projectName'] as String? ?? json['project']['name'] as String?) : null,
+      // Map from flat DTO structure fields
+      projectId: json['projectId'] as int? ?? 0, 
+      projectName: json['projectName'] as String?,
       title: json['title'] as String? ?? 'Untitled Report',
       description: json['description'] as String?,
       reportDate: parsedDate ?? DateTime.now(),
       status: json['status'] as String? ?? 'SUBMITTED',
-      reportType: ReportType.values.firstWhere(
-        (e) => e.name == json['reportType'],
-        orElse: () => ReportType.dailyProgress,
-      ),
-      siteVisitId: json['siteVisit'] != null ? (json['siteVisit']['id'] as int?) : null,
+      reportType: ReportType.fromJson(json['reportType']),
+      // SiteVisitId might not be in DTO, check if it's there or null
+      siteVisitId: json['siteVisitId'] as int?,
       photos: (json['photos'] as List? ?? [])
           .map((p) => SiteReportPhoto.fromJson(p))
           .toList(),
-      submittedByName: json['submittedBy'] != null 
-          ? '${json['submittedBy']['firstName'] ?? ''} ${json['submittedBy']['lastName'] ?? ''}'.trim()
-          : null,
+      // submittedByName might not be in DTO, as it might be anonymized or not needed for customer
+      submittedByName: null, 
     );
   }
 
