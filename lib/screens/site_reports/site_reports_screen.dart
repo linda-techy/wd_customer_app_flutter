@@ -128,7 +128,7 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
     // Group reports by date
     final groupedReports = <DateTime, List<SiteReport>>{};
     for (final report in _reports) {
-      final reportDate = DateTime.parse(report.reportDate);
+      final reportDate = report.reportDate;
       final date = DateTime(
         reportDate.year,
         reportDate.month,
@@ -220,7 +220,7 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
   }
 
   Widget _buildTimelineItem(SiteReport report, bool isLast) {
-    final reportDate = DateTime.parse(report.reportDate);
+    final reportDate = report.reportDate;
     final timeStr = DateFormat('h:mm a').format(reportDate);
 
     return IntrinsicHeight(
