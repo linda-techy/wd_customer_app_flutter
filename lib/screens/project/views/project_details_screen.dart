@@ -570,9 +570,10 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   }
 
   Widget _buildActionGrid(BuildContext context) {
-    final projectId = _getProjectId() ?? '';
+    final projectUuid = _getProjectId() ?? '';
+    final dbId = _projectDetails?.id ?? _getProjectCard()?.id;
     final phase = ProjectPhase.fromString(_projectDetails?.phase ?? _getProjectCard()?.projectPhase);
-    final actions = _getPhaseActions(phase, projectId);
+    final actions = _getPhaseActions(phase, projectUuid, dbId);
 
     if (actions.isEmpty) {
       return const SizedBox.shrink();
@@ -597,117 +598,117 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
     );
   }
 
-  List<_ActionItem> _getPhaseActions(ProjectPhase phase, String projectId) {
+  List<_ActionItem> _getPhaseActions(ProjectPhase phase, String projectUuid, int? dbId) {
     final list = <_ActionItem>[];
     final nav = Navigator.of(context);
 
     switch (phase) {
       case ProjectPhase.planning:
         list.add(_ActionItem('Activity Feed', Icons.timeline, Colors.indigo, () {
-          nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('Site Reports', Icons.assignment_outlined, Colors.orange, () {
-          nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: projectId.isNotEmpty ? int.tryParse(projectId) : null)));
+          nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: dbId)));
         }));
-        list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectId.isNotEmpty ? projectDocumentsRoute(projectId) : documentsScreenRoute)));
+        list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectUuid.isNotEmpty ? projectDocumentsRoute(projectUuid) : documentsScreenRoute)));
         list.add(_ActionItem('Site Visits', Icons.person_pin_circle_outlined, Colors.purple, () {
-          nav.push(MaterialPageRoute(builder: (_) => SiteVisitsScreen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => SiteVisitsScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('BOQ', Icons.receipt_long_outlined, Colors.green, () {
-          nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('360° Views', Icons.view_in_ar, Colors.cyan, () {
-          nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
-          showFeedbackDialog(context: context, projectId: projectId);
+          showFeedbackDialog(context: context, projectId: projectUuid);
         }));
         break;
       case ProjectPhase.design:
         list.add(_ActionItem('Activity Feed', Icons.timeline, Colors.indigo, () {
-          nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('Design Package', Icons.design_services_outlined, Colors.purple, () {
-          if (projectId.isNotEmpty) {
+          if (projectUuid.isNotEmpty) {
             final sqFeet = _projectDetails?.sqFeet ?? 0.0;
-            nav.push(MaterialPageRoute(builder: (_) => DesignPackageSelectionScreen(projectId: projectId, sqFeet: sqFeet)));
+            nav.push(MaterialPageRoute(builder: (_) => DesignPackageSelectionScreen(projectId: projectUuid, sqFeet: sqFeet)));
           }
         }));
         list.add(_ActionItem('Site Reports', Icons.assignment_outlined, Colors.orange, () {
-          nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: projectId.isNotEmpty ? int.tryParse(projectId) : null)));
+          nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: dbId)));
         }));
-        list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectId.isNotEmpty ? projectDocumentsRoute(projectId) : documentsScreenRoute)));
+        list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectUuid.isNotEmpty ? projectDocumentsRoute(projectUuid) : documentsScreenRoute)));
         list.add(_ActionItem('Site Visits', Icons.person_pin_circle_outlined, Colors.teal, () {
-          nav.push(MaterialPageRoute(builder: (_) => SiteVisitsScreen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => SiteVisitsScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('BOQ', Icons.receipt_long_outlined, Colors.green, () {
-          nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('360° Views', Icons.view_in_ar, Colors.cyan, () {
-          nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
-          showFeedbackDialog(context: context, projectId: projectId);
+          showFeedbackDialog(context: context, projectId: projectUuid);
         }));
         break;
       case ProjectPhase.construction:
         list.add(_ActionItem('Activity Feed', Icons.timeline, Colors.indigo, () {
-          nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectUuid)));
         }));
-        list.add(_ActionItem('Gallery', Icons.photo_library_outlined, Colors.teal, () => nav.pushNamed(projectId.isNotEmpty ? projectGalleryRoute(projectId) : projectGalleryScreenRoute)));
+        list.add(_ActionItem('Gallery', Icons.photo_library_outlined, Colors.teal, () => nav.pushNamed(projectUuid.isNotEmpty ? projectGalleryRoute(projectUuid) : projectGalleryScreenRoute)));
         list.add(_ActionItem('Site Visits', Icons.person_pin_circle_outlined, Colors.purple, () {
-          nav.push(MaterialPageRoute(builder: (_) => SiteVisitsScreen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => SiteVisitsScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('Snags', Icons.warning_amber_rounded, Colors.red, () {
-          nav.push(MaterialPageRoute(builder: (_) => SnagsScreen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => SnagsScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('Quality Check', Icons.checklist, Colors.deepPurple, () {
-          nav.push(MaterialPageRoute(builder: (_) => QualityCheckScreen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => QualityCheckScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('BOQ', Icons.receipt_long_outlined, Colors.green, () {
-          nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('360° Views', Icons.view_in_ar, Colors.cyan, () {
-          nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('Site Reports', Icons.assignment_outlined, Colors.orange, () {
-          nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: projectId.isNotEmpty ? int.tryParse(projectId) : null)));
+          nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: dbId)));
         }));
-        list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectId.isNotEmpty ? projectDocumentsRoute(projectId) : documentsScreenRoute)));
+        list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectUuid.isNotEmpty ? projectDocumentsRoute(projectUuid) : documentsScreenRoute)));
         list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
-          nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: projectId.isNotEmpty ? projectId : null)));
+          nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId)));
         }));
-        list.add(_ActionItem('CCTV', Icons.videocam_outlined, Colors.grey, () => nav.pushNamed(projectId.isNotEmpty ? projectCctvRoute(projectId) : cctvSurveillanceScreenRoute)));
+        list.add(_ActionItem('CCTV', Icons.videocam_outlined, Colors.grey, () => nav.pushNamed(projectUuid.isNotEmpty ? projectCctvRoute(projectUuid) : cctvSurveillanceScreenRoute)));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
-          showFeedbackDialog(context: context, projectId: projectId);
+          showFeedbackDialog(context: context, projectId: projectUuid);
         }));
         break;
       case ProjectPhase.completed:
         list.add(_ActionItem('Activity Feed', Icons.timeline, Colors.indigo, () {
-          nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectUuid)));
         }));
-        list.add(_ActionItem('Gallery', Icons.photo_library_outlined, Colors.teal, () => nav.pushNamed(projectId.isNotEmpty ? projectGalleryRoute(projectId) : projectGalleryScreenRoute)));
+        list.add(_ActionItem('Gallery', Icons.photo_library_outlined, Colors.teal, () => nav.pushNamed(projectUuid.isNotEmpty ? projectGalleryRoute(projectUuid) : projectGalleryScreenRoute)));
         list.add(_ActionItem('Snags', Icons.warning_amber_rounded, Colors.red, () {
-          nav.push(MaterialPageRoute(builder: (_) => SnagsScreen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => SnagsScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('Quality Check', Icons.checklist, Colors.deepPurple, () {
-          nav.push(MaterialPageRoute(builder: (_) => QualityCheckScreen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => QualityCheckScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('BOQ', Icons.receipt_long_outlined, Colors.green, () {
-          nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('360° Views', Icons.view_in_ar, Colors.cyan, () {
-          nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectId)));
+          nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('Site Reports', Icons.assignment_outlined, Colors.orange, () {
-          nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: projectId.isNotEmpty ? int.tryParse(projectId) : null)));
+          nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: dbId)));
         }));
-        list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectId.isNotEmpty ? projectDocumentsRoute(projectId) : documentsScreenRoute)));
+        list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectUuid.isNotEmpty ? projectDocumentsRoute(projectUuid) : documentsScreenRoute)));
         list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
-          nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: projectId.isNotEmpty ? projectId : null)));
+          nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId)));
         }));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
-          showFeedbackDialog(context: context, projectId: projectId);
+          showFeedbackDialog(context: context, projectId: projectUuid);
         }));
         break;
     }

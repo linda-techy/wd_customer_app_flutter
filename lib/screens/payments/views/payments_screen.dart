@@ -8,7 +8,7 @@ import '../../../../models/payment_models.dart';
 import 'package:intl/intl.dart';
 
 class PaymentsScreen extends StatefulWidget {
-  final String? projectId; // Optional: filter by specific project
+  final int? projectId; // Optional: filter by specific project
   
   const PaymentsScreen({super.key, this.projectId});
 

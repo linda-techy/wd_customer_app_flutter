@@ -282,8 +282,9 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     // Default/Fallback
 
     case paymentsScreenRoute:
+      final projectId = settings.arguments as int?;
       return FadeSlidePageRoute(
-        page: const PaymentsScreen(),
+        page: PaymentsScreen(projectId: projectId),
       );
     case siteUpdatesScreenRoute:
       // Check if projectId is provided in route arguments or query params

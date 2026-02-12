@@ -10,7 +10,7 @@ class PaymentService {
 
   /// Get all payment schedules for the current customer's projects
   Future<List<PaymentSchedule>> getCustomerPayments({
-    String? projectId,
+    int? projectId,
     int page = 0,
     int size = 20,
   }) async {
@@ -20,7 +20,7 @@ class PaymentService {
         'size': size,
       };
       
-      if (projectId != null && projectId.isNotEmpty) {
+      if (projectId != null) {
         queryParams['projectId'] = projectId;
       }
 
