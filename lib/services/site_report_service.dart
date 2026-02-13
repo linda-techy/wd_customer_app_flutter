@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../config/api_config.dart';
+import '../exceptions/api_exception.dart';
 import '../models/site_report_models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -41,9 +42,13 @@ class SiteReportService {
         }
       }
       return [];
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
     } catch (e) {
-      // Use logger in production instead of print
-      rethrow;
+      throw ApiException(
+        message: 'An unexpected error occurred: $e',
+        errorCode: 'UNKNOWN_ERROR',
+      );
     }
   }
 
@@ -64,9 +69,13 @@ class SiteReportService {
         }
       }
       return null;
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
     } catch (e) {
-      // Use logger in production instead of print
-      rethrow;
+      throw ApiException(
+        message: 'An unexpected error occurred: $e',
+        errorCode: 'UNKNOWN_ERROR',
+      );
     }
   }
 

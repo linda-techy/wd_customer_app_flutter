@@ -48,11 +48,11 @@ class _SiteReportPhotoViewerState extends State<SiteReportPhotoViewer> {
         scrollPhysics: const BouncingScrollPhysics(),
         builder: (BuildContext context, int index) {
           return PhotoViewGalleryPageOptions(
-            imageProvider: NetworkImage(widget.photos[index].photoUrl),
+            imageProvider: NetworkImage(widget.photos[index].fullUrl),
             initialScale: PhotoViewComputedScale.contained,
             minScale: PhotoViewComputedScale.contained,
             maxScale: PhotoViewComputedScale.covered * 3,
-            heroAttributes: PhotoViewHeroAttributes(tag: widget.photos[index].id ?? index),
+            heroAttributes: PhotoViewHeroAttributes(tag: 'photo_${widget.photos.hashCode}_$index'),
             errorBuilder: (context, error, stackTrace) {
               return Center(
                 child: Column(

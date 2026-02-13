@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../models/site_report_models.dart';
 import '../../services/site_report_service.dart';
 import 'site_report_detail_screen.dart';
+import 'site_report_photo_viewer.dart';
 
 class SiteReportsScreen extends StatefulWidget {
   final int? projectId; // Optional: filter by specific project
@@ -221,24 +222,66 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
 
   Widget _buildTimelineItem(SiteReport report, bool isLast) {
     final reportDate = report.reportDate;
+    final dateStr = DateFormat('MMM d, yyyy').format(reportDate);
     final timeStr = DateFormat('h:mm a').format(reportDate);
 
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Date label
+          SizedBox(
+            width: 100,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12, top: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        dateStr,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        timeStr,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
           // Timeline line and dot
           SizedBox(
-            width: 32,
+            width: 24,
             child: Column(
               children: [
+                const SizedBox(height: 12),
                 Container(
-                  width: 12,
-                  height: 12,
+                  width: 14,
+                  height: 14,
                   decoration: BoxDecoration(
                     color: Theme.of(context).primaryColor,
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).primaryColor.withOpacity(0.3),
+                        blurRadius: 4,
+                        spreadRadius: 1,
+                      ),
+                    ],
                   ),
                 ),
                 if (!isLast)
@@ -255,22 +298,8 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
           // Content
           Expanded(
             child: Padding(
-              padding: EdgeInsets.only(left: 12, bottom: isLast ? 0 : 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    timeStr,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  _buildTimelineCard(report),
-                ],
-              ),
+              padding: EdgeInsets.only(left: 12, bottom: isLast ? 0 : 20),
+              child: _buildTimelineCard(report),
             ),
           ),
         ],
@@ -353,23 +382,30 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
                     scrollDirection: Axis.horizontal,
                     itemCount: min(report.photos.length, 4),
                     itemBuilder: (context, photoIndex) {
+                      final photo = report.photos[photoIndex];
                       return Padding(
                         padding: const EdgeInsets.only(right: 6),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: Image.network(
-                            report.photos[photoIndex].photoUrl,
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
+                        child: GestureDetector(
+                          onTap: () => _openPhotoGallery(report, photoIndex),
+                          child: Hero(
+                            tag: 'photo_${report.id}_$photoIndex',
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: Image.network(
+                                photo.fullUrl,
                                 width: 60,
                                 height: 60,
-                                color: Colors.grey[300],
-                                child: const Icon(Icons.broken_image, size: 20, color: Colors.grey),
-                              );
-                            },
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 60,
+                                    height: 60,
+                                    color: Colors.grey[300],
+                                    child: const Icon(Icons.broken_image, size: 20, color: Colors.grey),
+                                  );
+                                },
+                              ),
+                            ),
                           ),
                         ),
                       );
@@ -490,23 +526,30 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
                     scrollDirection: Axis.horizontal,
                     itemCount: min(report.photos.length, 5),
                     itemBuilder: (context, photoIndex) {
+                      final photo = report.photos[photoIndex];
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            report.photos[photoIndex].photoUrl,
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
+                        child: GestureDetector(
+                          onTap: () => _openPhotoGallery(report, photoIndex),
+                          child: Hero(
+                            tag: 'photo_${report.id}_$photoIndex',
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                photo.fullUrl,
                                 width: 80,
                                 height: 80,
-                                color: Colors.grey[300],
-                                child: const Icon(Icons.broken_image, color: Colors.grey),
-                              );
-                            },
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 80,
+                                    height: 80,
+                                    color: Colors.grey[300],
+                                    child: const Icon(Icons.broken_image, color: Colors.grey),
+                                  );
+                                },
+                              ),
+                            ),
                           ),
                         ),
                       );
@@ -572,6 +615,18 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
           color: textColor,
           fontSize: 11,
           fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  void _openPhotoGallery(SiteReport report, int initialIndex) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SiteReportPhotoViewer(
+          photos: report.photos,
+          initialIndex: initialIndex,
         ),
       ),
     );

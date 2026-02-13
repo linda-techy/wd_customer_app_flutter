@@ -1,3 +1,4 @@
+import '../config/api_config.dart';
 import 'package:intl/intl.dart';
 
 enum ReportType {
@@ -53,6 +54,16 @@ class SiteReportPhoto {
     required this.storagePath,
     this.createdAt,
   });
+
+  /// Full URL for loading the photo. If photoUrl is already a full URL, return as-is.
+  /// Otherwise, prepend the API base URL for relative paths.
+  String get fullUrl {
+    if (photoUrl.startsWith('http://') || photoUrl.startsWith('https://')) {
+      return photoUrl;
+    }
+    // Prepend API base URL for relative paths
+    return '${ApiConfig.baseUrl}$photoUrl';
+  }
 
   factory SiteReportPhoto.fromJson(Map<String, dynamic> json) {
     return SiteReportPhoto(

@@ -162,7 +162,7 @@ class SiteReportDetailScreen extends StatelessWidget {
                                 fit: StackFit.expand,
                                 children: [
                                   Image.network(
-                                    report.photos[index].photoUrl,
+                                    report.photos[index].fullUrl,
                                     fit: BoxFit.cover,
                                     errorBuilder: (context, error, stackTrace) {
                                       return Container(
