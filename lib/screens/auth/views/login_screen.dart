@@ -55,19 +55,16 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // Debug: Print the credentials being sent
-      debugPrint('Attempting login with:');
-      debugPrint('Email: $_email');
-      debugPrint('Password: ${_password.isNotEmpty ? '***' : 'empty'}');
+      // Debug: Log login attempt (no sensitive data)
+      debugPrint('Attempting login...');
 
       final response = await AuthService.loginWithApi(_email, _password);
 
       if (!mounted) return;
 
-      // Debug: Print the response details
+      // Debug: Log response status
       debugPrint('Login response:');
       debugPrint('Success: ${response.success}');
-      debugPrint('Error: ${response.error?.message}');
       debugPrint('Status Code: ${response.error?.statusCode}');
 
       if (response.success && response.data != null) {
@@ -101,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
         // Add more specific error handling
         if (response.error?.statusCode == 401) {
           errorMessage =
-              'Invalid email or password. Please check your credentials.\n\nDebug Info:\n- Email: $_email\n- Password length: ${_password.length}\n- This is likely a backend bcrypt comparison issue.';
+              'Invalid email or password. Please check your credentials and try again.';
         } else if (response.error?.statusCode == 0) {
           errorMessage =
               'Cannot connect to server. Please check your internet connection and try again.';

@@ -90,7 +90,7 @@ class PaymentService {
   /// Get authentication headers
   Future<Map<String, String>> _getAuthHeaders() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+    final token = prefs.getString('access_token');
     
     return {
       'Content-Type': 'application/json',

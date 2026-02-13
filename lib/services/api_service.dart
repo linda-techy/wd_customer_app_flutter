@@ -16,15 +16,9 @@ class ApiService {
     try {
       final loginRequest = LoginRequest(email: email, password: password);
 
-      // Debug: Print the request details
+      // Debug: Log request (no sensitive data)
       debugPrint('=== API LOGIN REQUEST ===');
       debugPrint('URL: ${ApiConfig.loginUrl}');
-      debugPrint('Headers: ${ApiConfig.defaultHeaders}');
-      debugPrint('Body: ${jsonEncode(loginRequest.toJson())}');
-      debugPrint('Email: $email');
-      debugPrint('Password length: ${password.length}');
-      debugPrint(
-          'Password contains special chars: ${password.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>]'))}');
       debugPrint('========================');
 
       final response = await http
@@ -35,11 +29,9 @@ class ApiService {
           )
           .timeout(ApiConfig.connectionTimeout);
 
-      // Debug: Print the response details
+      // Debug: Log response status only
       debugPrint('=== API LOGIN RESPONSE ===');
       debugPrint('Status Code: ${response.statusCode}');
-      debugPrint('Response Headers: ${response.headers}');
-      debugPrint('Response Body: ${response.body}');
       debugPrint('=========================');
 
       if (response.statusCode == 200) {
@@ -95,7 +87,6 @@ class ApiService {
 
       debugPrint('=== API REGISTER REQUEST ===');
       debugPrint('URL: ${ApiConfig.registerUrl}');
-      debugPrint('Body: ${jsonEncode(body)}');
       debugPrint('============================');
 
       final response = await http
@@ -123,7 +114,9 @@ class ApiService {
           if (errorJson is Map) {
             errorMessage = errorJson['message'] ?? errorJson['error'] ?? errorMessage;
           }
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('Failed to parse error response: $e');
+        }
         return ApiResponse.error(
           ApiError(message: errorMessage, statusCode: response.statusCode),
         );
