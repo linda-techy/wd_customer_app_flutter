@@ -101,7 +101,7 @@ class AppColors {
   // Phase colors (for project phase badges/steppers)
   static Color getPhaseColor(String? phaseValue) {
     if (phaseValue == null || phaseValue.isEmpty) return info;
-    final p = phaseValue.trim().toUpperCase();
+    final p = phaseValue.trim().toUpperCase().replaceAll(' ', '_');
     switch (p) {
       case 'PLANNING':
         return info;
@@ -115,6 +115,8 @@ class AppColors {
       case 'WARRANTY':
       case 'COMPLETED':
         return success;
+      case 'ON_HOLD':
+        return error;
       default:
         return info;
     }

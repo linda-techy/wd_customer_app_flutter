@@ -301,7 +301,8 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   Widget _buildPhaseStepper(ProjectCard? p) {
     final phaseValue = _projectDetails?.phase ?? p?.projectPhase;
     final current = ProjectPhase.fromString(phaseValue);
-    const allPhases = ProjectPhase.values;
+    // Exclude ON_HOLD from the linear stepper — it's a special state, not a progression step
+    final allPhases = ProjectPhase.values.where((ph) => ph != ProjectPhase.onHold).toList();
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
@@ -493,7 +494,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
 
   Color _getPhaseColor(String? phaseValue) {
     if (phaseValue == null || phaseValue.isEmpty) return primaryColor;
-    final p = phaseValue.trim().toUpperCase();
+    final p = phaseValue.trim().toUpperCase().replaceAll(' ', '_');
     switch (p) {
       case 'PLANNING': return Colors.blue;
       case 'DESIGN': return Colors.purple;
@@ -503,6 +504,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
       case 'HANDOVER':
       case 'WARRANTY':
       case 'COMPLETED': return successColor;
+      case 'ON_HOLD': return Colors.red;
       default: return primaryColor;
     }
   }
@@ -699,6 +701,21 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         }));
         list.add(_ActionItem('360° Views', Icons.view_in_ar, Colors.cyan, () {
           nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectUuid)));
+        }));
+        list.add(_ActionItem('Site Reports', Icons.assignment_outlined, Colors.orange, () {
+          nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: dbId)));
+        }));
+        list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectUuid.isNotEmpty ? projectDocumentsRoute(projectUuid) : documentsScreenRoute)));
+        list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
+          nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId)));
+        }));
+        list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
+          showFeedbackDialog(context: context, projectId: projectUuid);
+        }));
+        break;
+      case ProjectPhase.onHold:
+        list.add(_ActionItem('Activity Feed', Icons.timeline, Colors.indigo, () {
+          nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('Site Reports', Icons.assignment_outlined, Colors.orange, () {
           nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: dbId)));
