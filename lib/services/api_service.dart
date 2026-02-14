@@ -17,9 +17,11 @@ class ApiService {
       final loginRequest = LoginRequest(email: email, password: password);
 
       // Debug: Log request (no sensitive data)
-      debugPrint('=== API LOGIN REQUEST ===');
-      debugPrint('URL: ${ApiConfig.loginUrl}');
-      debugPrint('========================');
+      if (kDebugMode) {
+        debugPrint('=== API LOGIN REQUEST ===');
+        debugPrint('URL: ${ApiConfig.loginUrl}');
+        debugPrint('========================');
+      }
 
       final response = await http
           .post(
@@ -30,9 +32,11 @@ class ApiService {
           .timeout(ApiConfig.connectionTimeout);
 
       // Debug: Log response status only
-      debugPrint('=== API LOGIN RESPONSE ===');
-      debugPrint('Status Code: ${response.statusCode}');
-      debugPrint('=========================');
+      if (kDebugMode) {
+        debugPrint('=== API LOGIN RESPONSE ===');
+        debugPrint('Status Code: ${response.statusCode}');
+        debugPrint('=========================');
+      }
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
@@ -85,9 +89,11 @@ class ApiService {
         'password': password,
       };
 
-      debugPrint('=== API REGISTER REQUEST ===');
-      debugPrint('URL: ${ApiConfig.registerUrl}');
-      debugPrint('============================');
+      if (kDebugMode) {
+        debugPrint('=== API REGISTER REQUEST ===');
+        debugPrint('URL: ${ApiConfig.registerUrl}');
+        debugPrint('============================');
+      }
 
       final response = await http
           .post(
@@ -97,10 +103,12 @@ class ApiService {
           )
           .timeout(ApiConfig.connectionTimeout);
 
-      debugPrint('=== API REGISTER RESPONSE ===');
-      debugPrint('Status Code: ${response.statusCode}');
-      debugPrint('Response Body: ${response.body}');
-      debugPrint('=============================');
+      if (kDebugMode) {
+        debugPrint('=== API REGISTER RESPONSE ===');
+        debugPrint('Status Code: ${response.statusCode}');
+        debugPrint('Response Body: ${response.body}');
+        debugPrint('=============================');
+      }
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
@@ -338,10 +346,11 @@ class ApiService {
   // Get dashboard data method
   Future<ApiResponse<DashboardDto>> getDashboard(String accessToken) async {
     try {
-      debugPrint('=== API DASHBOARD REQUEST ===');
-      debugPrint('URL: ${ApiConfig.dashboardUrl}');
-      debugPrint('Access Token: ${accessToken.substring(0, 20)}...');
-      debugPrint('============================');
+      if (kDebugMode) {
+        debugPrint('=== API DASHBOARD REQUEST ===');
+        debugPrint('URL: ${ApiConfig.dashboardUrl}');
+        debugPrint('============================');
+      }
 
       final response = await http
           .get(
@@ -350,10 +359,12 @@ class ApiService {
           )
           .timeout(ApiConfig.connectionTimeout);
 
-      debugPrint('=== API DASHBOARD RESPONSE ===');
-      debugPrint('Status Code: ${response.statusCode}');
-      debugPrint('Response Body: ${response.body}');
-      debugPrint('=============================');
+      if (kDebugMode) {
+        debugPrint('=== API DASHBOARD RESPONSE ===');
+        debugPrint('Status Code: ${response.statusCode}');
+        debugPrint('Response Body: ${response.body}');
+        debugPrint('=============================');
+      }
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
@@ -386,11 +397,12 @@ class ApiService {
     try {
       final url = '${ApiConfig.baseUrl}/api/dashboard/projects/$projectUuid';
       
-      debugPrint('=== API PROJECT DETAILS REQUEST ===');
-      debugPrint('URL: $url');
-      debugPrint('Project UUID: $projectUuid');
-      debugPrint('Access Token: ${accessToken.substring(0, 20)}...');
-      debugPrint('==================================');
+      if (kDebugMode) {
+        debugPrint('=== API PROJECT DETAILS REQUEST ===');
+        debugPrint('URL: $url');
+        debugPrint('Project UUID: $projectUuid');
+        debugPrint('==================================');
+      }
 
       final response = await http
           .get(
@@ -399,10 +411,12 @@ class ApiService {
           )
           .timeout(ApiConfig.connectionTimeout);
 
-      debugPrint('=== API PROJECT DETAILS RESPONSE ===');
-      debugPrint('Status Code: ${response.statusCode}');
-      debugPrint('Response Body: ${response.body}');
-      debugPrint('===================================');
+      if (kDebugMode) {
+        debugPrint('=== API PROJECT DETAILS RESPONSE ===');
+        debugPrint('Status Code: ${response.statusCode}');
+        debugPrint('Response Body: ${response.body}');
+        debugPrint('===================================');
+      }
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
@@ -476,7 +490,9 @@ class ApiService {
   // Test connection method
   Future<ApiResponse<String>> testConnection() async {
     try {
-      debugPrint('Testing API connection to: ${ApiConfig.testUrl}');
+      if (kDebugMode) {
+        debugPrint('Testing API connection to: ${ApiConfig.testUrl}');
+      }
 
       final response = await http
           .get(
@@ -485,8 +501,10 @@ class ApiService {
           )
           .timeout(ApiConfig.connectionTimeout);
 
-      debugPrint('Test response status: ${response.statusCode}');
-      debugPrint('Test response body: ${response.body}');
+      if (kDebugMode) {
+        debugPrint('Test response status: ${response.statusCode}');
+        debugPrint('Test response body: ${response.body}');
+      }
 
       if (response.statusCode == 200) {
         return ApiResponse.success(response.body);
@@ -499,7 +517,9 @@ class ApiService {
         );
       }
     } on SocketException {
-      debugPrint('SocketException: Cannot connect to server');
+      if (kDebugMode) {
+        debugPrint('SocketException: Cannot connect to server');
+      }
       return ApiResponse.error(
         ApiError(
           message:
@@ -508,7 +528,9 @@ class ApiService {
         ),
       );
     } catch (e) {
-      debugPrint('Test connection error: $e');
+      if (kDebugMode) {
+        debugPrint('Test connection error: $e');
+      }
       return ApiResponse.error(
         ApiError(
           message: 'Connection test failed: ${e.toString()}',

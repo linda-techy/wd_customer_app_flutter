@@ -200,15 +200,15 @@ class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
             child: Column(
               children: [
                 _buildSideButton(Icons.layers, "Layers", () {
-                  _showSnack('Layer controls - Coming in future update');
+                  _showSnack('This feature is not yet available');
                 }),
                 const SizedBox(height: 12),
                 _buildSideButton(Icons.wb_sunny, "Lighting", () {
-                  _showSnack('Lighting controls - Coming in future update');
+                  _showSnack('This feature is not yet available');
                 }),
                 const SizedBox(height: 12),
                 _buildSideButton(Icons.straighten, "Measure", () {
-                  _showSnack('Measurement tool - Coming in future update');
+                  _showSnack('This feature is not yet available');
                 }),
                 const SizedBox(height: 12),
                 _buildSideButton(Icons.info_outline, "Info", _showInfoSheet),

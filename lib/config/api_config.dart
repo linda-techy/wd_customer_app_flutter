@@ -1,12 +1,25 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 
 class ApiConfig {
-  // Base URL from .env (API_BASE_URL)
-  // Dev: http://localhost:8080
-  // Staging: https://cust-api-staging.walldotbuilders.com
-  // Production: https://cust-api.walldotbuilders.com
-  static String get baseUrl =>
-      dotenv.get('API_BASE_URL', fallback: 'http://localhost:8080');
+  // API Base URL Configuration
+  // Development: Uses localhost as default fallback (port 8080)
+  // Production: Must be set via dart-define: --dart-define=API_BASE_URL=https://cust-api.walldotbuilders.com
+  // Staging: Can be set via dart-define: --dart-define=API_BASE_URL=https://cust-api-staging.walldotbuilders.com
+  // For release builds, API_BASE_URL should always be provided via dart-define
+  static const String _devApiUrl = 'http://localhost:8080';
+  static const String _prodApiUrl = 'https://cust-api.walldotbuilders.com';
+  
+  // Get API URL from environment variable (dart-define) or use defaults
+  // In production (kReleaseMode), this will use the dart-define value or production URL
+  // In development, this will use the dart-define value or localhost
+  static String get baseUrl {
+    const String envApiUrl = String.fromEnvironment('API_BASE_URL');
+    if (envApiUrl.isNotEmpty) {
+      return envApiUrl;
+    }
+    // Fallback: use production URL in release mode, localhost in development
+    return kReleaseMode ? _prodApiUrl : _devApiUrl;
+  }
 
   // API endpoints
   static const String loginEndpoint = '/auth/login';

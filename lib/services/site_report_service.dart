@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import '../config/api_config.dart';
 import '../exceptions/api_exception.dart';
 import '../models/site_report_models.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'auth_service.dart';
 
 class SiteReportService {
   final Dio _dio;
@@ -80,8 +80,7 @@ class SiteReportService {
   }
 
   Future<Map<String, String>> _getAuthHeaders() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
+    final token = await AuthService.getAccessToken();
     
     return {
       'Content-Type': 'application/json',

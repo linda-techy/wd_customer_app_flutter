@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/api_models.dart';
 import 'api_service.dart';
 
@@ -58,6 +59,7 @@ class AuthService {
   static const String _permissionsKey = 'permissions';
 
   static final ApiService _apiService = ApiService();
+  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   // Login with API
   static Future<ApiResponse<LoginResponse>> loginWithApi(
@@ -98,12 +100,15 @@ class AuthService {
     return await _apiService.resetPassword(email, resetCode, newPassword);
   }
 
-  // Save login data to SharedPreferences
+  // Save login data to secure storage (tokens) and SharedPreferences (non-sensitive data)
   static Future<void> _saveLoginData(LoginResponse loginResponse) async {
     final prefs = await SharedPreferences.getInstance();
 
-    await prefs.setString(_accessTokenKey, loginResponse.accessToken);
-    await prefs.setString(_refreshTokenKey, loginResponse.refreshToken);
+    // Store tokens in secure storage
+    await _secureStorage.write(key: _accessTokenKey, value: loginResponse.accessToken);
+    await _secureStorage.write(key: _refreshTokenKey, value: loginResponse.refreshToken);
+    
+    // Store non-sensitive data in SharedPreferences
     await prefs.setString(
         _userInfoKey, jsonEncode(loginResponse.user.toJson()));
     await prefs.setStringList(_permissionsKey, loginResponse.permissions);
@@ -120,16 +125,14 @@ class AuthService {
     await prefs.setString(_userKey, json.encode(user.toJson()));
   }
 
-  // Get access token
+  // Get access token from secure storage
   static Future<String?> getAccessToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_accessTokenKey);
+    return await _secureStorage.read(key: _accessTokenKey);
   }
 
-  // Get refresh token
+  // Get refresh token from secure storage
   static Future<String?> getRefreshToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_refreshTokenKey);
+    return await _secureStorage.read(key: _refreshTokenKey);
   }
 
   // Check if token is expired
@@ -153,10 +156,11 @@ class AuthService {
     final response = await _apiService.refreshToken(refreshToken);
 
     if (response.success && response.data != null) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_accessTokenKey, response.data!.accessToken);
+      // Store new access token in secure storage
+      await _secureStorage.write(key: _accessTokenKey, value: response.data!.accessToken);
 
-      // Update expiry time
+      // Update expiry time in SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
       final expiryTime = DateTime.now()
           .add(Duration(milliseconds: response.data!.expiresIn))
           .millisecondsSinceEpoch;
@@ -207,8 +211,12 @@ class AuthService {
   // Clear all authentication data
   static Future<void> _clearAuthData() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_accessTokenKey);
-    await prefs.remove(_refreshTokenKey);
+    
+    // Remove tokens from secure storage
+    await _secureStorage.delete(key: _accessTokenKey);
+    await _secureStorage.delete(key: _refreshTokenKey);
+    
+    // Remove non-sensitive data from SharedPreferences
     await prefs.remove(_tokenExpiryKey);
     await prefs.remove(_userInfoKey);
     await prefs.remove(_permissionsKey);
@@ -233,7 +241,7 @@ class AuthService {
     }
 
     // Check if we have valid tokens and user data
-    final accessToken = prefs.getString(_accessTokenKey);
+    final accessToken = await getAccessToken();
     final userInfo = prefs.getString(_userInfoKey);
 
     developer.log(

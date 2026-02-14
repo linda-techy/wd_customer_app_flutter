@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import '../config/api_config.dart';
 import '../models/payment_models.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'auth_service.dart';
 
 class PaymentService {
   final Dio _dio;
@@ -89,8 +89,7 @@ class PaymentService {
 
   /// Get authentication headers
   Future<Map<String, String>> _getAuthHeaders() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
+    final token = await AuthService.getAccessToken();
     
     return {
       'Content-Type': 'application/json',

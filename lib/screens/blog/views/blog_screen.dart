@@ -107,6 +107,7 @@ class BlogScreen extends StatelessWidget {
 
   Widget _buildBlogCard(BuildContext context, int index) {
     final now = DateTime.now();
+    // Content loaded from CMS
     final blogData = [
       {
         'title': 'Kerala-Style Home Design: Traditional Nalukettu to Modern',

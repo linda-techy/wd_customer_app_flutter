@@ -68,12 +68,6 @@ const Color whileColor5 = Color(0xFF0D0D0D);
 const Color greyColor = Color(0xFFB8B5C3);
 const Color lightGreyColor = Color(0xFFF8F8F9);
 const Color darkGreyColor = Color(0xFF1C1C25);
-// const Color greyColor80 = Color(0xFFC6C4CF);
-// const Color greyColor60 = Color(0xFFD4D3DB);
-// const Color greyColor40 = Color(0xFFE3E1E7);
-// const Color greyColor20 = Color(0xFFF1F0F3);
-// const Color greyColor10 = Color(0xFFF8F8F9);
-// const Color greyColor5 = Color(0xFFFBFBFC);
 
 const Color purpleColor = Color(0xFF2C5F2D);
 const Color successColor = Color(0xFF00C853); // Emerald Green
@@ -89,15 +83,14 @@ const Duration kSlowDuration = Duration(milliseconds: 600);
 const Curve kButtonScaleCurve = Curves.easeOut;
 const Curve kStandardCurve = Curves.easeInOut;
 
-// TEMPORARY: Simplified password validator for testing
 final passwordValidator = MultiValidator([
   RequiredValidator(errorText: 'Password is required'),
-  // MinLengthValidator(8, errorText: 'password must be at least 8 digits long'),
-  // PatternValidator(r'(?=.*?[#?!@$%^&*-])',
-  //     errorText: 'passwords must have at least one special character')
+  MinLengthValidator(8, errorText: 'Password must be at least 8 characters long'),
+  PatternValidator(r'(?=.*?[#?!@$%^&*\-])',
+      errorText: 'Password must have at least one special character'),
 ]);
 
-final emaildValidator = MultiValidator([
+final emailValidator = MultiValidator([
   RequiredValidator(errorText: 'Email is required'),
   EmailValidator(errorText: "Enter a valid email address"),
 ]);
