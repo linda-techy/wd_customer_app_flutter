@@ -7,7 +7,15 @@ import '../../../utils/responsive.dart';
 import 'components/login_form.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  /// When provided, called on successful login instead of navigating away.
+  /// Used when the screen is embedded inside the EntryPoint (with bottom nav).
+  final VoidCallback? onLoginSuccess;
+
+  /// When provided, called when "Forgot Password?" is tapped instead of
+  /// pushing a new route. Used for inline/embedded usage.
+  final VoidCallback? onForgotPassword;
+
+  const LoginScreen({super.key, this.onLoginSuccess, this.onForgotPassword});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -69,6 +77,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.success && response.data != null) {
         _showSuccessSnackBar('Login successful!');
+
+        // If an inline callback is provided (e.g. embedded inside EntryPoint),
+        // call it instead of pushing a new route so the bottom nav stays visible.
+        if (widget.onLoginSuccess != null) {
+          widget.onLoginSuccess!();
+          return;
+        }
 
         // Check redirect URL from API response
         final redirectUrl = response.data!.redirectUrl;
@@ -443,19 +458,23 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 8),
               Align(
                 alignment: Alignment.centerRight,
-                child: TextButton(
-                  child: Text(
-                    "Forgot Password?",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: ResponsiveFontSize.getBody(context),
-                      color: logoRed,
+                  child: TextButton(
+                    child: Text(
+                      "Forgot Password?",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: ResponsiveFontSize.getBody(context),
+                        color: logoRed,
+                      ),
                     ),
+                    onPressed: () {
+                      if (widget.onForgotPassword != null) {
+                        widget.onForgotPassword!();
+                      } else {
+                        Navigator.pushNamed(context, passwordRecoveryScreenRoute);
+                      }
+                    },
                   ),
-                  onPressed: () {
-                    Navigator.pushNamed(context, passwordRecoveryScreenRoute);
-                  },
-                ),
               ),
             ],
           ),

@@ -1,19 +1,9 @@
 // Authentication Routes
 const String onbordingScreenRoute = "onbording";
 const String notificationPermissionScreenRoute = "notification_permission";
-const String preferredLanuageScreenRoute = "preferred_language";
 const String logInScreenRoute = "login";
-const String signUpScreenRoute = "signup";
-const String profileSetupScreenRoute = "profile_setup";
-const String signUpVerificationScreenRoute = "signup_verification";
 const String passwordRecoveryScreenRoute = "password_recovery";
-const String verificationMethodScreenRoute = "verification_method";
-const String otpScreenRoute = "otp";
-const String newPasswordScreenRoute = "new_password";
-const String doneResetPasswordScreenRoute = "done_reset_password";
-const String termsOfServicesScreenRoute = "terms_of_services";
-const String setupFingerprintScreenRoute = "setup_fingerprint";
-const String setupFaceIdScreenRoute = "setup_faceid";
+const String resetPasswordScreenRoute = "reset_password";
 
 // Error & Status Routes
 const String noInternetScreenRoute = "no_internet";
@@ -22,7 +12,6 @@ const String serverErrorScreenRoute = "server_error";
 // Main Navigation Routes
 const String homeScreenRoute = "home";
 const String entryPointScreenRoute = "entry_point";
-
 
 // Profile & Settings Routes
 const String profileScreenRoute = "profile";
@@ -38,12 +27,6 @@ const String notificationsScreenRoute = "notifications";
 const String noNotificationScreenRoute = "no_notifications";
 const String enableNotificationScreenRoute = "enable_notifications";
 const String notificationOptionsScreenRoute = "notification_options";
-
-// Location & Address Routes (for job sites)
-const String selectLanguageScreenRoute = "select_language";
-const String noAddressScreenRoute = "no_address";
-const String addressesScreenRoute = "addresses";
-const String addNewAddressesScreenRoute = "add_new_addresses";
 
 // Project Routes
 const String projectScreenRoute = "project";
@@ -92,21 +75,3 @@ const String blogScreenRoute = "blog";
 const String blogDetailsScreenRoute = "blog_details";
 const String portfolioScreenRoute = "portfolio";
 const String portfolioDetailsScreenRoute = "portfolio_details";
-
-// Service Routes
-const String servicesScreenRoute = "services";
-const String serviceDetailsScreenRoute = "service_details";
-const String requestQuoteScreenRoute = "request_quote";
-const String scheduleVisitScreenRoute = "schedule_visit";
-
-// Payment & Billing Routes (Construction-focused)
-const String billingScreenRoute = "billing";
-const String invoicesScreenRoute = "invoices";
-const String invoiceDetailsScreenRoute = "invoice_details";
-const String paymentHistoryScreenRoute = "payment_history";
-const String paymentMethodScreenRoute = "payment_method";
-
-// Communication Routes
-const String contactSupportScreenRoute = "contact_support";
-const String submitTicketScreenRoute = "submit_ticket";
-const String ticketsScreenRoute = "tickets";

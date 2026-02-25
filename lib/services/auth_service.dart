@@ -74,20 +74,6 @@ class AuthService {
     return response;
   }
 
-  // Register with API
-  static Future<ApiResponse<LoginResponse>> registerWithApi(
-      String firstName, String lastName, String email, String password) async {
-    final response =
-        await _apiService.register(firstName, lastName, email, password);
-
-    if (response.success && response.data != null) {
-      // Save tokens and user data (auto-login after registration)
-      await _saveLoginData(response.data!);
-    }
-
-    return response;
-  }
-
   // Forgot password
   static Future<ApiResponse<Map<String, dynamic>>> forgotPassword(
       String email) async {

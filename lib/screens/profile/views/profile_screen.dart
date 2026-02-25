@@ -297,12 +297,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               () => Navigator.pushNamed(context, logInScreenRoute),
               400.ms,
             ),
-            _buildAnimatedTile(
-              "Sign Up",
-              "assets/icons/Profile.svg",
-              () => Navigator.pushNamed(context, signUpScreenRoute),
-              450.ms,
-            ),
           ],
 
           const SizedBox(height: defaultPadding),

@@ -23,7 +23,6 @@ class ApiConfig {
 
   // API endpoints
   static const String loginEndpoint = '/auth/login';
-  static const String registerEndpoint = '/auth/register';
   static const String forgotPasswordEndpoint = '/auth/forgot-password';
   static const String resetPasswordEndpoint = '/auth/reset-password';
   static const String refreshTokenEndpoint = '/auth/refresh-token';
@@ -34,7 +33,6 @@ class ApiConfig {
 
   // Full URLs
   static String get loginUrl => '$baseUrl$loginEndpoint';
-  static String get registerUrl => '$baseUrl$registerEndpoint';
   static String get forgotPasswordUrl => '$baseUrl$forgotPasswordEndpoint';
   static String get resetPasswordUrl => '$baseUrl$resetPasswordEndpoint';
   static String get refreshTokenUrl => '$baseUrl$refreshTokenEndpoint';

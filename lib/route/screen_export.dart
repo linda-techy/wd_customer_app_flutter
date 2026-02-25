@@ -2,7 +2,7 @@
 export '/screens/onbording/views/onbording_screnn.dart';
 export '/screens/auth/views/login_screen.dart';
 export '/screens/auth/views/password_recovery_screen.dart';
-export '/screens/auth/views/signup_screen.dart';
+export '/screens/auth/views/reset_password_screen.dart';
 
 // Route Constants
 export '/route/route_constants.dart';
@@ -32,11 +32,6 @@ export '/screens/notification/view/enable_notification_screen.dart';
 export '/screens/notification/view/no_notification_screen.dart';
 export '/screens/notification/view/notification_ontions_screen.dart';
 export '/screens/notification/view/notificatios_screen.dart';
-
-// Addresses (Job Sites)
-export '/screens/address/views/addresses_screen.dart';
-
-
 
 // Note: E-commerce screens (products, cart, checkout, reviews, etc.) have been removed
 // If you need them, check git history or REFACTORING_PLAN.md

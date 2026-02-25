@@ -14,6 +14,7 @@ import 'package:wd_cust_mobile_app/screens/project/views/quality_check_screen.da
 import 'package:wd_cust_mobile_app/screens/project/views/view_360_screen.dart';
 import 'fade_slide_page_route.dart';
 import 'screen_export.dart';
+import '../screens/auth/views/reset_password_screen.dart';
 
 // Construction-focused routing for Walldot Builders Customer App
 // Removed all e-commerce routes (products, cart, checkout, etc.)
@@ -158,13 +159,16 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         builder: (context) => const LoginScreen(),
       );
-    case signUpScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const SignUpScreen(),
-      );
     case passwordRecoveryScreenRoute:
       return MaterialPageRoute(
         builder: (context) => const PasswordRecoveryScreen(),
+      );
+    case resetPasswordScreenRoute:
+      final args = settings.arguments as Map<String, String>?;
+      final token = args?['token'] ?? '';
+      final email = args?['email'] ?? '';
+      return MaterialPageRoute(
+        builder: (context) => ResetPasswordScreen(token: token, email: email),
       );
 
     // Main Navigation
@@ -213,12 +217,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case notificationOptionsScreenRoute:
       return MaterialPageRoute(
         builder: (context) => const NotificationOptionsScreen(),
-      );
-
-    // Addresses (Job Sites)
-    case addressesScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const AddressesScreen(),
       );
 
     // Projects

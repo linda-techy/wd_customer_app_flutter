@@ -38,6 +38,7 @@ dependencies:
   intl: ^0.19.0  # For date formatting
   geolocator: ^13.0.2  # For GPS location access during site visit check-in/check-out
   flutter_secure_storage: ^10.0.0
+  app_links: ^6.3.4
 
 dev_dependencies:
   flutter_test:

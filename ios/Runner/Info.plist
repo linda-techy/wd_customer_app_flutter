@@ -49,5 +49,21 @@
 	<string>This app needs access to your location for site visit check-in and check-out verification.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This app needs access to your location for site visit check-in and check-out verification.</string>
+	<!-- Universal Links: intercept password reset links from the customer portal -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.wd.custapp</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>wdcustapp</string>
+			</array>
+		</dict>
+	</array>
+	<key>FlutterDeepLinkingEnabled</key>
+	<true/>
 </dict>
 </plist>

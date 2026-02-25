@@ -1,3 +1,4 @@
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -35,12 +36,55 @@ void _configureWeb() {
 // Thanks for using our template. You are using the free version of the template.
 // Full template: https://theflutterway.gumroad.com/l/fluttershop
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  late final AppLinks _appLinks;
+
+  @override
+  void initState() {
+    super.initState();
+    _initDeepLinks();
+  }
+
+  void _initDeepLinks() {
+    _appLinks = AppLinks();
+
+    // Handle deep link that opened the app from cold start
+    _appLinks.getInitialLink().then((uri) {
+      if (uri != null) {
+        _handleDeepLink(uri);
+      }
+    });
+
+    // Handle deep links while the app is already running
+    _appLinks.uriLinkStream.listen(_handleDeepLink);
+  }
+
+  void _handleDeepLink(Uri uri) {
+    if (uri.path == '/reset-password' &&
+        (uri.host == 'app.walldotbuilders.com' || uri.host.isEmpty)) {
+      final token = uri.queryParameters['token'];
+      final email = uri.queryParameters['email'];
+      if (token != null && token.isNotEmpty && email != null && email.isNotEmpty) {
+        _navigatorKey.currentState?.pushNamed(
+          resetPasswordScreenRoute,
+          arguments: {'token': token, 'email': email},
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'Walldot Builders',
       theme: AppTheme.lightTheme(context),
