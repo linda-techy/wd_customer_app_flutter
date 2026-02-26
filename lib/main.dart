@@ -2,10 +2,12 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
 import 'route/route_constants.dart';
 import 'route/router.dart' as router;
 import 'theme/app_theme.dart';
 import 'services/auth_service.dart';
+import 'providers/theme_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,16 +27,17 @@ Future<void> main() async {
     _configureWeb();
   }
 
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 void _configureWeb() {
   // Web-specific configuration
-  // This helps with web deployment issues
 }
-
-// Thanks for using our template. You are using the free version of the template.
-// Full template: https://theflutterway.gumroad.com/l/fluttershop
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -83,12 +86,14 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
     return MaterialApp(
       navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'Walldot Builders',
       theme: AppTheme.lightTheme(context),
-      themeMode: ThemeMode.light,
+      darkTheme: AppTheme.darkTheme(context),
+      themeMode: themeProvider.themeMode,
       onGenerateRoute: router.generateRoute,
       home: const InitialScreen(),
     );
@@ -122,11 +127,13 @@ class _InitialScreenState extends State<InitialScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Walldot Builders',
       theme: AppTheme.lightTheme(context),
-      themeMode: ThemeMode.light,
+      darkTheme: AppTheme.darkTheme(context),
+      themeMode: themeProvider.themeMode,
       onGenerateRoute: router.generateRoute,
       initialRoute: _initialRoute,
     );

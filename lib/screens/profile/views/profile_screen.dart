@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 import '../../../components/list_tile/divider_list_tile.dart';
 import '../../../constants.dart';
 import '../../../route/screen_export.dart';
 import '../../../services/auth_service.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/hover_card.dart';
+import '../../../providers/theme_provider.dart';
 
 import 'components/profile_card.dart';
 import 'components/profile_menu_item_list_tile.dart';
@@ -301,9 +303,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           const SizedBox(height: defaultPadding),
 
-          // Personalization Section
-          _buildSectionHeader("Personalization", 700.ms),
-          
+          // Appearance Section
+          _buildSectionHeader("Appearance", 670.ms),
+
+          FadeEntry(
+            delay: 680.ms,
+            child: _buildThemeToggleTile(),
+          ),
+
+          const SizedBox(height: defaultPadding),
+
+          // Notifications Section
+          _buildSectionHeader("Notifications", 700.ms),
+
           FadeEntry(
             delay: 750.ms,
             child: DividerListTileWithTrilingText(
@@ -312,17 +324,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               trailingText: "Off",
               onTap: () {
                 Navigator.pushNamed(context, notificationsScreenRoute);
-              },
-            ),
-          ),
-          FadeEntry(
-            delay: 800.ms,
-            child: DividerListTileWithTrilingText(
-              svgSrc: "assets/icons/Theme.svg",
-              title: "Theme",
-              trailingText: "Light",
-              onTap: () {
-                Navigator.pushNamed(context, preferencesScreenRoute);
               },
             ),
           ),
@@ -369,6 +370,73 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           const SizedBox(height: defaultPadding * 4),
         ],
+      ),
+    );
+  }
+
+  Widget _buildThemeToggleTile() {
+    final themeProvider = context.watch<ThemeProvider>();
+    final isDark = themeProvider.isDark;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: defaultPadding, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color ?? Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Theme.of(context).dividerColor,
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: (isDark ? Colors.indigo : Colors.amber).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+                color: isDark ? Colors.indigo : Colors.amber.shade700,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isDark ? "Dark Mode" : "Light Mode",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    isDark ? "Switch to light theme" : "Switch to dark theme",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Transform.scale(
+              scale: 0.85,
+              child: Switch(
+                value: isDark,
+                onChanged: (_) => themeProvider.toggleTheme(),
+                activeColor: Colors.indigo,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

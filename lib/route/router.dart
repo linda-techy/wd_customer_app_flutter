@@ -196,11 +196,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         builder: (context) => const UserInfoScreen(),
       );
-    case preferencesScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const PreferencesScreen(),
-      );
-
     // Notifications
     case notificationsScreenRoute:
       return MaterialPageRoute(
