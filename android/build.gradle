@@ -5,12 +5,57 @@ allprojects {
     }
 }
 
-rootProject.buildDir = "../build"
-subprojects {
-    project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
+// Let flutter manage build directories
 subprojects {
     project.evaluationDependsOn(":app")
+}
+
+// Global flutter properties definition to fix old plugins evaluation failing
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader("UTF-8") { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterRoot = localProperties.getProperty("flutter.sdk")
+if (flutterRoot == null) {
+    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+}
+
+def flutterVersionCode = localProperties.getProperty("flutter.versionCode")
+if (flutterVersionCode == null) {
+    flutterVersionCode = "1"
+}
+
+def flutterVersionName = localProperties.getProperty("flutter.versionName")
+if (flutterVersionName == null) {
+    flutterVersionName = "1.0"
+}
+
+// Load flutter properties
+def flutterProperties = new Properties()
+def flutterPropertiesFile = new File("$flutterRoot/packages/flutter_tools/gradle/src/main/groovy/flutter.groovy")
+if (!flutterPropertiesFile.exists()) {
+	// fallback for older flutter versions
+    flutterPropertiesFile = new File("$flutterRoot/packages/flutter_tools/gradle/flutter.gradle")
+}
+
+ext {
+    // Hardcode known good defaults for Flutter 3+ in case parsing fails
+    flutterCompileSdkVersion = 34
+    flutterMinSdkVersion = 21
+    flutterTargetSdkVersion = 34
+}
+
+// Expose properties globally so old plugins find them
+subprojects { project ->
+    project.ext.flutter = [
+        compileSdkVersion: 36,
+        targetSdkVersion: 36,
+        minSdkVersion: 21
+    ]
 }
 
 tasks.register("clean", Delete) {

@@ -14,7 +14,6 @@ import 'package:wd_cust_mobile_app/screens/project/views/quality_check_screen.da
 import 'package:wd_cust_mobile_app/screens/project/views/view_360_screen.dart';
 import 'fade_slide_page_route.dart';
 import 'screen_export.dart';
-import '../screens/auth/views/reset_password_screen.dart';
 
 // Construction-focused routing for Walldot Builders Customer App
 // Removed all e-commerce routes (products, cart, checkout, etc.)
