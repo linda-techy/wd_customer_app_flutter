@@ -1,0 +1,63 @@
+com.example.wd_cust_mobile_app-jetified-window-1.2.0-0 C:\Users\linda\.gradle\caches\transforms-3\079760209a016b95961d56f9b5236165\transformed\jetified-window-1.2.0\res
+com.example.wd_cust_mobile_app-jetified-core-1.0.0-1 C:\Users\linda\.gradle\caches\transforms-3\0e244bae6e40f66dd8af8d2067096121\transformed\jetified-core-1.0.0\res
+com.example.wd_cust_mobile_app-jetified-lifecycle-viewmodel-savedstate-2.7.0-2 C:\Users\linda\.gradle\caches\transforms-3\16660eaf79748ffe2f9f60a523a5bec3\transformed\jetified-lifecycle-viewmodel-savedstate-2.7.0\res
+com.example.wd_cust_mobile_app-jetified-appcompat-resources-1.6.1-3 C:\Users\linda\.gradle\caches\transforms-3\17eb1cf0b7e2c9aec45c17f32e91e075\transformed\jetified-appcompat-resources-1.6.1\res
+com.example.wd_cust_mobile_app-jetified-fragment-ktx-1.7.1-4 C:\Users\linda\.gradle\caches\transforms-3\22624c3fe4d6deefb5272e650aa41278\transformed\jetified-fragment-ktx-1.7.1\res
+com.example.wd_cust_mobile_app-lifecycle-runtime-2.7.0-5 C:\Users\linda\.gradle\caches\transforms-3\2dd4eb8a92900efe5a38c7b0b1c87726\transformed\lifecycle-runtime-2.7.0\res
+com.example.wd_cust_mobile_app-jetified-profileinstaller-1.3.1-6 C:\Users\linda\.gradle\caches\transforms-3\3a688781315dd96c804795b33ed2c8ad\transformed\jetified-profileinstaller-1.3.1\res
+com.example.wd_cust_mobile_app-jetified-play-services-basement-18.3.0-7 C:\Users\linda\.gradle\caches\transforms-3\45c486b9bbeb5defd640b2d0fcd4673d\transformed\jetified-play-services-basement-18.3.0\res
+com.example.wd_cust_mobile_app-jetified-activity-1.8.1-8 C:\Users\linda\.gradle\caches\transforms-3\46d40f6f4b8fb94f668fa9ddf150380f\transformed\jetified-activity-1.8.1\res
+com.example.wd_cust_mobile_app-jetified-datastore-release-9 C:\Users\linda\.gradle\caches\transforms-3\47603b8f430e36bba377ddb3cddb4c51\transformed\jetified-datastore-release\res
+com.example.wd_cust_mobile_app-webkit-1.12.0-10 C:\Users\linda\.gradle\caches\transforms-3\524964afb9496fd5f6750a1c4800e146\transformed\webkit-1.12.0\res
+com.example.wd_cust_mobile_app-recyclerview-1.0.0-11 C:\Users\linda\.gradle\caches\transforms-3\5808efd85fc9d24a4f39fc4d8a712a85\transformed\recyclerview-1.0.0\res
+com.example.wd_cust_mobile_app-jetified-tracing-1.2.0-12 C:\Users\linda\.gradle\caches\transforms-3\5fa7a6e368539a146ec64d812807235a\transformed\jetified-tracing-1.2.0\res
+com.example.wd_cust_mobile_app-preference-1.2.1-13 C:\Users\linda\.gradle\caches\transforms-3\7202d1a90f3a974b2f09cfc2bc9beadf\transformed\preference-1.2.1\res
+com.example.wd_cust_mobile_app-fragment-1.7.1-14 C:\Users\linda\.gradle\caches\transforms-3\727cda21d94663f0bfbd795d2b96f118\transformed\fragment-1.7.1\res
+com.example.wd_cust_mobile_app-jetified-lifecycle-viewmodel-ktx-2.7.0-15 C:\Users\linda\.gradle\caches\transforms-3\72c419a3f8da0b514fbfcc82e09dcb4e\transformed\jetified-lifecycle-viewmodel-ktx-2.7.0\res
+com.example.wd_cust_mobile_app-appcompat-1.6.1-16 C:\Users\linda\.gradle\caches\transforms-3\7a215b6970ed8fe8a357865eacb11cce\transformed\appcompat-1.6.1\res
+com.example.wd_cust_mobile_app-jetified-core-ktx-1.13.1-17 C:\Users\linda\.gradle\caches\transforms-3\7c4427b82d8fbd61776361252b22f30d\transformed\jetified-core-ktx-1.13.1\res
+com.example.wd_cust_mobile_app-slidingpanelayout-1.2.0-18 C:\Users\linda\.gradle\caches\transforms-3\7ff9515b10f9b5670298b99dd453fe86\transformed\slidingpanelayout-1.2.0\res
+com.example.wd_cust_mobile_app-lifecycle-livedata-core-2.7.0-19 C:\Users\linda\.gradle\caches\transforms-3\890714e4078889fa572babfe9af96919\transformed\lifecycle-livedata-core-2.7.0\res
+com.example.wd_cust_mobile_app-swiperefreshlayout-1.1.0-20 C:\Users\linda\.gradle\caches\transforms-3\8f42958461723b6932bf81eec0b8fa68\transformed\swiperefreshlayout-1.1.0\res
+com.example.wd_cust_mobile_app-lifecycle-viewmodel-2.7.0-21 C:\Users\linda\.gradle\caches\transforms-3\96b342ebb4d9a593ab8fac9362b16066\transformed\lifecycle-viewmodel-2.7.0\res
+com.example.wd_cust_mobile_app-jetified-window-java-1.2.0-22 C:\Users\linda\.gradle\caches\transforms-3\a19fdaa9078a6b8e8e11e6eee2ddd4fb\transformed\jetified-window-java-1.2.0\res
+com.example.wd_cust_mobile_app-jetified-lifecycle-runtime-ktx-2.7.0-23 C:\Users\linda\.gradle\caches\transforms-3\ac25ca26017871fea22c9ee41eba34a2\transformed\jetified-lifecycle-runtime-ktx-2.7.0\res
+com.example.wd_cust_mobile_app-core-1.13.1-24 C:\Users\linda\.gradle\caches\transforms-3\af60f7a55829d5753d61478907f8e55b\transformed\core-1.13.1\res
+com.example.wd_cust_mobile_app-lifecycle-livedata-2.7.0-25 C:\Users\linda\.gradle\caches\transforms-3\b3ea412910dd810e1a8a0421de2a1ef7\transformed\lifecycle-livedata-2.7.0\res
+com.example.wd_cust_mobile_app-transition-1.4.1-26 C:\Users\linda\.gradle\caches\transforms-3\b578da5dc94bf70590ae2b0e893ffe5e\transformed\transition-1.4.1\res
+com.example.wd_cust_mobile_app-jetified-activity-ktx-1.8.1-27 C:\Users\linda\.gradle\caches\transforms-3\b8ecf941ada073058feed4d8a211996e\transformed\jetified-activity-ktx-1.8.1\res
+com.example.wd_cust_mobile_app-coordinatorlayout-1.0.0-28 C:\Users\linda\.gradle\caches\transforms-3\bbd1cbebf871981a461489219720a5a7\transformed\coordinatorlayout-1.0.0\res
+com.example.wd_cust_mobile_app-browser-1.8.0-29 C:\Users\linda\.gradle\caches\transforms-3\bbf8617d7cfc7cd8c5aff4eb00ab8ff3\transformed\browser-1.8.0\res
+com.example.wd_cust_mobile_app-jetified-savedstate-1.2.1-30 C:\Users\linda\.gradle\caches\transforms-3\bfeefc5da51b69d306ab787d7a8b2865\transformed\jetified-savedstate-1.2.1\res
+com.example.wd_cust_mobile_app-jetified-play-services-base-18.3.0-31 C:\Users\linda\.gradle\caches\transforms-3\c9f38fca1de7a228b4539bf5899254a3\transformed\jetified-play-services-base-18.3.0\res
+com.example.wd_cust_mobile_app-jetified-annotation-experimental-1.4.0-32 C:\Users\linda\.gradle\caches\transforms-3\d2f73a83e4131996f5e48df3af6e64c7\transformed\jetified-annotation-experimental-1.4.0\res
+com.example.wd_cust_mobile_app-jetified-savedstate-ktx-1.2.1-33 C:\Users\linda\.gradle\caches\transforms-3\dc1232906409e822a14636243dbae88e\transformed\jetified-savedstate-ktx-1.2.1\res
+com.example.wd_cust_mobile_app-jetified-datastore-preferences-release-34 C:\Users\linda\.gradle\caches\transforms-3\dc76f0d2eeed0dc91b9b2df33bde309f\transformed\jetified-datastore-preferences-release\res
+com.example.wd_cust_mobile_app-jetified-datastore-core-release-35 C:\Users\linda\.gradle\caches\transforms-3\dcf785ecfcc5cf0e72ad7f100215b6e1\transformed\jetified-datastore-core-release\res
+com.example.wd_cust_mobile_app-jetified-emoji2-1.2.0-36 C:\Users\linda\.gradle\caches\transforms-3\e02d0e4847fbb37a6a8955e3bcd17d35\transformed\jetified-emoji2-1.2.0\res
+com.example.wd_cust_mobile_app-jetified-lifecycle-livedata-core-ktx-2.7.0-37 C:\Users\linda\.gradle\caches\transforms-3\e35d5c9cca9ea740e48b6312a862eda4\transformed\jetified-lifecycle-livedata-core-ktx-2.7.0\res
+com.example.wd_cust_mobile_app-jetified-startup-runtime-1.1.1-38 C:\Users\linda\.gradle\caches\transforms-3\e568db8a78a4c4ff28559fa6ce165f95\transformed\jetified-startup-runtime-1.1.1\res
+com.example.wd_cust_mobile_app-jetified-emoji2-views-helper-1.2.0-39 C:\Users\linda\.gradle\caches\transforms-3\ef371417206467bf47d66e5bea5409d0\transformed\jetified-emoji2-views-helper-1.2.0\res
+com.example.wd_cust_mobile_app-jetified-lifecycle-process-2.7.0-40 C:\Users\linda\.gradle\caches\transforms-3\f79007d3a91996f4e5edfe833b18ff40\transformed\jetified-lifecycle-process-2.7.0\res
+com.example.wd_cust_mobile_app-core-runtime-2.2.0-41 C:\Users\linda\.gradle\caches\transforms-3\f8f95a096748e7326884ff48194d2dec\transformed\core-runtime-2.2.0\res
+com.example.wd_cust_mobile_app-packaged_res-42 C:\Users\linda\AppData\Local\Pub\Cache\hosted\pub.dev\app_links-6.2.0\android\build\intermediates\packaged_res\release
+com.example.wd_cust_mobile_app-packaged_res-43 C:\Users\linda\AppData\Local\Pub\Cache\hosted\pub.dev\device_info_plus-10.1.2\android\build\intermediates\packaged_res\release
+com.example.wd_cust_mobile_app-packaged_res-44 C:\Users\linda\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_inappwebview_android-1.1.3\android\build\intermediates\packaged_res\release
+com.example.wd_cust_mobile_app-packaged_res-45 C:\Users\linda\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage-10.0.0\android\build\intermediates\packaged_res\release
+com.example.wd_cust_mobile_app-packaged_res-46 C:\Users\linda\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_android-4.6.2\android\build\intermediates\packaged_res\release
+com.example.wd_cust_mobile_app-packaged_res-47 C:\Users\linda\AppData\Local\Pub\Cache\hosted\pub.dev\open_filex-4.7.0\android\build\intermediates\packaged_res\release
+com.example.wd_cust_mobile_app-packaged_res-48 C:\Users\linda\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.15\android\build\intermediates\packaged_res\release
+com.example.wd_cust_mobile_app-packaged_res-49 C:\Users\linda\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_android-12.1.0\android\build\intermediates\packaged_res\release
+com.example.wd_cust_mobile_app-packaged_res-50 C:\Users\linda\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-10.1.4\android\build\intermediates\packaged_res\release
+com.example.wd_cust_mobile_app-packaged_res-51 C:\Users\linda\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.7\android\build\intermediates\packaged_res\release
+com.example.wd_cust_mobile_app-packaged_res-52 C:\Users\linda\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.0\android\build\intermediates\packaged_res\release
+com.example.wd_cust_mobile_app-packaged_res-53 C:\Users\linda\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_flutter_pdfviewer-27.2.5\android\build\intermediates\packaged_res\release
+com.example.wd_cust_mobile_app-packaged_res-54 C:\Users\linda\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.14\android\build\intermediates\packaged_res\release
+com.example.wd_cust_mobile_app-pngs-55 N:\Projects\wd projects git\wd_customer_app_flutter\android\app\build\generated\res\pngs\release
+com.example.wd_cust_mobile_app-resValues-56 N:\Projects\wd projects git\wd_customer_app_flutter\android\app\build\generated\res\resValues\release
+com.example.wd_cust_mobile_app-packageReleaseResources-57 N:\Projects\wd projects git\wd_customer_app_flutter\android\app\build\intermediates\incremental\release\packageReleaseResources\merged.dir
+com.example.wd_cust_mobile_app-packageReleaseResources-58 N:\Projects\wd projects git\wd_customer_app_flutter\android\app\build\intermediates\incremental\release\packageReleaseResources\stripped.dir
+com.example.wd_cust_mobile_app-merged-not-compiled-resources-59 N:\Projects\wd projects git\wd_customer_app_flutter\android\app\build\intermediates\merged-not-compiled-resources\release
+com.example.wd_cust_mobile_app-merged_res-60 N:\Projects\wd projects git\wd_customer_app_flutter\android\app\build\intermediates\merged_res\release
+com.example.wd_cust_mobile_app-main-61 N:\Projects\wd projects git\wd_customer_app_flutter\android\app\src\main\res
+com.example.wd_cust_mobile_app-release-62 N:\Projects\wd projects git\wd_customer_app_flutter\android\app\src\release\res
