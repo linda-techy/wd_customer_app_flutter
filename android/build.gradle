@@ -5,12 +5,6 @@ allprojects {
     }
 }
 
-// Let flutter manage build directories
-subprojects {
-    project.evaluationDependsOn(":app")
-}
-
-// Global flutter properties definition to fix old plugins evaluation failing
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
@@ -34,30 +28,22 @@ if (flutterVersionName == null) {
     flutterVersionName = "1.0"
 }
 
-// Load flutter properties
 def flutterProperties = new Properties()
 def flutterPropertiesFile = new File("$flutterRoot/packages/flutter_tools/gradle/src/main/groovy/flutter.groovy")
 if (!flutterPropertiesFile.exists()) {
-	// fallback for older flutter versions
     flutterPropertiesFile = new File("$flutterRoot/packages/flutter_tools/gradle/flutter.gradle")
 }
 
-ext {
-    // Hardcode known good defaults for Flutter 3+ in case parsing fails
-    flutterCompileSdkVersion = 34
-    flutterMinSdkVersion = 21
-    flutterTargetSdkVersion = 34
-}
-
-// Expose properties globally so old plugins find them
 subprojects { project ->
-    project.ext.flutter = [
-        compileSdkVersion: 36,
-        targetSdkVersion: 36,
-        minSdkVersion: 24
-    ]
+    if (project.name != "app") {
+        project.ext.flutter = [
+            compileSdkVersion: 36,
+            targetSdkVersion: 36,
+            minSdkVersion: 24
+        ]
+    }
 
-    if (project.state.executed) {
+    project.afterEvaluate {
         if (project.hasProperty("android")) {
             project.android {
                 if (namespace == null) {
@@ -69,21 +55,11 @@ subprojects { project ->
                 }
             }
         }
-    } else {
-        project.afterEvaluate {
-            if (project.hasProperty("android")) {
-                project.android {
-                    if (namespace == null) {
-                        namespace project.group
-                    }
-                    compileSdkVersion 36
-                    defaultConfig {
-                        targetSdkVersion 36
-                    }
-                }
-            }
-        }
     }
+}
+
+subprojects {
+    project.evaluationDependsOn(":app")
 }
 
 tasks.register("clean", Delete) {
