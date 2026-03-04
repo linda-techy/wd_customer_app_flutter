@@ -1,24 +1,38 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiConfig {
   // API Base URL Configuration
-  // Development: Uses localhost as default fallback (port 8080)
+  // Development: Uses localhost as default fallback (port 8081)
   // Production: Must be set via dart-define: --dart-define=API_BASE_URL=https://cust-api.walldotbuilders.com
   // Staging: Can be set via dart-define: --dart-define=API_BASE_URL=https://cust-api-staging.walldotbuilders.com
   // For release builds, API_BASE_URL should always be provided via dart-define
   static const String _devApiUrl = 'http://localhost:8080';
   static const String _prodApiUrl = 'https://cust-api.walldotbuilders.com';
-  
+
   // Get API URL from environment variable (dart-define) or use defaults
   // In production (kReleaseMode), this will use the dart-define value or production URL
   // In development, this will use the dart-define value or localhost
   static String get baseUrl {
-    const String envApiUrl = String.fromEnvironment('API_BASE_URL');
-    if (envApiUrl.isNotEmpty) {
-      return envApiUrl;
+    const String dartDefineApiUrl = String.fromEnvironment('API_BASE_URL');
+    final String dotenvApiUrl = dotenv.env['API_BASE_URL']?.trim() ?? '';
+
+    // Resolution precedence:
+    // 1) --dart-define=API_BASE_URL
+    // 2) assets/env/.env* loaded via dotenv
+    // 3) hardcoded fallback by build mode
+    final String resolvedBaseUrl = dartDefineApiUrl.isNotEmpty
+        ? dartDefineApiUrl
+        : (dotenvApiUrl.isNotEmpty
+            ? dotenvApiUrl
+            : (kReleaseMode ? _prodApiUrl : _devApiUrl));
+
+    if (kDebugMode) {
+      debugPrint('[ApiConfig] baseUrl=$resolvedBaseUrl '
+          '(source=${dartDefineApiUrl.isNotEmpty ? "dart-define" : (dotenvApiUrl.isNotEmpty ? "dotenv" : "fallback")})');
     }
-    // Fallback: use production URL in release mode, localhost in development
-    return kReleaseMode ? _prodApiUrl : _devApiUrl;
+
+    return resolvedBaseUrl;
   }
 
   // API endpoints

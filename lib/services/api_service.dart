@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -50,7 +51,15 @@ class ApiService {
     } on SocketException {
       return ApiResponse.error(
         ApiError(
-          message: 'No internet connection. Please check your network.',
+          message: 'Cannot reach the server. Please check your network connection.',
+          statusCode: 0,
+        ),
+      );
+    } on TimeoutException {
+      return ApiResponse.error(
+        ApiError(
+          message:
+              'Request timed out while contacting the server. Please try again.',
           statusCode: 0,
         ),
       );
@@ -108,11 +117,26 @@ class ApiService {
       }
     } on SocketException {
       return ApiResponse.error(
-        ApiError(message: 'No internet connection.', statusCode: 0),
+        ApiError(
+          message:
+              'Cannot connect to the server. Please check if the API is running.',
+          statusCode: 0,
+        ),
+      );
+    } on TimeoutException {
+      return ApiResponse.error(
+        ApiError(
+          message:
+              'Request timed out. We could not submit your reset link request.',
+          statusCode: 0,
+        ),
       );
     } catch (e) {
       return ApiResponse.error(
-        ApiError(message: 'An unexpected error occurred: ${e.toString()}', statusCode: 0),
+        ApiError(
+          message: 'An unexpected error occurred while sending reset link.',
+          statusCode: 0,
+        ),
       );
     }
   }
@@ -152,11 +176,26 @@ class ApiService {
       }
     } on SocketException {
       return ApiResponse.error(
-        ApiError(message: 'No internet connection.', statusCode: 0),
+        ApiError(
+          message:
+              'Cannot connect to the server. Please check if the API is running.',
+          statusCode: 0,
+        ),
+      );
+    } on TimeoutException {
+      return ApiResponse.error(
+        ApiError(
+          message:
+              'Request timed out. Please retry resetting your password.',
+          statusCode: 0,
+        ),
       );
     } catch (e) {
       return ApiResponse.error(
-        ApiError(message: 'An unexpected error occurred: ${e.toString()}', statusCode: 0),
+        ApiError(
+          message: 'An unexpected error occurred while resetting password.',
+          statusCode: 0,
+        ),
       );
     }
   }

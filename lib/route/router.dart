@@ -18,15 +18,63 @@ import 'screen_export.dart';
 // Construction-focused routing for Walldot Builders Customer App
 // Removed all e-commerce routes (products, cart, checkout, etc.)
 
+bool _isResetPasswordPath(String path, List<String> segments) {
+  final normalizedPath = path.toLowerCase();
+  if (normalizedPath == '/reset_password' || normalizedPath == '/reset-password') {
+    return true;
+  }
+  if (segments.isEmpty) return false;
+  final last = segments.last.toLowerCase();
+  return last == 'reset_password' || last == 'reset-password';
+}
+
+Map<String, String>? _resolveResetPayload(RouteSettings settings, Uri uri) {
+  final args = settings.arguments as Map<String, String>?;
+  final token = (args?['token'] ??
+          uri.queryParameters['token'] ??
+          uri.queryParameters['resetCode'] ??
+          uri.queryParameters['reset_code'] ??
+          uri.queryParameters['code'] ??
+          '')
+      .trim();
+  final email = (args?['email'] ??
+          uri.queryParameters['email'] ??
+          uri.queryParameters['userEmail'] ??
+          uri.queryParameters['user_email'] ??
+          '')
+      .trim();
+
+  if (token.isEmpty || email.isEmpty) {
+    return null;
+  }
+  return {'token': token, 'email': email};
+}
+
 Route<dynamic> generateRoute(RouteSettings settings) {
-  final uri = Uri.parse(settings.name ?? '');
+  final routeName = settings.name ?? '';
+  final uri = Uri.parse(routeName.isEmpty ? '/' : routeName);
   final path = uri.path;
   final segments = path.split('/').where((s) => s.isNotEmpty).toList();
-  
+
+  if (_isResetPasswordPath(path, segments)) {
+    final payload = _resolveResetPayload(settings, uri);
+    if (payload == null) {
+      return MaterialPageRoute(
+        builder: (context) => const PasswordRecoveryScreen(),
+      );
+    }
+    return MaterialPageRoute(
+      builder: (context) => ResetPasswordScreen(
+        token: payload['token']!,
+        email: payload['email']!,
+      ),
+    );
+  }
+
   // Handle routes with path parameters
   if (segments.isNotEmpty) {
     final basePath = segments[0];
-    
+
     // Project detail routes with ID parameter
     if (segments.length == 2) {
       final projectIdStr = segments[1];
@@ -163,11 +211,17 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         builder: (context) => const PasswordRecoveryScreen(),
       );
     case resetPasswordScreenRoute:
-      final args = settings.arguments as Map<String, String>?;
-      final token = args?['token'] ?? '';
-      final email = args?['email'] ?? '';
+      final payload = _resolveResetPayload(settings, uri);
+      if (payload == null) {
+        return MaterialPageRoute(
+          builder: (context) => const PasswordRecoveryScreen(),
+        );
+      }
       return MaterialPageRoute(
-        builder: (context) => ResetPasswordScreen(token: token, email: email),
+        builder: (context) => ResetPasswordScreen(
+          token: payload['token']!,
+          email: payload['email']!,
+        ),
       );
 
     // Main Navigation
