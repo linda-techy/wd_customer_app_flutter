@@ -53,6 +53,7 @@ class _MyAppState extends State<MyApp> {
   StreamSubscription<Uri>? _deepLinkSub;
   Uri? _pendingDeepLink;
   String? _lastHandledResetSignature;
+  bool _navigatedToResetFromDeepLink = false;
   String _initialRoute = onbordingScreenRoute;
 
   @override
@@ -196,6 +197,7 @@ class _MyAppState extends State<MyApp> {
 
     _pendingDeepLink = null;
     _lastHandledResetSignature = signature;
+    _navigatedToResetFromDeepLink = true;
     navigator.pushNamed(
       resetPasswordScreenRoute,
       arguments: payload,
@@ -205,6 +207,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> _checkInitialRoute() async {
     final hasSeenWelcome = await AuthService.hasSeenWelcome();
     if (!mounted || !hasSeenWelcome) return;
+    if (_pendingDeepLink != null || _navigatedToResetFromDeepLink) return;
     setState(() {
       _initialRoute = entryPointScreenRoute;
     });
