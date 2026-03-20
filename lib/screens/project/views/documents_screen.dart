@@ -567,6 +567,43 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   }
 
   Future<void> _shareDocument(ProjectDocument doc) async {
-    // existing share logic
+    try {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Preparing to share...'), duration: Duration(seconds: 1)),
+        );
+      }
+
+      final token = await AuthService.getAccessToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final url = _resolveFileUrl(doc.downloadUrl);
+
+      final dio = Dio();
+      final response = await dio.get(
+        url,
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Accept': '*/*',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final bytes = Uint8List.fromList(response.data);
+        final filePath = await saveFileToDevice(bytes, doc.filename);
+        await shareFile(filePath, doc.filename);
+      } else {
+        throw Exception('Failed to download file: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Share failed: $e'), backgroundColor: errorColor),
+        );
+      }
+    }
   }
 }
