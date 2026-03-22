@@ -12,6 +12,13 @@
             "type": "dart"
         },
         {
+            "name": "wd_customer_app_flutter (Chrome - 3002)",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "chrome",
+            "args": ["--web-port=3002"]
+        },
+        {
             "name": "wd_customer_app_flutter (profile mode)",
             "request": "launch",
             "type": "dart",

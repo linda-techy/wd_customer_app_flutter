@@ -9,9 +9,14 @@ import 'route/router.dart' as router;
 import 'theme/app_theme.dart';
 import 'services/auth_service.dart';
 import 'providers/theme_provider.dart';
+import 'services/notification_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Register FCM background handler before runApp()
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   // Load .env based on APP_ENV (--dart-define=APP_ENV=staging|production)
   const appEnv = String.fromEnvironment('APP_ENV', defaultValue: '');

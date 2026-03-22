@@ -1,8 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:http/http.dart' as http;
 import '../../../constants.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/scale_button.dart';
+import '../../../services/auth_service.dart';
+import '../../../config/api_config.dart';
 
 class UserInfoScreen extends StatefulWidget {
   const UserInfoScreen({super.key});
@@ -13,17 +17,96 @@ class UserInfoScreen extends StatefulWidget {
 
 class _UserInfoScreenState extends State<UserInfoScreen> {
   // Controllers
-  final _nameController = TextEditingController(text: "Linda Techy");
-  final _phoneController = TextEditingController(text: "+91 98765 43210");
-  final _emailController = TextEditingController(text: "linda@techy.com");
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _whatsappController = TextEditingController();
+  final _emailController = TextEditingController();
 
   // State
   bool _isEditing = false;
+  bool _isSaving = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final userInfo = await AuthService.getUserInfo();
+      if (userInfo != null && mounted) {
+        setState(() {
+          _firstNameController.text = userInfo.firstName ?? '';
+          _lastNameController.text = userInfo.lastName ?? '';
+          _emailController.text = userInfo.email;
+          _isLoading = false;
+        });
+      } else if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    setState(() => _isSaving = true);
+    try {
+      final token = await AuthService.getAccessToken();
+      if (token == null) {
+        _showSnackBar('Please log in again to save changes', isError: true);
+        return;
+      }
+
+      final body = jsonEncode({
+        'firstName': _firstNameController.text.trim(),
+        'lastName': _lastNameController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'whatsapp': _whatsappController.text.trim(),
+      });
+
+      final response = await http
+          .put(
+            Uri.parse('${ApiConfig.baseUrl}/auth/profile'),
+            headers: ApiConfig.getAuthHeaders(token),
+            body: body,
+          )
+          .timeout(ApiConfig.receiveTimeout);
+
+      if (response.statusCode == 200) {
+        if (mounted) {
+          setState(() => _isEditing = false);
+          _showSnackBar('Profile updated successfully');
+        }
+      } else {
+        _showSnackBar('Failed to save profile (${response.statusCode})', isError: true);
+      }
+    } catch (e) {
+      _showSnackBar('Error saving profile: $e', isError: true);
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? errorColor : successColor,
+      ),
+    );
+  }
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _phoneController.dispose();
+    _whatsappController.dispose();
     _emailController.dispose();
     super.dispose();
   }
@@ -32,30 +115,32 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: surfaceColor,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          _buildSliverAppBar(),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(defaultPadding),
-              child: Column(
-                children: [
-                  FadeEntry(
-                    delay: 200.ms,
-                    child: _buildInfoCard(),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: primaryColor))
+          : CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                _buildSliverAppBar(),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(defaultPadding),
+                    child: Column(
+                      children: [
+                        FadeEntry(
+                          delay: 200.ms,
+                          child: _buildInfoCard(),
+                        ),
+                        const SizedBox(height: defaultPadding * 2),
+                        FadeEntry(
+                          delay: 300.ms,
+                          child: _buildActionButtons(),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: defaultPadding * 2),
-                  FadeEntry(
-                    delay: 300.ms,
-                    child: _buildActionButtons(),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -162,23 +247,27 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
             color: _isEditing ? primaryColor.withOpacity(0.1) : Colors.white.withOpacity(0.9),
             shape: BoxShape.circle,
           ),
-          child: IconButton(
-            icon: Icon(
-              _isEditing ? Icons.check : Icons.edit,
-              color: _isEditing ? primaryColor : blackColor,
-            ),
-            onPressed: () {
-              setState(() {
-                if (_isEditing) {
-                  // Save logic here
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Profile updated successfully'), backgroundColor: successColor),
-                  );
-                }
-                _isEditing = !_isEditing;
-              });
-            },
-          ),
+          child: _isSaving
+              ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: SizedBox(
+                    width: 20, height: 20,
+                    child: CircularProgressIndicator(color: primaryColor, strokeWidth: 2),
+                  ),
+                )
+              : IconButton(
+                  icon: Icon(
+                    _isEditing ? Icons.check : Icons.edit,
+                    color: _isEditing ? primaryColor : blackColor,
+                  ),
+                  onPressed: () {
+                    if (_isEditing) {
+                      _saveProfile();
+                    } else {
+                      setState(() => _isEditing = true);
+                    }
+                  },
+                ),
         ),
       ],
     );
@@ -209,17 +298,22 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          _buildTextField("Full Name", Icons.person_outline, _nameController),
+          _buildTextField("First Name", Icons.person_outline, _firstNameController),
+          const SizedBox(height: 20),
+          _buildTextField("Last Name", Icons.person_outline, _lastNameController),
+          const SizedBox(height: 20),
+          _buildTextField("Email Address", Icons.email_outlined, _emailController, readOnly: true),
           const SizedBox(height: 20),
           _buildTextField("Phone Number", Icons.phone_outlined, _phoneController),
           const SizedBox(height: 20),
-          _buildTextField("Email Address", Icons.email_outlined, _emailController),
+          _buildTextField("WhatsApp Number", Icons.chat_outlined, _whatsappController),
         ],
       ),
     );
   }
 
-  Widget _buildTextField(String label, IconData icon, TextEditingController controller) {
+  Widget _buildTextField(String label, IconData icon, TextEditingController controller, {bool readOnly = false}) {
+    final effectivelyEditing = _isEditing && !readOnly;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -234,24 +328,28 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: _isEditing ? surfaceColor : Colors.transparent,
+            color: effectivelyEditing ? surfaceColor : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: _isEditing ? primaryColor.withOpacity(0.2) : Colors.transparent,
+              color: effectivelyEditing ? primaryColor.withOpacity(0.2) : Colors.transparent,
             ),
           ),
           child: TextField(
             controller: controller,
-            enabled: _isEditing,
-            style: const TextStyle(
+            enabled: effectivelyEditing,
+            readOnly: readOnly,
+            style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 16,
-              color: blackColor,
+              color: readOnly ? blackColor60 : blackColor,
             ),
             decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: _isEditing ? primaryColor : blackColor40),
+              prefixIcon: Icon(icon, color: effectivelyEditing ? primaryColor : blackColor40),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              suffixIcon: readOnly
+                  ? const Icon(Icons.lock_outline, size: 16, color: blackColor40)
+                  : null,
             ),
           ),
         ),
@@ -267,7 +365,8 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
         children: [
           Expanded(
             child: ScaleButton(
-              onTap: () {
+              onTap: _isSaving ? null : () {
+                _loadUserData(); // Reset to saved values
                 setState(() => _isEditing = false);
               },
               child: Container(
@@ -293,12 +392,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
           const SizedBox(width: 16),
           Expanded(
             child: ScaleButton(
-              onTap: () {
-                setState(() => _isEditing = false);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Profile updated successfully'), backgroundColor: successColor),
-                );
-              },
+              onTap: _isSaving ? null : _saveProfile,
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
@@ -312,15 +406,20 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                     ),
                   ],
                 ),
-                child: const Center(
-                  child: Text(
-                    "Save Changes",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
+                child: Center(
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 20, height: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Text(
+                          "Save Changes",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                 ),
               ),
             ),

@@ -191,13 +191,13 @@ class BlogScreen extends StatelessWidget {
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                   child: (data['isAsset'] == true)
                       ? Image.asset(
-                          data['image'] as String,
+                          (data['image'] as String?) ?? '',
                           height: 200,
                           width: double.infinity,
                           fit: BoxFit.cover,
                         )
                       : Image.network(
-                          data['image'] as String,
+                          (data['image'] as String?) ?? '',
                           height: 200,
                           width: double.infinity,
                           fit: BoxFit.cover,
@@ -213,7 +213,7 @@ class BlogScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      data['category'] as String,
+                      (data['category'] as String?) ?? '',
                       style: const TextStyle(
                         color: blackColor,
                         fontSize: 12,
@@ -234,21 +234,21 @@ class BlogScreen extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        data['date'] as String,
+                        (data['date'] as String?) ?? '',
                         style: const TextStyle(color: blackColor40, fontSize: 12),
                       ),
                       const SizedBox(width: 8),
                       const CircleAvatar(radius: 2, backgroundColor: blackColor40),
                       const SizedBox(width: 8),
                       Text(
-                        data['readTime'] as String,
+                        (data['readTime'] as String?) ?? '',
                         style: const TextStyle(color: blackColor40, fontSize: 12),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    data['title'] as String,
+                    (data['title'] as String?) ?? '',
                     style: const TextStyle(
                       fontFamily: grandisExtendedFont,
                       fontSize: 18,
@@ -259,7 +259,7 @@ class BlogScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    data['description'] as String,
+                    (data['description'] as String?) ?? '',
                     style: const TextStyle(
                       color: blackColor60,
                       height: 1.5,

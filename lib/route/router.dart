@@ -245,6 +245,10 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         builder: (context) => const ProfileScreen(),
       );
+    case referAFriendScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => const ReferAFriendScreen(),
+      );
     case userInfoScreenRoute:
       return MaterialPageRoute(
         builder: (context) => const UserInfoScreen(),

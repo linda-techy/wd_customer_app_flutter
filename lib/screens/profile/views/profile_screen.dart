@@ -135,52 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: HoverCard(
                 child: GestureDetector(
                   onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        title: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFD84940).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Icon(Icons.people, color: Color(0xFFD84940)),
-                            ),
-                            const SizedBox(width: 12),
-                            const Text('Refer a Friend'),
-                          ],
-                        ),
-                        content: const Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Know someone planning to build? Refer them to Walldot Builders!',
-                              style: TextStyle(height: 1.5),
-                            ),
-                            SizedBox(height: 12),
-                            Text(
-                              'Contact our team:',
-                              style: TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              'Phone: +91-9074-9548-74\nEmail: $companyEmail',
-                              style: TextStyle(height: 1.6),
-                            ),
-                          ],
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: const Text('Close', style: TextStyle(color: Color(0xFFD84940))),
-                          ),
-                        ],
-                      ),
-                    );
+                    Navigator.pushNamed(context, referAFriendScreenRoute);
                   },
                   child: Container(
                     padding: const EdgeInsets.all(20),

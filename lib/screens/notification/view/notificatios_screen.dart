@@ -1,14 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:http/http.dart' as http;
 import '../../../constants.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/scale_button.dart';
-import '../../../services/dashboard_service.dart';
-import '../../../services/project_module_service.dart';
 import '../../../services/auth_service.dart';
 import '../../../config/api_config.dart';
-import '../../../models/project_module_models.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -27,30 +26,50 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (selectedFilter == 'All') return notifications;
     if (selectedFilter == 'Unread') return notifications.where((n) => !n.isRead).toList();
     
-    // Simple filter mapping
+    // Filter by type
     return notifications.where((n) {
-       switch(selectedFilter) {
-         case 'Updates': return n.type == NotificationType.projectUpdate;
-         case 'Payments': return n.type == NotificationType.payment;
-         case 'Site': return n.type == NotificationType.siteVisit;
-         default: return true;
-       }
+      switch (selectedFilter) {
+        case 'Updates': return n.type == NotificationType.projectUpdate;
+        case 'Payments': return n.type == NotificationType.payment;
+        case 'Documents': return n.type == NotificationType.document;
+        default: return true;
+      }
     }).toList();
   }
 
-  void markAsRead(String id) {
+  void markAsRead(String id) async {
+    // Optimistic update
     setState(() {
-      final notification = notifications.firstWhere((n) => n.id == id);
-      notification.isRead = true;
+      final idx = notifications.indexWhere((n) => n.id == id);
+      if (idx != -1) notifications[idx].isRead = true;
     });
+    // Persist to server
+    try {
+      final token = await AuthService.getAccessToken();
+      if (token == null) return;
+      await http.put(
+        Uri.parse('${ApiConfig.baseUrl}/api/notifications/$id/read'),
+        headers: ApiConfig.getAuthHeaders(token),
+      );
+    } catch (_) {} // Optimistic; ignore failures
   }
 
-  void markAllAsRead() {
+  void markAllAsRead() async {
+    // Optimistic update
     setState(() {
-      for (var notification in notifications) {
-        notification.isRead = true;
+      for (var n in notifications) {
+        n.isRead = true;
       }
     });
+    // Persist to server
+    try {
+      final token = await AuthService.getAccessToken();
+      if (token == null) return;
+      await http.put(
+        Uri.parse('${ApiConfig.baseUrl}/api/notifications/read-all'),
+        headers: ApiConfig.getAuthHeaders(token),
+      );
+    } catch (_) {}
   }
 
   void deleteNotification(String id) {
@@ -72,7 +91,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     });
 
     try {
-      // Get access token
       final token = await AuthService.getAccessToken();
       if (token == null) {
         setState(() {
@@ -82,47 +100,29 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         return;
       }
 
-      // Fetch user's projects
-      final projectsResponse = await DashboardService.searchProjects();
-      if (!projectsResponse.success || projectsResponse.data == null || projectsResponse.data!.isEmpty) {
+      final response = await http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/api/notifications?page=0&size=50'),
+            headers: ApiConfig.getAuthHeaders(token),
+          )
+          .timeout(ApiConfig.receiveTimeout);
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        final data = json['data'] as Map<String, dynamic>? ?? {};
+        final rawList = (data['notifications'] as List<dynamic>?) ?? [];
+        final loaded = rawList.map((e) => _mapNotification(e as Map<String, dynamic>)).toList();
+        setState(() {
+          notifications.clear();
+          notifications.addAll(loaded);
+          _isLoading = false;
+        });
+      } else {
         setState(() {
           _isLoading = false;
-          _error = 'No projects found';
+          _error = 'Failed to load notifications (${response.statusCode})';
         });
-        return;
       }
-
-      // Get the first project (most recent)
-      final firstProject = projectsResponse.data!.first;
-      final projectId = firstProject.projectUuid ?? firstProject.id.toString();
-      
-      if (projectId.isEmpty) {
-        setState(() {
-          _isLoading = false;
-          _error = 'Invalid project ID';
-        });
-        return;
-      }
-
-      // Initialize ProjectModuleService
-      final projectModuleService = ProjectModuleService(
-        baseUrl: ApiConfig.baseUrl,
-        token: token,
-      );
-
-      // Fetch combined activities
-      final activities = await projectModuleService.getCombinedActivities(projectId);
-
-      // Transform activities into notifications
-      final transformedNotifications = activities.map((activity) {
-        return _transformActivityToNotification(activity);
-      }).toList();
-
-      setState(() {
-        notifications.clear();
-        notifications.addAll(transformedNotifications);
-        _isLoading = false;
-      });
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -131,40 +131,59 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
-  ConstructionNotification _transformActivityToNotification(CombinedActivityItem activity) {
+  ConstructionNotification _mapNotification(Map<String, dynamic> json) {
+    final notifType = (json['notificationType'] as String? ?? '').toUpperCase();
     NotificationType type;
     IconData icon;
     Color color;
-    String title;
-    String message;
 
-    if (activity.isSiteReport) {
-      type = NotificationType.projectUpdate;
-      icon = Icons.construction_rounded;
-      color = logoRed;
-      title = 'Site Report Update';
-      message = activity.description ?? activity.title;
-    } else if (activity.isQuery) {
-      type = NotificationType.alert;
-      icon = Icons.help_outline_rounded;
-      color = Colors.orange;
-      title = 'Project Query';
-      message = activity.description ?? activity.title;
-    } else {
-      type = NotificationType.general;
-      icon = Icons.notifications_rounded;
-      color = primaryColor;
-      title = activity.title;
-      message = activity.description ?? 'New activity update';
+    switch (notifType) {
+      case 'PAYMENT':
+        type = NotificationType.payment;
+        icon = Icons.account_balance_wallet_rounded;
+        color = Colors.green;
+        break;
+      case 'SITE_REPORT':
+        type = NotificationType.projectUpdate;
+        icon = Icons.construction_rounded;
+        color = logoRed;
+        break;
+      case 'MILESTONE':
+        type = NotificationType.projectUpdate;
+        icon = Icons.flag_rounded;
+        color = Colors.blue;
+        break;
+      case 'DOCUMENT':
+        type = NotificationType.document;
+        icon = Icons.folder_rounded;
+        color = Colors.indigo;
+        break;
+      case 'BOQ':
+        type = NotificationType.projectUpdate;
+        icon = Icons.receipt_long_rounded;
+        color = Colors.teal;
+        break;
+      default:
+        type = NotificationType.general;
+        icon = Icons.notifications_rounded;
+        color = primaryColor;
+    }
+
+    final createdAtStr = json['createdAt'] as String?;
+    DateTime timestamp;
+    try {
+      timestamp = createdAtStr != null ? DateTime.parse(createdAtStr) : DateTime.now();
+    } catch (_) {
+      timestamp = DateTime.now();
     }
 
     return ConstructionNotification(
-      id: activity.id.toString(),
+      id: json['id']?.toString() ?? '',
       type: type,
-      title: title,
-      message: message,
-      timestamp: activity.timestamp,
-      isRead: activity.status == 'RESOLVED' || activity.status == 'CLOSED',
+      title: json['title'] as String? ?? 'Notification',
+      message: json['body'] as String? ?? '',
+      timestamp: timestamp,
+      isRead: json['read'] as bool? ?? false,
       icon: icon,
       color: color,
     );
@@ -236,7 +255,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   _buildFilterChip('Unread'),
                   _buildFilterChip('Updates'),
                   _buildFilterChip('Payments'),
-                  _buildFilterChip('Site'),
+                  _buildFilterChip('Documents'),
                 ],
               ),
             ),

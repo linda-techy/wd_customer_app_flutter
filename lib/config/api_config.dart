@@ -10,6 +10,16 @@ class ApiConfig {
   static const String _devApiUrl = 'http://localhost:8080';
   static const String _prodApiUrl = 'https://cust-api.walldotbuilders.com';
 
+  // Portal API (public endpoints — no auth required for lead/referral submission)
+  static const String _devPortalApiUrl = 'http://localhost:8081';
+  static const String _prodPortalApiUrl = 'https://api.walldotbuilders.com';
+
+  static String get portalApiBaseUrl {
+    const String dartDefineUrl = String.fromEnvironment('PORTAL_API_BASE_URL');
+    if (dartDefineUrl.isNotEmpty) return dartDefineUrl;
+    return kReleaseMode ? _prodPortalApiUrl : _devPortalApiUrl;
+  }
+
   // Get API URL from environment variable (dart-define) or use defaults
   // In production (kReleaseMode), this will use the dart-define value or production URL
   // In development, this will use the dart-define value or localhost

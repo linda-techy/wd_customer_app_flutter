@@ -36,7 +36,7 @@ class _DesignPackagePaymentScreenState
 
   double get _basePrice {
     // Extract price per sq ft from string (e.g. "₹ 95 per sq.ft.")
-    final priceString = widget.packageDetails['price'] as String;
+    final priceString = (widget.packageDetails['price'] as String?) ?? '';
     final pricePerSqFt = double.tryParse(
             priceString.replaceAll(RegExp(r'[^0-9.]'), '').split('.').first) ??
         0.0;
@@ -431,7 +431,7 @@ class _DesignPackagePaymentScreenState
                   final idx = entry.key;
                   final activity = entry.value;
                   // Calculate amount based on total project value (No discount + 18% GST)
-                  final priceString = widget.packageDetails['price'] as String;
+                  final priceString = (widget.packageDetails['price'] as String?) ?? '';
                   final pricePerSqFt = double.tryParse(
                           priceString.replaceAll(RegExp(r'[^0-9.]'), '').split('.').first) ??
                       0.0;

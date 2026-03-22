@@ -24,6 +24,7 @@ export '/screens/project/views/documents_screen.dart';
 
 // Profile & Settings
 export '/screens/profile/views/profile_screen.dart';
+export '/screens/profile/views/refer_a_friend_screen.dart';
 export '/screens/user_info/views/user_info_screen.dart';
 
 // Notifications

@@ -190,6 +190,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             _buildOverallProgressCard(),
             const SizedBox(height: defaultPadding * 1.5),
 
+            // Milestones Section (real data from project_milestones table)
+            if (_projectDetails?.progressData?.milestones.isNotEmpty == true) ...[
+              Text(
+                "Project Milestones",
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
+                    ),
+              ),
+              const SizedBox(height: defaultPadding),
+              _buildMilestonesSection(_projectDetails!.progressData!.milestones),
+              const SizedBox(height: defaultPadding * 1.5),
+            ],
+
             // Work Phases
             if (_workTypes.isNotEmpty) ...[
               Text(
@@ -762,6 +776,154 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         ),
       );
     });
+  }
+
+  Widget _buildMilestonesSection(List<ProgressMilestone> milestones) {
+    return Column(
+      children: List.generate(milestones.length, (index) {
+        final m = milestones[index];
+        final isLast = index == milestones.length - 1;
+        final isDone = m.status == 'COMPLETED' || m.status == 'INVOICED';
+        final isInProgress = m.status == 'IN_PROGRESS';
+        final color = isDone ? Colors.green : isInProgress ? Colors.orange : Colors.grey;
+
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Timeline node
+              SizedBox(
+                width: 40,
+                child: Column(
+                  children: [
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Icon(
+                          isDone ? Icons.check : isInProgress ? Icons.hourglass_top : Icons.radio_button_unchecked,
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                      ),
+                    ),
+                    if (!isLast)
+                      Expanded(
+                        child: Container(
+                          width: 2,
+                          color: Colors.grey[300],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Milestone card
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: defaultPadding),
+                  padding: const EdgeInsets.all(defaultPadding),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDone ? Colors.green.withOpacity(0.3) : Colors.grey[200]!,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              m.name,
+                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: color.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              m.status.replaceAll('_', ' '),
+                              style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (m.progressPercentage > 0) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: (m.progressPercentage / 100).clamp(0.0, 1.0),
+                                  backgroundColor: Colors.grey[200],
+                                  valueColor: AlwaysStoppedAnimation<Color>(color),
+                                  minHeight: 6,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${m.progressPercentage.toStringAsFixed(0)}%',
+                              style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ],
+                      if (m.targetDate != null) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_today_outlined, size: 12, color: Colors.grey[500]),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Due: ${_formatDate(m.targetDate!)}',
+                              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                            ),
+                            if (m.completedDate != null) ...[
+                              const SizedBox(width: 12),
+                              Icon(Icons.check_circle_outline, size: 12, color: Colors.green),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Done: ${_formatDate(m.completedDate!)}',
+                                style: const TextStyle(color: Colors.green, fontSize: 12),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  String _formatDate(DateTime d) {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return '${months[d.month - 1]} ${d.day}, ${d.year}';
   }
 
   Widget _buildEmptyState() {

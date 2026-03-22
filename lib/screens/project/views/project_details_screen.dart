@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../models/api_models.dart';
 import '../../../route/route_constants.dart';
 import '../../../services/dashboard_service.dart';
+import '../../../services/auth_service.dart';
 import '../../../constants.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/hover_card.dart';
@@ -34,6 +35,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   bool _hasLoadedOnce = false;
+  String _userRole = 'VIEWER'; // defaults to most restrictive until loaded
 
   @override
   void didChangeDependencies() {
@@ -83,6 +85,14 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         return;
       }
 
+      // Load user role and project details concurrently
+      final userInfo = await AuthService.getUserInfo();
+      if (mounted) {
+        setState(() {
+          _userRole = userInfo?.role ?? 'VIEWER';
+        });
+      }
+
       final response = await DashboardService.getProjectDetails(projectId);
 
       if (response.success && response.data != null) {
@@ -103,6 +113,16 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
       });
     }
   }
+
+  // ─── Role-based feature visibility helpers ──────────────────────────────────
+  bool _canSeePayments()      => ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN'].contains(_userRole);
+  bool _canSeeBOQ()           => ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN', 'ARCHITECT', 'INTERIOR_DESIGNER'].contains(_userRole);
+  bool _canSeeQualityChecks() => ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN', 'ARCHITECT', 'SITE_ENGINEER', 'CONTRACTOR', 'BUILDER'].contains(_userRole);
+  bool _canSeeObservations()  => ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN', 'ARCHITECT', 'SITE_ENGINEER', 'CONTRACTOR', 'BUILDER'].contains(_userRole);
+  bool _canSeeSnags()         => ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN', 'ARCHITECT', 'INTERIOR_DESIGNER', 'SITE_ENGINEER', 'CONTRACTOR', 'BUILDER'].contains(_userRole);
+  bool _canSeeCCTV()          => ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN', 'ARCHITECT'].contains(_userRole);
+  bool _canSeeQueries()       => ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN', 'ARCHITECT', 'INTERIOR_DESIGNER', 'SITE_ENGINEER', 'CONTRACTOR', 'BUILDER'].contains(_userRole);
+  // ─────────────────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -179,9 +199,11 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
                     children: [
-                      if (_projectDetails?.phase != null || p?.projectPhase != null) ...[
+                      if (_projectDetails?.phase != null || p?.projectPhase != null)
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
@@ -199,8 +221,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                      ],
                       if (_projectDetails?.status != null || p?.status?.isNotEmpty == true)
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -211,6 +231,25 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                           ),
                           child: Text(
                             (_projectDetails?.status ?? p?.status ?? 'UNKNOWN').toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      // Project type badge
+                      if ((_projectDetails?.projectType ?? p?.projectType) != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: _getProjectTypeColor(_projectDetails?.projectType ?? p?.projectType).withOpacity(0.25),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: _getProjectTypeColor(_projectDetails?.projectType ?? p?.projectType).withOpacity(0.6)),
+                          ),
+                          child: Text(
+                            _formatProjectType(_projectDetails?.projectType ?? p?.projectType),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 10,
@@ -616,9 +655,10 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         list.add(_ActionItem('Site Visits', Icons.person_pin_circle_outlined, Colors.purple, () {
           nav.push(MaterialPageRoute(builder: (_) => SiteVisitsScreen(projectId: projectUuid)));
         }));
-        list.add(_ActionItem('BOQ', Icons.receipt_long_outlined, Colors.green, () {
-          nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectUuid)));
-        }));
+        if (_canSeeBOQ())
+          list.add(_ActionItem('BOQ', Icons.receipt_long_outlined, Colors.green, () {
+            nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectUuid)));
+          }));
         list.add(_ActionItem('360° Views', Icons.view_in_ar, Colors.cyan, () {
           nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectUuid)));
         }));
@@ -643,9 +683,10 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         list.add(_ActionItem('Site Visits', Icons.person_pin_circle_outlined, Colors.teal, () {
           nav.push(MaterialPageRoute(builder: (_) => SiteVisitsScreen(projectId: projectUuid)));
         }));
-        list.add(_ActionItem('BOQ', Icons.receipt_long_outlined, Colors.green, () {
-          nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectUuid)));
-        }));
+        if (_canSeeBOQ())
+          list.add(_ActionItem('BOQ', Icons.receipt_long_outlined, Colors.green, () {
+            nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectUuid)));
+          }));
         list.add(_ActionItem('360° Views', Icons.view_in_ar, Colors.cyan, () {
           nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectUuid)));
         }));
@@ -661,15 +702,18 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         list.add(_ActionItem('Site Visits', Icons.person_pin_circle_outlined, Colors.purple, () {
           nav.push(MaterialPageRoute(builder: (_) => SiteVisitsScreen(projectId: projectUuid)));
         }));
-        list.add(_ActionItem('Snags', Icons.warning_amber_rounded, Colors.red, () {
-          nav.push(MaterialPageRoute(builder: (_) => SnagsScreen(projectId: projectUuid)));
-        }));
-        list.add(_ActionItem('Quality Check', Icons.checklist, Colors.deepPurple, () {
-          nav.push(MaterialPageRoute(builder: (_) => QualityCheckScreen(projectId: projectUuid)));
-        }));
-        list.add(_ActionItem('BOQ', Icons.receipt_long_outlined, Colors.green, () {
-          nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectUuid)));
-        }));
+        if (_canSeeSnags())
+          list.add(_ActionItem('Snags', Icons.warning_amber_rounded, Colors.red, () {
+            nav.push(MaterialPageRoute(builder: (_) => SnagsScreen(projectId: projectUuid)));
+          }));
+        if (_canSeeQualityChecks())
+          list.add(_ActionItem('Quality Check', Icons.checklist, Colors.deepPurple, () {
+            nav.push(MaterialPageRoute(builder: (_) => QualityCheckScreen(projectId: projectUuid)));
+          }));
+        if (_canSeeBOQ())
+          list.add(_ActionItem('BOQ', Icons.receipt_long_outlined, Colors.green, () {
+            nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectUuid)));
+          }));
         list.add(_ActionItem('360° Views', Icons.view_in_ar, Colors.cyan, () {
           nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectUuid)));
         }));
@@ -677,10 +721,12 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: dbId)));
         }));
         list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectUuid.isNotEmpty ? projectDocumentsRoute(projectUuid) : documentsScreenRoute)));
-        list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
-          nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId)));
-        }));
-        list.add(_ActionItem('CCTV', Icons.videocam_outlined, Colors.grey, () => nav.pushNamed(projectUuid.isNotEmpty ? projectCctvRoute(projectUuid) : cctvSurveillanceScreenRoute)));
+        if (_canSeePayments())
+          list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
+            nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId)));
+          }));
+        if (_canSeeCCTV())
+          list.add(_ActionItem('CCTV', Icons.videocam_outlined, Colors.grey, () => nav.pushNamed(projectUuid.isNotEmpty ? projectCctvRoute(projectUuid) : cctvSurveillanceScreenRoute)));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
           showFeedbackDialog(context: context, projectId: projectUuid);
         }));
@@ -690,15 +736,18 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('Gallery', Icons.photo_library_outlined, Colors.teal, () => nav.pushNamed(projectUuid.isNotEmpty ? projectGalleryRoute(projectUuid) : projectGalleryScreenRoute)));
-        list.add(_ActionItem('Snags', Icons.warning_amber_rounded, Colors.red, () {
-          nav.push(MaterialPageRoute(builder: (_) => SnagsScreen(projectId: projectUuid)));
-        }));
-        list.add(_ActionItem('Quality Check', Icons.checklist, Colors.deepPurple, () {
-          nav.push(MaterialPageRoute(builder: (_) => QualityCheckScreen(projectId: projectUuid)));
-        }));
-        list.add(_ActionItem('BOQ', Icons.receipt_long_outlined, Colors.green, () {
-          nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectUuid)));
-        }));
+        if (_canSeeSnags())
+          list.add(_ActionItem('Snags', Icons.warning_amber_rounded, Colors.red, () {
+            nav.push(MaterialPageRoute(builder: (_) => SnagsScreen(projectId: projectUuid)));
+          }));
+        if (_canSeeQualityChecks())
+          list.add(_ActionItem('Quality Check', Icons.checklist, Colors.deepPurple, () {
+            nav.push(MaterialPageRoute(builder: (_) => QualityCheckScreen(projectId: projectUuid)));
+          }));
+        if (_canSeeBOQ())
+          list.add(_ActionItem('BOQ', Icons.receipt_long_outlined, Colors.green, () {
+            nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectUuid)));
+          }));
         list.add(_ActionItem('360° Views', Icons.view_in_ar, Colors.cyan, () {
           nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectUuid)));
         }));
@@ -706,9 +755,10 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: dbId)));
         }));
         list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectUuid.isNotEmpty ? projectDocumentsRoute(projectUuid) : documentsScreenRoute)));
-        list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
-          nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId)));
-        }));
+        if (_canSeePayments())
+          list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
+            nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId)));
+          }));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
           showFeedbackDialog(context: context, projectId: projectUuid);
         }));
@@ -721,9 +771,10 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: dbId)));
         }));
         list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectUuid.isNotEmpty ? projectDocumentsRoute(projectUuid) : documentsScreenRoute)));
-        list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
-          nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId)));
-        }));
+        if (_canSeePayments())
+          list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
+            nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId)));
+          }));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
           showFeedbackDialog(context: context, projectId: projectUuid);
         }));
@@ -798,6 +849,29 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
       case 'COMPLETED': return primaryColor;
       case 'ON_HOLD': return Colors.orange;
       default: return Colors.grey;
+    }
+  }
+
+  Color _getProjectTypeColor(String? type) {
+    switch ((type ?? '').toUpperCase()) {
+      case 'RESIDENTIAL':    return Colors.green;
+      case 'COMMERCIAL':     return Colors.blue;
+      case 'INDUSTRIAL':     return Colors.orange;
+      case 'RENOVATION':     return Colors.purple;
+      case 'INTERIOR_ONLY':  return Colors.pink;
+      default:               return Colors.blueGrey;
+    }
+  }
+
+  String _formatProjectType(String? type) {
+    if (type == null || type.isEmpty) return '';
+    switch (type.toUpperCase()) {
+      case 'RESIDENTIAL':    return 'RESIDENTIAL';
+      case 'COMMERCIAL':     return 'COMMERCIAL';
+      case 'INDUSTRIAL':     return 'INDUSTRIAL';
+      case 'RENOVATION':     return 'RENOVATION';
+      case 'INTERIOR_ONLY':  return 'INTERIOR';
+      default:               return type.replaceAll('_', ' ').toUpperCase();
     }
   }
 }

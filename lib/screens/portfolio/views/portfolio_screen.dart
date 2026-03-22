@@ -204,7 +204,7 @@ class PortfolioScreen extends StatelessWidget {
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                   child: Image.asset(
-                    data['image'] as String,
+                    (data['image'] as String?) ?? '',
                     height: 200,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -225,7 +225,7 @@ class PortfolioScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      data['year'] as String,
+                      (data['year'] as String?) ?? '',
                       style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                   ),
@@ -240,7 +240,7 @@ class PortfolioScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      data['category'] as String,
+                      (data['category'] as String?) ?? '',
                       style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                   ),
@@ -255,7 +255,7 @@ class PortfolioScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    data['title'] as String,
+                    (data['title'] as String?) ?? '',
                     style: const TextStyle(
                       fontFamily: grandisExtendedFont,
                       fontSize: 18,
@@ -269,14 +269,14 @@ class PortfolioScreen extends StatelessWidget {
                       const Icon(Icons.location_on, size: 14, color: blackColor40),
                       const SizedBox(width: 4),
                       Text(
-                        data['location'] as String,
+                        (data['location'] as String?) ?? '',
                         style: const TextStyle(color: blackColor60, fontSize: 13),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    data['description'] as String,
+                    (data['description'] as String?) ?? '',
                     style: const TextStyle(color: blackColor80, height: 1.5, fontSize: 14),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

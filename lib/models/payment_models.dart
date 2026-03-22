@@ -23,14 +23,14 @@ class PaymentSchedule {
 
   factory PaymentSchedule.fromJson(Map<String, dynamic> json) {
     return PaymentSchedule(
-      id: json['id'] as int,
-      installmentNumber: json['installmentNumber'] ?? json['installment_number'] as int,
-      description: json['description'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      dueDate: json['dueDate'] ?? json['due_date'] as String?,
-      status: json['status'] as String,
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      installmentNumber: (json['installmentNumber'] ?? json['installment_number'] ?? 0) as int,
+      description: (json['description'] as String?) ?? '',
+      amount: ((json['amount'] as num?) ?? 0).toDouble(),
+      dueDate: (json['dueDate'] ?? json['due_date']) as String?,
+      status: (json['status'] as String?) ?? 'PENDING',
       paidAmount: (json['paidAmount'] ?? json['paid_amount'] ?? 0).toDouble(),
-      paidDate: json['paidDate'] ?? json['paid_date'] as String?,
+      paidDate: (json['paidDate'] ?? json['paid_date']) as String?,
       transactions: (json['transactions'] as List<dynamic>?)
               ?.map((t) => PaymentTransaction.fromJson(t as Map<String, dynamic>))
               .toList() ??
@@ -72,16 +72,16 @@ class PaymentTransaction {
 
   factory PaymentTransaction.fromJson(Map<String, dynamic> json) {
     return PaymentTransaction(
-      id: json['id'] as int,
-      amount: (json['amount'] as num).toDouble(),
-      paymentMethod: json['paymentMethod'] ?? json['payment_method'] as String?,
-      referenceNumber: json['referenceNumber'] ?? json['reference_number'] as String?,
-      paymentDate: json['paymentDate'] ?? json['payment_date'] as String,
-      receiptNumber: json['receiptNumber'] ?? json['receipt_number'] as String?,
-      status: json['status'] as String,
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      amount: ((json['amount'] as num?) ?? 0).toDouble(),
+      paymentMethod: (json['paymentMethod'] ?? json['payment_method']) as String?,
+      referenceNumber: (json['referenceNumber'] ?? json['reference_number']) as String?,
+      paymentDate: ((json['paymentDate'] ?? json['payment_date']) as String?) ?? '',
+      receiptNumber: (json['receiptNumber'] ?? json['receipt_number']) as String?,
+      status: (json['status'] as String?) ?? 'PENDING',
       tdsPercentage: (json['tdsPercentage'] ?? json['tds_percentage'] ?? 0).toDouble(),
       tdsAmount: (json['tdsAmount'] ?? json['tds_amount'] ?? 0).toDouble(),
-      netAmount: (json['netAmount'] ?? json['net_amount'] as num).toDouble(),
+      netAmount: ((json['netAmount'] ?? json['net_amount'] ?? 0) as num).toDouble(),
     );
   }
 }

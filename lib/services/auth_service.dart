@@ -1,9 +1,13 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../config/api_config.dart';
 import '../models/api_models.dart';
 import 'api_service.dart';
+import 'notification_service.dart';
 
 class User {
   final String id;
@@ -69,9 +73,33 @@ class AuthService {
     if (response.success && response.data != null) {
       // Save tokens and user data
       await _saveLoginData(response.data!);
+
+      // Initialize push notifications (fire-and-forget — must not block login)
+      NotificationService.initialize(
+        onTokenReceived: _registerFcmToken,
+      ).catchError((e) {
+        debugPrint('FCM init error: $e');
+      });
     }
 
     return response;
+  }
+
+  // Register FCM token with the customer API backend
+  static Future<void> _registerFcmToken(String token) async {
+    try {
+      final accessToken = await getAccessToken();
+      if (accessToken == null) return;
+      await http
+          .post(
+            Uri.parse('${ApiConfig.baseUrl}/auth/fcm-token'),
+            headers: ApiConfig.getAuthHeaders(accessToken),
+            body: jsonEncode({'fcmToken': token}),
+          )
+          .timeout(ApiConfig.connectionTimeout);
+    } catch (e) {
+      // Non-critical — token registration failure must not affect app behaviour
+    }
   }
 
   // Forgot password

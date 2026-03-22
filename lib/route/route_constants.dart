@@ -66,6 +66,9 @@ String projectBoqRoute(dynamic projectId) => 'project_boq/$projectId';
 String projectQualityCheckRoute(dynamic projectId) => 'project_quality_check/$projectId';
 String project360ViewsRoute(dynamic projectId) => 'project_360_views/$projectId';
 
+// Referral Routes
+const String referAFriendScreenRoute = "refer_a_friend";
+
 // Dashboard Routes
 const String customerDashboardScreenRoute = "customer_dashboard";
 

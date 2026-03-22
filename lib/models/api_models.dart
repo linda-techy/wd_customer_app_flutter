@@ -266,6 +266,7 @@ class ProjectCard {
   final String? status;
   final double progress;
   final String? projectPhase;
+  final String? projectType;
   final String? designPackage;
   final bool isDesignAgreementSigned;
   final double designProgress;
@@ -281,6 +282,7 @@ class ProjectCard {
     this.status,
     required this.progress,
     this.projectPhase,
+    this.projectType,
     this.designPackage,
     this.isDesignAgreementSigned = false,
     this.designProgress = 0.0,
@@ -298,6 +300,7 @@ class ProjectCard {
       status: json['status'],
       progress: (json['progress'] ?? 0).toDouble(),
       projectPhase: json['projectPhase'],
+      projectType: json['projectType'],
       designPackage: json['designPackage'],
       isDesignAgreementSigned: json['isDesignAgreementSigned'] ?? false,
       designProgress: (json['designProgress'] ?? 0).toDouble(),
@@ -399,6 +402,7 @@ class ProjectDetails {
   final String? status;
   final double progress;
   final String? phase;
+  final String? projectType;
   final String? designPackage;
   final bool isDesignAgreementSigned;
   final String? state;
@@ -421,6 +425,7 @@ class ProjectDetails {
     this.status,
     required this.progress,
     this.phase,
+    this.projectType,
     this.designPackage,
     this.isDesignAgreementSigned = false,
     this.state,
@@ -452,6 +457,7 @@ class ProjectDetails {
       status: json['status'],
       progress: (json['progress'] ?? 0).toDouble(),
       phase: json['projectPhase'],
+      projectType: json['projectType'],
       designPackage: json['designPackage'],
       isDesignAgreementSigned: json['isDesignAgreementSigned'] ?? false,
       state: json['state'],
