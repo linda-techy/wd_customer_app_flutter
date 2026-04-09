@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import '../models/api_models.dart';
 
@@ -10,6 +8,11 @@ class ApiService {
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   ApiService._internal();
+
+  final Dio _dio = Dio(BaseOptions(
+    connectTimeout: ApiConfig.connectionTimeout,
+    receiveTimeout: ApiConfig.receiveTimeout,
+  ));
 
   // Login method
   Future<ApiResponse<LoginResponse>> login(
@@ -24,13 +27,11 @@ class ApiService {
         debugPrint('========================');
       }
 
-      final response = await http
-          .post(
-            Uri.parse(ApiConfig.loginUrl),
-            headers: ApiConfig.defaultHeaders,
-            body: jsonEncode(loginRequest.toJson()),
-          )
-          .timeout(ApiConfig.connectionTimeout);
+      final response = await _dio.post(
+        ApiConfig.loginUrl,
+        data: loginRequest.toJson(),
+        options: Options(headers: ApiConfig.defaultHeaders),
+      );
 
       // Debug: Log response status only
       if (kDebugMode) {
@@ -40,43 +41,39 @@ class ApiService {
       }
 
       if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        final loginResponse = LoginResponse.fromJson(jsonResponse);
+        final loginResponse = LoginResponse.fromJson(response.data);
         return ApiResponse.success(loginResponse);
       } else {
-        final errorJson = jsonDecode(response.body);
-        final error = ApiError.fromJson(errorJson);
+        final error = ApiError.fromJson(response.data);
         return ApiResponse.error(error);
       }
-    } on SocketException {
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return ApiResponse.error(
+          ApiError(
+            message:
+                'Cannot reach the server. Please check your network connection.',
+            statusCode: 0,
+          ),
+        );
+      }
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        return ApiResponse.error(
+          ApiError(
+            message:
+                'Request timed out while contacting the server. Please try again.',
+            statusCode: 0,
+          ),
+        );
+      }
+      final message =
+          e.response?.data?['message'] ?? 'An unexpected error occurred';
+      final statusCode = e.response?.statusCode ?? 0;
       return ApiResponse.error(
-        ApiError(
-          message: 'Cannot reach the server. Please check your network connection.',
-          statusCode: 0,
-        ),
-      );
-    } on TimeoutException {
-      return ApiResponse.error(
-        ApiError(
-          message:
-              'Request timed out while contacting the server. Please try again.',
-          statusCode: 0,
-        ),
-      );
-    } on HttpException {
-      return ApiResponse.error(
-        ApiError(
-          message: 'Server error. Please try again later.',
-          statusCode: 500,
-        ),
-      );
-    } on FormatException {
-      return ApiResponse.error(
-        ApiError(
-          message: 'Invalid response format from server.',
-          statusCode: 0,
-        ),
-      );
+          ApiError(message: message.toString(), statusCode: statusCode));
     } catch (e) {
       return ApiResponse.error(
         ApiError(
@@ -90,51 +87,56 @@ class ApiService {
   // Forgot password method
   Future<ApiResponse<Map<String, dynamic>>> forgotPassword(String email) async {
     try {
-      final body = {'email': email};
-
-      final response = await http
-          .post(
-            Uri.parse(ApiConfig.forgotPasswordUrl),
-            headers: ApiConfig.defaultHeaders,
-            body: jsonEncode(body),
-          )
-          .timeout(ApiConfig.connectionTimeout);
+      final response = await _dio.post(
+        ApiConfig.forgotPasswordUrl,
+        data: {'email': email},
+        options: Options(headers: ApiConfig.defaultHeaders),
+      );
 
       if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
-        return ApiResponse.success(jsonResponse);
+        return ApiResponse.success(response.data as Map<String, dynamic>);
       } else {
         String errorMessage = 'Failed to send reset code';
-        try {
-          final errorJson = jsonDecode(response.body);
-          if (errorJson is Map) {
-            errorMessage = errorJson['message'] ?? errorJson['error'] ?? errorMessage;
-          }
-        } catch (_) {}
+        final data = response.data;
+        if (data is Map) {
+          errorMessage =
+              (data['message'] ?? data['error'] ?? errorMessage).toString();
+        }
         return ApiResponse.error(
-          ApiError(message: errorMessage, statusCode: response.statusCode),
+          ApiError(
+              message: errorMessage, statusCode: response.statusCode ?? 0),
         );
       }
-    } on SocketException {
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return ApiResponse.error(
+          ApiError(
+            message:
+                'Cannot connect to the server. Please check if the API is running.',
+            statusCode: 0,
+          ),
+        );
+      }
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        return ApiResponse.error(
+          ApiError(
+            message:
+                'Request timed out. We could not submit your reset link request.',
+            statusCode: 0,
+          ),
+        );
+      }
+      final message = e.response?.data?['message'] ?? 'Failed to send reset code';
       return ApiResponse.error(
-        ApiError(
-          message:
-              'Cannot connect to the server. Please check if the API is running.',
-          statusCode: 0,
-        ),
-      );
-    } on TimeoutException {
-      return ApiResponse.error(
-        ApiError(
-          message:
-              'Request timed out. We could not submit your reset link request.',
-          statusCode: 0,
-        ),
-      );
+          ApiError(message: message.toString(), statusCode: e.response?.statusCode ?? 0));
     } catch (e) {
       return ApiResponse.error(
         ApiError(
-          message: 'An unexpected error occurred while sending reset link.',
+          message:
+              'An unexpected error occurred while sending reset link.',
           statusCode: 0,
         ),
       );
@@ -145,51 +147,55 @@ class ApiService {
   Future<ApiResponse<Map<String, dynamic>>> resetPassword(
       String email, String resetCode, String newPassword) async {
     try {
-      final body = {
-        'email': email,
-        'resetCode': resetCode,
-        'newPassword': newPassword,
-      };
-
-      final response = await http
-          .post(
-            Uri.parse(ApiConfig.resetPasswordUrl),
-            headers: ApiConfig.defaultHeaders,
-            body: jsonEncode(body),
-          )
-          .timeout(ApiConfig.connectionTimeout);
+      final response = await _dio.post(
+        ApiConfig.resetPasswordUrl,
+        data: {
+          'email': email,
+          'resetCode': resetCode,
+          'newPassword': newPassword,
+        },
+        options: Options(headers: ApiConfig.defaultHeaders),
+      );
 
       if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
-        return ApiResponse.success(jsonResponse);
+        return ApiResponse.success(response.data as Map<String, dynamic>);
       } else {
         String errorMessage = 'Failed to reset password';
-        try {
-          final errorJson = jsonDecode(response.body);
-          if (errorJson is Map) {
-            errorMessage = errorJson['message'] ?? errorJson['error'] ?? errorMessage;
-          }
-        } catch (_) {}
+        final data = response.data;
+        if (data is Map) {
+          errorMessage =
+              (data['message'] ?? data['error'] ?? errorMessage).toString();
+        }
         return ApiResponse.error(
-          ApiError(message: errorMessage, statusCode: response.statusCode),
+          ApiError(
+              message: errorMessage, statusCode: response.statusCode ?? 0),
         );
       }
-    } on SocketException {
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return ApiResponse.error(
+          ApiError(
+            message:
+                'Cannot connect to the server. Please check if the API is running.',
+            statusCode: 0,
+          ),
+        );
+      }
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        return ApiResponse.error(
+          ApiError(
+            message: 'Request timed out. Please retry resetting your password.',
+            statusCode: 0,
+          ),
+        );
+      }
+      final message =
+          e.response?.data?['message'] ?? 'Failed to reset password';
       return ApiResponse.error(
-        ApiError(
-          message:
-              'Cannot connect to the server. Please check if the API is running.',
-          statusCode: 0,
-        ),
-      );
-    } on TimeoutException {
-      return ApiResponse.error(
-        ApiError(
-          message:
-              'Request timed out. Please retry resetting your password.',
-          statusCode: 0,
-        ),
-      );
+          ApiError(message: message.toString(), statusCode: e.response?.statusCode ?? 0));
     } catch (e) {
       return ApiResponse.error(
         ApiError(
@@ -206,28 +212,35 @@ class ApiService {
     try {
       final refreshRequest = RefreshTokenRequest(refreshToken: refreshToken);
 
-      final response = await http
-          .post(
-            Uri.parse(ApiConfig.refreshTokenUrl),
-            headers: ApiConfig.defaultHeaders,
-            body: jsonEncode(refreshRequest.toJson()),
-          )
-          .timeout(ApiConfig.connectionTimeout);
+      final response = await _dio.post(
+        ApiConfig.refreshTokenUrl,
+        data: refreshRequest.toJson(),
+        options: Options(headers: ApiConfig.defaultHeaders),
+      );
 
       if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        final refreshResponse = RefreshTokenResponse.fromJson(jsonResponse);
+        final refreshResponse = RefreshTokenResponse.fromJson(response.data);
         return ApiResponse.success(refreshResponse);
       } else {
-        final errorJson = jsonDecode(response.body);
-        final error = ApiError.fromJson(errorJson);
+        final error = ApiError.fromJson(response.data);
         return ApiResponse.error(error);
       }
-    } on SocketException {
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return ApiResponse.error(
+          ApiError(
+            message: 'No internet connection.',
+            statusCode: 0,
+          ),
+        );
+      }
+      final message =
+          e.response?.data?['message'] ?? 'Failed to refresh token';
       return ApiResponse.error(
         ApiError(
-          message: 'No internet connection.',
-          statusCode: 0,
+          message: 'Failed to refresh token: ${message.toString()}',
+          statusCode: e.response?.statusCode ?? 0,
         ),
       );
     } catch (e) {
@@ -246,26 +259,33 @@ class ApiService {
     try {
       final refreshRequest = RefreshTokenRequest(refreshToken: refreshToken);
 
-      final response = await http
-          .post(
-            Uri.parse(ApiConfig.logoutUrl),
-            headers: ApiConfig.getAuthHeaders(accessToken),
-            body: jsonEncode(refreshRequest.toJson()),
-          )
-          .timeout(ApiConfig.connectionTimeout);
+      final response = await _dio.post(
+        ApiConfig.logoutUrl,
+        data: refreshRequest.toJson(),
+        options: Options(headers: ApiConfig.getAuthHeaders(accessToken)),
+      );
 
       if (response.statusCode == 200) {
         return ApiResponse.success(null);
       } else {
-        final errorJson = jsonDecode(response.body);
-        final error = ApiError.fromJson(errorJson);
+        final error = ApiError.fromJson(response.data);
         return ApiResponse.error(error);
       }
-    } on SocketException {
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return ApiResponse.error(
+          ApiError(
+            message: 'No internet connection.',
+            statusCode: 0,
+          ),
+        );
+      }
+      final message = e.response?.data?['message'] ?? 'Failed to logout';
       return ApiResponse.error(
         ApiError(
-          message: 'No internet connection.',
-          statusCode: 0,
+          message: 'Failed to logout: ${message.toString()}',
+          statusCode: e.response?.statusCode ?? 0,
         ),
       );
     } catch (e) {
@@ -281,27 +301,33 @@ class ApiService {
   // Get current user method
   Future<ApiResponse<UserInfo>> getCurrentUser(String accessToken) async {
     try {
-      final response = await http
-          .get(
-            Uri.parse(ApiConfig.getCurrentUserUrl),
-            headers: ApiConfig.getAuthHeaders(accessToken),
-          )
-          .timeout(ApiConfig.connectionTimeout);
+      final response = await _dio.get(
+        ApiConfig.getCurrentUserUrl,
+        options: Options(headers: ApiConfig.getAuthHeaders(accessToken)),
+      );
 
       if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        final userInfo = UserInfo.fromJson(jsonResponse);
+        final userInfo = UserInfo.fromJson(response.data);
         return ApiResponse.success(userInfo);
       } else {
-        final errorJson = jsonDecode(response.body);
-        final error = ApiError.fromJson(errorJson);
+        final error = ApiError.fromJson(response.data);
         return ApiResponse.error(error);
       }
-    } on SocketException {
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return ApiResponse.error(
+          ApiError(
+            message: 'No internet connection.',
+            statusCode: 0,
+          ),
+        );
+      }
+      final message = e.response?.data?['message'] ?? 'Failed to get user info';
       return ApiResponse.error(
         ApiError(
-          message: 'No internet connection.',
-          statusCode: 0,
+          message: 'Failed to get user info: ${message.toString()}',
+          statusCode: e.response?.statusCode ?? 0,
         ),
       );
     } catch (e) {
@@ -323,34 +349,41 @@ class ApiService {
         debugPrint('============================');
       }
 
-      final response = await http
-          .get(
-            Uri.parse(ApiConfig.dashboardUrl),
-            headers: ApiConfig.getAuthHeaders(accessToken),
-          )
-          .timeout(ApiConfig.connectionTimeout);
+      final response = await _dio.get(
+        ApiConfig.dashboardUrl,
+        options: Options(headers: ApiConfig.getAuthHeaders(accessToken)),
+      );
 
       if (kDebugMode) {
         debugPrint('=== API DASHBOARD RESPONSE ===');
         debugPrint('Status Code: ${response.statusCode}');
-        debugPrint('Response Body: ${response.body}');
+        debugPrint('Response Body: ${response.data}');
         debugPrint('=============================');
       }
 
       if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        final dashboardData = DashboardDto.fromJson(jsonResponse);
+        final dashboardData = DashboardDto.fromJson(response.data);
         return ApiResponse.success(dashboardData);
       } else {
-        final errorJson = jsonDecode(response.body);
-        final error = ApiError.fromJson(errorJson);
+        final error = ApiError.fromJson(response.data);
         return ApiResponse.error(error);
       }
-    } on SocketException {
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return ApiResponse.error(
+          ApiError(
+            message: 'No internet connection.',
+            statusCode: 0,
+          ),
+        );
+      }
+      final message =
+          e.response?.data?['message'] ?? 'Failed to get dashboard data';
       return ApiResponse.error(
         ApiError(
-          message: 'No internet connection.',
-          statusCode: 0,
+          message: 'Failed to get dashboard data: ${message.toString()}',
+          statusCode: e.response?.statusCode ?? 0,
         ),
       );
     } catch (e) {
@@ -364,10 +397,12 @@ class ApiService {
   }
 
   // Get project details method
-  Future<ApiResponse<ProjectDetails>> getProjectDetails(String projectUuid, String accessToken) async {
+  Future<ApiResponse<ProjectDetails>> getProjectDetails(
+      String projectUuid, String accessToken) async {
     try {
-      final url = '${ApiConfig.baseUrl}/api/dashboard/projects/$projectUuid';
-      
+      final url =
+          '${ApiConfig.baseUrl}/api/dashboard/projects/$projectUuid';
+
       if (kDebugMode) {
         debugPrint('=== API PROJECT DETAILS REQUEST ===');
         debugPrint('URL: $url');
@@ -375,34 +410,41 @@ class ApiService {
         debugPrint('==================================');
       }
 
-      final response = await http
-          .get(
-            Uri.parse(url),
-            headers: ApiConfig.getAuthHeaders(accessToken),
-          )
-          .timeout(ApiConfig.connectionTimeout);
+      final response = await _dio.get(
+        url,
+        options: Options(headers: ApiConfig.getAuthHeaders(accessToken)),
+      );
 
       if (kDebugMode) {
         debugPrint('=== API PROJECT DETAILS RESPONSE ===');
         debugPrint('Status Code: ${response.statusCode}');
-        debugPrint('Response Body: ${response.body}');
+        debugPrint('Response Body: ${response.data}');
         debugPrint('===================================');
       }
 
       if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        final projectDetails = ProjectDetails.fromJson(jsonResponse);
+        final projectDetails = ProjectDetails.fromJson(response.data);
         return ApiResponse.success(projectDetails);
       } else {
-        final errorJson = jsonDecode(response.body);
-        final error = ApiError.fromJson(errorJson);
+        final error = ApiError.fromJson(response.data);
         return ApiResponse.error(error);
       }
-    } on SocketException {
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return ApiResponse.error(
+          ApiError(
+            message: 'No internet connection.',
+            statusCode: 0,
+          ),
+        );
+      }
+      final message =
+          e.response?.data?['message'] ?? 'Failed to get project details';
       return ApiResponse.error(
         ApiError(
-          message: 'No internet connection.',
-          statusCode: 0,
+          message: 'Failed to get project details: ${message.toString()}',
+          statusCode: e.response?.statusCode ?? 0,
         ),
       );
     } catch (e) {
@@ -415,38 +457,98 @@ class ApiService {
     }
   }
 
-  /// Server-side project search. Empty/null [query] returns recent projects (backend default).
-  Future<ApiResponse<List<ProjectCard>>> searchProjects(String accessToken, [String? query]) async {
+  /// Fetch construction phase timeline for a project.
+  Future<ApiResponse<List<ProjectPhaseModel>>> getProjectPhases(
+      String projectUuid, String accessToken) async {
     try {
-      final path = query != null && query.trim().isNotEmpty
-          ? '/api/dashboard/search-projects?q=${Uri.encodeQueryComponent(query.trim())}'
-          : '/api/dashboard/search-projects';
-      final uri = Uri.parse('${ApiConfig.baseUrl}$path');
+      final url =
+          '${ApiConfig.baseUrl}/api/dashboard/projects/$projectUuid/phases';
 
-      final response = await http
-          .get(
-            uri,
-            headers: ApiConfig.getAuthHeaders(accessToken),
-          )
-          .timeout(ApiConfig.connectionTimeout);
+      final response = await _dio.get(
+        url,
+        options: Options(headers: ApiConfig.getAuthHeaders(accessToken)),
+      );
 
       if (response.statusCode == 200) {
-        final list = jsonDecode(response.body) as List<dynamic>?;
+        final list = response.data as List<dynamic>?;
+        final phases = (list ?? [])
+            .map((e) =>
+                ProjectPhaseModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+        return ApiResponse.success(phases);
+      } else {
+        final data = response.data;
+        return ApiResponse.error(data != null
+            ? ApiError.fromJson(data as Map<String, dynamic>)
+            : ApiError(
+                message:
+                    'Failed to load phases (${response.statusCode})',
+                statusCode: response.statusCode ?? 0));
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return ApiResponse.error(
+            ApiError(message: 'No internet connection.', statusCode: 0));
+      }
+      return ApiResponse.error(ApiError(
+          message:
+              'Failed to get project phases: ${e.response?.data?['message'] ?? e.toString()}',
+          statusCode: e.response?.statusCode ?? 0));
+    } catch (e) {
+      return ApiResponse.error(ApiError(
+          message: 'Failed to get project phases: ${e.toString()}',
+          statusCode: 0));
+    }
+  }
+
+  /// Server-side project search. Empty/null [query] returns recent projects (backend default).
+  Future<ApiResponse<List<ProjectCard>>> searchProjects(String accessToken,
+      [String? query]) async {
+    try {
+      final queryParameters = <String, dynamic>{};
+      if (query != null && query.trim().isNotEmpty) {
+        queryParameters['q'] = query.trim();
+      }
+
+      final response = await _dio.get(
+        '${ApiConfig.baseUrl}/api/dashboard/search-projects',
+        queryParameters:
+            queryParameters.isNotEmpty ? queryParameters : null,
+        options: Options(headers: ApiConfig.getAuthHeaders(accessToken)),
+      );
+
+      if (response.statusCode == 200) {
+        final list = response.data as List<dynamic>?;
         final projects = (list ?? [])
-            .map((e) => ProjectCard.fromJson(e as Map<String, dynamic>))
+            .map((e) =>
+                ProjectCard.fromJson(e as Map<String, dynamic>))
             .toList();
         return ApiResponse.success(projects);
       } else {
-        final body = response.body.isNotEmpty ? jsonDecode(response.body) : null;
-        final error = body != null ? ApiError.fromJson(body as Map<String, dynamic>) : ApiError(
-          message: 'Search failed (${response.statusCode})',
-          statusCode: response.statusCode,
-        );
+        final data = response.data;
+        final error = data != null
+            ? ApiError.fromJson(data as Map<String, dynamic>)
+            : ApiError(
+                message: 'Search failed (${response.statusCode})',
+                statusCode: response.statusCode ?? 0,
+              );
         return ApiResponse.error(error);
       }
-    } on SocketException {
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return ApiResponse.error(
+          ApiError(message: 'No internet connection.', statusCode: 0),
+        );
+      }
+      final message =
+          e.response?.data?['message'] ?? 'Failed to search projects';
       return ApiResponse.error(
-        ApiError(message: 'No internet connection.', statusCode: 0),
+        ApiError(
+          message: 'Failed to search projects: ${message.toString()}',
+          statusCode: e.response?.statusCode ?? 0,
+        ),
       );
     } catch (e) {
       return ApiResponse.error(
@@ -465,37 +567,46 @@ class ApiService {
         debugPrint('Testing API connection to: ${ApiConfig.testUrl}');
       }
 
-      final response = await http
-          .get(
-            Uri.parse(ApiConfig.testUrl),
-            headers: ApiConfig.defaultHeaders,
-          )
-          .timeout(ApiConfig.connectionTimeout);
+      final response = await _dio.get(
+        ApiConfig.testUrl,
+        options: Options(headers: ApiConfig.defaultHeaders),
+      );
 
       if (kDebugMode) {
         debugPrint('Test response status: ${response.statusCode}');
-        debugPrint('Test response body: ${response.body}');
+        debugPrint('Test response body: ${response.data}');
       }
 
       if (response.statusCode == 200) {
-        return ApiResponse.success(response.body);
+        return ApiResponse.success(response.data.toString());
       } else {
         return ApiResponse.error(
           ApiError(
-            message: 'Server returned status code: ${response.statusCode}',
-            statusCode: response.statusCode,
+            message:
+                'Server returned status code: ${response.statusCode}',
+            statusCode: response.statusCode ?? 0,
           ),
         );
       }
-    } on SocketException {
+    } on DioException catch (e) {
       if (kDebugMode) {
-        debugPrint('SocketException: Cannot connect to server');
+        debugPrint('DioException: Cannot connect to server: $e');
+      }
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return ApiResponse.error(
+          ApiError(
+            message:
+                'Cannot connect to server. Please check if the API is running on ${ApiConfig.baseUrl}',
+            statusCode: 0,
+          ),
+        );
       }
       return ApiResponse.error(
         ApiError(
           message:
-              'Cannot connect to server. Please check if the API is running on ${ApiConfig.baseUrl}',
-          statusCode: 0,
+              'Connection test failed: ${e.response?.data?['message'] ?? e.toString()}',
+          statusCode: e.response?.statusCode ?? 0,
         ),
       );
     } catch (e) {
@@ -518,31 +629,38 @@ class ApiService {
     String designPackage,
   ) async {
     try {
-      final response = await http
-          .put(
-            Uri.parse('${ApiConfig.baseUrl}/api/dashboard/projects/$projectUuid/design-package'),
-            headers: ApiConfig.getAuthHeaders(accessToken),
-            body: jsonEncode({
-              'designPackage': designPackage,
-              'isDesignAgreementSigned': true,
-            }),
-          )
-          .timeout(ApiConfig.connectionTimeout);
+      final response = await _dio.put(
+        '${ApiConfig.baseUrl}/api/dashboard/projects/$projectUuid/design-package',
+        data: {
+          'designPackage': designPackage,
+          'isDesignAgreementSigned': true,
+        },
+        options: Options(headers: ApiConfig.getAuthHeaders(accessToken)),
+      );
 
       if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        final projectDetails = ProjectDetails.fromJson(jsonResponse);
+        final projectDetails = ProjectDetails.fromJson(response.data);
         return ApiResponse.success(projectDetails);
       } else {
-        final errorJson = jsonDecode(response.body);
-        final error = ApiError.fromJson(errorJson);
+        final error = ApiError.fromJson(response.data);
         return ApiResponse.error(error);
       }
-    } on SocketException {
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return ApiResponse.error(
+          ApiError(
+            message: 'No internet connection.',
+            statusCode: 0,
+          ),
+        );
+      }
+      final message =
+          e.response?.data?['message'] ?? 'Failed to update design package';
       return ApiResponse.error(
         ApiError(
-          message: 'No internet connection.',
-          statusCode: 0,
+          message: 'Failed to update design package: ${message.toString()}',
+          statusCode: e.response?.statusCode ?? 0,
         ),
       );
     } catch (e) {

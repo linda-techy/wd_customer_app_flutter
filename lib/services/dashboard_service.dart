@@ -169,6 +169,36 @@ class DashboardService {
     }
   }
 
+  /// Fetch the ordered construction phase timeline for a project.
+  /// Returns phases sorted by displayOrder. Used to render MilestoneTimeline.
+  static Future<ApiResponse<List<ProjectPhaseModel>>> getProjectPhases(
+      String projectUuid) async {
+    try {
+      final accessToken = await AuthService.getAccessToken();
+      if (accessToken == null) {
+        return ApiResponse.error(
+            ApiError(message: 'No access token found. Please login again.', statusCode: 401));
+      }
+      if (await AuthService.isTokenExpired()) {
+        final refreshed = await AuthService.refreshAccessToken();
+        if (!refreshed) {
+          return ApiResponse.error(
+              ApiError(message: 'Session expired. Please login again.', statusCode: 401));
+        }
+        final newToken = await AuthService.getAccessToken();
+        if (newToken == null) {
+          return ApiResponse.error(
+              ApiError(message: 'Failed to get new access token.', statusCode: 401));
+        }
+        return await _apiService.getProjectPhases(projectUuid, newToken);
+      }
+      return await _apiService.getProjectPhases(projectUuid, accessToken);
+    } catch (e) {
+      return ApiResponse.error(
+          ApiError(message: 'Failed to get project phases: ${e.toString()}', statusCode: 0));
+    }
+  }
+
   // Update design package for a project
   static Future<ApiResponse<ProjectDetails>> updateDesignPackage(
     String projectUuid,

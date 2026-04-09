@@ -542,6 +542,47 @@ class ProgressData {
   }
 }
 
+// Project Phase Model — maps the construction phase timeline from the portal.
+// Status values: NOT_STARTED | IN_PROGRESS | COMPLETED | DELAYED
+class ProjectPhaseModel {
+  final int id;
+  final String phaseName;
+  final String status;
+  final int? displayOrder;
+  final DateTime? plannedStart;
+  final DateTime? plannedEnd;
+  final DateTime? actualStart;
+  final DateTime? actualEnd;
+
+  ProjectPhaseModel({
+    required this.id,
+    required this.phaseName,
+    required this.status,
+    this.displayOrder,
+    this.plannedStart,
+    this.plannedEnd,
+    this.actualStart,
+    this.actualEnd,
+  });
+
+  factory ProjectPhaseModel.fromJson(Map<String, dynamic> json) {
+    return ProjectPhaseModel(
+      id: json['id'] ?? 0,
+      phaseName: json['phaseName'] ?? '',
+      status: json['status'] ?? 'NOT_STARTED',
+      displayOrder: json['displayOrder'] as int?,
+      plannedStart: json['plannedStart'] != null ? DateTime.tryParse(json['plannedStart']) : null,
+      plannedEnd: json['plannedEnd'] != null ? DateTime.tryParse(json['plannedEnd']) : null,
+      actualStart: json['actualStart'] != null ? DateTime.tryParse(json['actualStart']) : null,
+      actualEnd: json['actualEnd'] != null ? DateTime.tryParse(json['actualEnd']) : null,
+    );
+  }
+
+  bool get isCompleted => status == 'COMPLETED';
+  bool get isInProgress => status == 'IN_PROGRESS';
+  bool get isDelayed => status == 'DELAYED';
+}
+
 // Progress Milestone Model
 class ProgressMilestone {
   final String name;

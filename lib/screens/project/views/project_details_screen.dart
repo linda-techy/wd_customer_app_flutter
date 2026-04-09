@@ -9,6 +9,7 @@ import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/scale_button.dart';
 import '../../../models/project_phase.dart';
+import '../../../widgets/milestone_timeline.dart';
 import 'design_package_selection_screen.dart';
 import '../../site_reports/site_reports_screen.dart';
 import '../../payments/views/payments_screen.dart';
@@ -32,6 +33,7 @@ class ProjectDetailsScreen extends StatefulWidget {
 
 class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   ProjectDetails? _projectDetails;
+  List<ProjectPhaseModel> _constructionPhases = [];
   bool _isLoading = true;
   String? _errorMessage;
   bool _hasLoadedOnce = false;
@@ -93,11 +95,18 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         });
       }
 
-      final response = await DashboardService.getProjectDetails(projectId);
+      // Load project details and construction phases concurrently
+      final results = await Future.wait([
+        DashboardService.getProjectDetails(projectId),
+        DashboardService.getProjectPhases(projectId),
+      ]);
+      final response = results[0] as ApiResponse<ProjectDetails>;
+      final phasesResponse = results[1] as ApiResponse<List<ProjectPhaseModel>>;
 
       if (response.success && response.data != null) {
         setState(() {
           _projectDetails = response.data;
+          _constructionPhases = phasesResponse.data ?? [];
           _isLoading = false;
         });
       } else {
@@ -328,12 +337,49 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         ),
         const SizedBox(height: 24),
 
+        // Construction Phase Timeline (only shown when phases are available)
+        if (_constructionPhases.isNotEmpty) ...[
+          FadeEntry(
+            delay: 560.ms,
+            child: _buildConstructionTimeline(),
+          ),
+          const SizedBox(height: 24),
+        ],
+
         // Action Buttons Grid
         FadeEntry(
           delay: 600.ms,
           child: _buildActionGrid(context),
         ),
       ],
+    );
+  }
+
+  /// Maps backend ProjectPhaseModel list → MilestoneTimeline widget.
+  /// currentMilestoneIndex = first IN_PROGRESS phase, or first NOT_STARTED after
+  /// the last COMPLETED phase, falling back to 0 (so the first phase is highlighted).
+  Widget _buildConstructionTimeline() {
+    final milestones = _constructionPhases.map((phase) {
+      return ProjectMilestone(
+        name: phase.phaseName,
+        targetDate: phase.plannedEnd,
+        description: phase.isDelayed ? 'Delayed' : null,
+      );
+    }).toList();
+
+    // Determine current index: first IN_PROGRESS, otherwise total completed count
+    int currentIndex = _constructionPhases.indexWhere((p) => p.isInProgress);
+    if (currentIndex == -1) {
+      // If none in-progress, advance to first NOT_STARTED after last COMPLETED
+      final lastCompleted = _constructionPhases.lastIndexWhere((p) => p.isCompleted);
+      currentIndex = lastCompleted + 1 < _constructionPhases.length
+          ? lastCompleted + 1
+          : _constructionPhases.length - 1;
+    }
+
+    return MilestoneTimeline(
+      milestones: milestones,
+      currentMilestoneIndex: currentIndex.clamp(0, milestones.length - 1),
     );
   }
 
@@ -723,7 +769,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectUuid.isNotEmpty ? projectDocumentsRoute(projectUuid) : documentsScreenRoute)));
         if (_canSeePayments())
           list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
-            nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId)));
+            nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId, projectUuid: projectUuid.isNotEmpty ? projectUuid : null)));
           }));
         if (_canSeeCCTV())
           list.add(_ActionItem('CCTV', Icons.videocam_outlined, Colors.grey, () => nav.pushNamed(projectUuid.isNotEmpty ? projectCctvRoute(projectUuid) : cctvSurveillanceScreenRoute)));
@@ -757,7 +803,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectUuid.isNotEmpty ? projectDocumentsRoute(projectUuid) : documentsScreenRoute)));
         if (_canSeePayments())
           list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
-            nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId)));
+            nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId, projectUuid: projectUuid.isNotEmpty ? projectUuid : null)));
           }));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
           showFeedbackDialog(context: context, projectId: projectUuid);
@@ -773,7 +819,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectUuid.isNotEmpty ? projectDocumentsRoute(projectUuid) : documentsScreenRoute)));
         if (_canSeePayments())
           list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
-            nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId)));
+            nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId, projectUuid: projectUuid.isNotEmpty ? projectUuid : null)));
           }));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
           showFeedbackDialog(context: context, projectId: projectUuid);

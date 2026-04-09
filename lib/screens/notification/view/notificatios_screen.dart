@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import '../../../constants.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/hover_card.dart';
@@ -47,9 +46,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     try {
       final token = await AuthService.getAccessToken();
       if (token == null) return;
-      await http.put(
-        Uri.parse('${ApiConfig.baseUrl}/api/notifications/$id/read'),
-        headers: ApiConfig.getAuthHeaders(token),
+      final dio = Dio(BaseOptions(
+        connectTimeout: ApiConfig.connectionTimeout,
+        receiveTimeout: ApiConfig.receiveTimeout,
+      ));
+      await dio.put(
+        '${ApiConfig.baseUrl}/api/notifications/$id/read',
+        options: Options(headers: ApiConfig.getAuthHeaders(token)),
       );
     } catch (_) {} // Optimistic; ignore failures
   }
@@ -65,9 +68,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     try {
       final token = await AuthService.getAccessToken();
       if (token == null) return;
-      await http.put(
-        Uri.parse('${ApiConfig.baseUrl}/api/notifications/read-all'),
-        headers: ApiConfig.getAuthHeaders(token),
+      final dio = Dio(BaseOptions(
+        connectTimeout: ApiConfig.connectionTimeout,
+        receiveTimeout: ApiConfig.receiveTimeout,
+      ));
+      await dio.put(
+        '${ApiConfig.baseUrl}/api/notifications/read-all',
+        options: Options(headers: ApiConfig.getAuthHeaders(token)),
       );
     } catch (_) {}
   }
@@ -100,16 +107,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         return;
       }
 
-      final response = await http
-          .get(
-            Uri.parse('${ApiConfig.baseUrl}/api/notifications?page=0&size=50'),
-            headers: ApiConfig.getAuthHeaders(token),
-          )
-          .timeout(ApiConfig.receiveTimeout);
+      final dio = Dio(BaseOptions(
+        connectTimeout: ApiConfig.connectionTimeout,
+        receiveTimeout: ApiConfig.receiveTimeout,
+      ));
+      final response = await dio.get(
+        '${ApiConfig.baseUrl}/api/notifications?page=0&size=50',
+        options: Options(
+          headers: ApiConfig.getAuthHeaders(token),
+          validateStatus: (_) => true,
+        ),
+      );
 
       if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
-        final data = json['data'] as Map<String, dynamic>? ?? {};
+        final data = (response.data['data'] as Map<String, dynamic>?) ?? {};
         final rawList = (data['notifications'] as List<dynamic>?) ?? [];
         final loaded = rawList.map((e) => _mapNotification(e as Map<String, dynamic>)).toList();
         setState(() {

@@ -7,7 +7,7 @@ class ApiConfig {
   // Production: Must be set via dart-define: --dart-define=API_BASE_URL=https://cust-api.walldotbuilders.com
   // Staging: Can be set via dart-define: --dart-define=API_BASE_URL=https://cust-api-staging.walldotbuilders.com
   // For release builds, API_BASE_URL should always be provided via dart-define
-  static const String _devApiUrl = 'http://localhost:8080';
+  static const String _devApiUrl = 'http://localhost:8081';
   static const String _prodApiUrl = 'https://cust-api.walldotbuilders.com';
 
   // Portal API (public endpoints — no auth required for lead/referral submission)

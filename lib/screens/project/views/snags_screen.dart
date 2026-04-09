@@ -27,6 +27,7 @@ class _SnagsScreenState extends State<SnagsScreen>
   Map<String, int> counts = {'active': 0, 'resolved': 0, 'total': 0};
   ProjectModuleService? service;
   String? _authToken;
+  String _userRole = 'VIEWER'; // Resolved on init; restricts create FAB
 
   @override
   void initState() {
@@ -48,9 +49,14 @@ class _SnagsScreenState extends State<SnagsScreen>
         baseUrl: ApiConfig.baseUrl,
         token: token,
       );
-      setState(() {
-        _authToken = token;
-      });
+      // Resolve user role to control FAB visibility
+      final userInfo = await AuthService.getUserInfo();
+      if (mounted) {
+        setState(() {
+          _authToken = token;
+          _userRole = userInfo?.role ?? 'VIEWER';
+        });
+      }
       _loadSnags();
     } else {
       setState(() {
@@ -153,11 +159,17 @@ class _SnagsScreenState extends State<SnagsScreen>
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showCreateDialog,
-        backgroundColor: primaryColor,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+      // FAB visible only to roles that can create observations
+      floatingActionButton: ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN']
+              .contains(_userRole.toUpperCase())
+          ? FloatingActionButton.extended(
+              onPressed: _showCreateDialog,
+              backgroundColor: primaryColor,
+              icon: const Icon(Icons.report_problem_rounded, color: Colors.white),
+              label: const Text('Report Issue',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+            )
+          : null,
       body: isLoading
           ? const Center(child: CircularProgressIndicator(color: primaryColor))
           : error != null

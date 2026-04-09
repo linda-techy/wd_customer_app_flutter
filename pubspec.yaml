@@ -21,7 +21,6 @@ dependencies:
   animations: ^2.0.11
   url_launcher: ^6.3.0
   shared_preferences: ^2.2.2
-  http: ^1.1.0
   provider: ^6.1.5+1
   syncfusion_flutter_pdfviewer: ^27.1.58  # PDF viewer with network support
   dio: ^5.4.0  # Better HTTP client for file downloads

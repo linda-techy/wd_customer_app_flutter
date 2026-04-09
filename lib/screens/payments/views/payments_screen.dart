@@ -8,25 +8,40 @@ import '../../../../models/payment_models.dart';
 import 'package:intl/intl.dart';
 
 class PaymentsScreen extends StatefulWidget {
-  final int? projectId; // Optional: filter by specific project
-  
-  const PaymentsScreen({super.key, this.projectId});
+  final int? projectId;       // DB id for payment schedule queries
+  final String? projectUuid;  // UUID for invoice queries
+
+  const PaymentsScreen({super.key, this.projectId, this.projectUuid});
 
   @override
   State<PaymentsScreen> createState() => _PaymentsScreenState();
 }
 
-class _PaymentsScreenState extends State<PaymentsScreen> {
+class _PaymentsScreenState extends State<PaymentsScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   final PaymentService _paymentService = PaymentService();
   bool _isLoading = true;
   String? _errorMessage;
   List<PaymentSchedule> _schedules = [];
+  List<CustomerInvoice> _invoices = [];
   PaymentSummary? _summary;
 
   @override
   void initState() {
     super.initState();
+    // Show invoices tab only when a project UUID is available
+    _tabController = TabController(
+      length: widget.projectUuid != null ? 2 : 1,
+      vsync: this,
+    );
     _loadPayments();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadPayments() async {
@@ -36,14 +51,23 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     });
 
     try {
-      final schedules = await _paymentService.getCustomerPayments(
-        projectId: widget.projectId,
-      );
-      final summary = _paymentService.calculateSummary(schedules);
-      
+      // Load schedules and invoices concurrently
+      final futures = <Future>[
+        _paymentService.getCustomerPayments(projectId: widget.projectId),
+        if (widget.projectUuid != null)
+          _paymentService.getProjectInvoices(projectUuid: widget.projectUuid!),
+      ];
+      final results = await Future.wait(futures);
+
+      final schedules = results[0] as List<PaymentSchedule>;
+      final invoices = widget.projectUuid != null
+          ? results[1] as List<CustomerInvoice>
+          : <CustomerInvoice>[];
+
       setState(() {
         _schedules = schedules;
-        _summary = summary;
+        _invoices = invoices;
+        _summary = _paymentService.calculateSummary(schedules);
         _isLoading = false;
       });
     } catch (e) {
@@ -56,6 +80,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool hasTabs = widget.projectUuid != null;
     return Scaffold(
       backgroundColor: surfaceColor,
       appBar: AppBar(
@@ -66,6 +91,19 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
         backgroundColor: surfaceColor,
         elevation: 0,
         iconTheme: const IconThemeData(color: blackColor),
+        bottom: hasTabs
+            ? TabBar(
+                controller: _tabController,
+                labelColor: primaryColor,
+                unselectedLabelColor: blackColor60,
+                indicatorColor: primaryColor,
+                indicatorWeight: 3,
+                tabs: const [
+                  Tab(icon: Icon(Icons.schedule_rounded, size: 18), text: 'Schedule'),
+                  Tab(icon: Icon(Icons.receipt_long_rounded, size: 18), text: 'Invoices'),
+                ],
+              )
+            : null,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -85,44 +123,170 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                     ],
                   ),
                 )
-              : _schedules.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.receipt_long_outlined, size: 60, color: blackColor40),
-                          SizedBox(height: 16),
-                          Text('No payment schedules found'),
-                        ],
-                      ),
+              : hasTabs
+                  ? TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildScheduleTab(),
+                        _buildInvoicesTab(),
+                      ],
                     )
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        children: [
-                          // Summary Card
-                          if (_summary != null) _buildSummaryCard(_summary!),
-                          const SizedBox(height: 32),
+                  : _buildScheduleTab(),
+    );
+  }
 
-                          // Payment History
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              "Payment Schedule",
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
+  Widget _buildScheduleTab() {
+    return _schedules.isEmpty
+        ? const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.receipt_long_outlined, size: 60, color: blackColor40),
+                SizedBox(height: 16),
+                Text('No payment schedules found'),
+              ],
+            ),
+          )
+        : SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                // Summary Card
+                if (_summary != null) _buildSummaryCard(_summary!),
+                const SizedBox(height: 32),
 
-                          // Payment Items
-                          ..._schedules.asMap().entries.map((entry) {
-                            return _buildPaymentItem(entry.value, entry.key);
-                          }),
-                        ],
+                // Payment History
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Payment Schedule",
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Payment Items
+                ..._schedules.asMap().entries.map((entry) {
+                  return _buildPaymentItem(entry.value, entry.key);
+                }),
+              ],
+            ),
+          );
+  }
+
+  Widget _buildInvoicesTab() {
+    if (_invoices.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.receipt_outlined, size: 60, color: blackColor40),
+            SizedBox(height: 16),
+            Text('No invoices found', style: TextStyle(color: blackColor60)),
+            SizedBox(height: 8),
+            Text('Invoices will appear here once issued by your project team.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: blackColor40, fontSize: 13)),
+          ],
+        ),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: _invoices.length,
+      itemBuilder: (context, index) => _buildInvoiceItem(_invoices[index], index),
+    );
+  }
+
+  Widget _buildInvoiceItem(CustomerInvoice invoice, int index) {
+    final Color statusColor = invoice.isPaid
+        ? successColor
+        : invoice.isOverdue
+            ? errorColor
+            : invoice.isCancelled
+                ? blackColor40
+                : primaryColor;
+    final String statusLabel = invoice.isPaid
+        ? 'PAID'
+        : invoice.isOverdue
+            ? 'OVERDUE'
+            : invoice.isCancelled
+                ? 'CANCELLED'
+                : 'ISSUED';
+
+    return FadeEntry(
+      delay: Duration(milliseconds: 100 * index),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: HoverCard(
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: blackColor.withOpacity(0.05)),
+              boxShadow: [
+                BoxShadow(
+                  color: blackColor.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.receipt_long_rounded, color: statusColor, size: 20),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(invoice.invoiceNumber,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      const SizedBox(height: 4),
+                      Text(
+                        invoice.dueDate != null
+                            ? 'Due: ${DateFormat('MMM dd, yyyy').format(invoice.dueDate!)}'
+                            : 'Date: ${DateFormat('MMM dd, yyyy').format(invoice.invoiceDate)}',
+                        style: const TextStyle(color: blackColor60, fontSize: 12),
                       ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text('₹${_formatAmount(invoice.totalAmount)}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(statusLabel,
+                          style: TextStyle(
+                              color: statusColor,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600)),
                     ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 

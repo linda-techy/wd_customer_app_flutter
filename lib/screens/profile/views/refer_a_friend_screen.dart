@@ -1,9 +1,6 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import '../../../config/api_config.dart';
 import '../../../constants.dart';
 
@@ -116,19 +113,25 @@ class _ReferAFriendScreenState extends State<ReferAFriendScreen> {
     };
 
     try {
+      final dio = Dio(BaseOptions(
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 15),
+      ));
       final url = '${ApiConfig.portalApiBaseUrl}/leads/referral';
-      final response = await http
-          .post(
-            Uri.parse(url),
-            headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-            body: jsonEncode(body),
-          )
-          .timeout(const Duration(seconds: 15));
+      final response = await dio.post(
+        url,
+        data: body,
+        options: Options(
+          contentType: 'application/json',
+          headers: {'Accept': 'application/json'},
+          validateStatus: (_) => true,
+        ),
+      );
 
       if (!mounted) return;
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final json = jsonDecode(response.body) as Map<String, dynamic>?;
+        final json = response.data as Map<String, dynamic>?;
         if (json?['success'] == true) {
           setState(() => _submitted = true);
           return;
@@ -138,14 +141,21 @@ class _ReferAFriendScreenState extends State<ReferAFriendScreen> {
       // Extract backend error message
       String msg = 'Submission failed. Please try again.';
       try {
-        final json = jsonDecode(response.body) as Map<String, dynamic>?;
+        final json = response.data as Map<String, dynamic>?;
         if (json?['message'] != null) msg = json!['message'] as String;
       } catch (_) {}
       setState(() => _errorMessage = msg);
-    } on SocketException {
-      setState(() => _errorMessage = 'No internet connection. Please check your network.');
-    } on TimeoutException {
-      setState(() => _errorMessage = 'Request timed out. Please try again.');
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        setState(() => _errorMessage = 'No internet connection. Please check your network.');
+      } else if (e.type == DioExceptionType.connectionTimeout ||
+                 e.type == DioExceptionType.receiveTimeout ||
+                 e.type == DioExceptionType.sendTimeout) {
+        setState(() => _errorMessage = 'Request timed out. Please try again.');
+      } else {
+        setState(() => _errorMessage = 'Something went wrong. Please try again.');
+      }
     } catch (e) {
       setState(() => _errorMessage = 'Something went wrong. Please try again.');
     } finally {

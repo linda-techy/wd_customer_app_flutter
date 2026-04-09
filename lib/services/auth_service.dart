@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/api_config.dart';
@@ -90,13 +90,15 @@ class AuthService {
     try {
       final accessToken = await getAccessToken();
       if (accessToken == null) return;
-      await http
-          .post(
-            Uri.parse('${ApiConfig.baseUrl}/auth/fcm-token'),
-            headers: ApiConfig.getAuthHeaders(accessToken),
-            body: jsonEncode({'fcmToken': token}),
-          )
-          .timeout(ApiConfig.connectionTimeout);
+      final dio = Dio(BaseOptions(
+        connectTimeout: ApiConfig.connectionTimeout,
+        receiveTimeout: ApiConfig.receiveTimeout,
+      ));
+      dio.options.headers['Authorization'] = 'Bearer $accessToken';
+      await dio.post(
+        '${ApiConfig.baseUrl}/auth/fcm-token',
+        data: {'fcmToken': token},
+      );
     } catch (e) {
       // Non-critical — token registration failure must not affect app behaviour
     }

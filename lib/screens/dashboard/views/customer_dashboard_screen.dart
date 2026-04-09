@@ -10,6 +10,8 @@ import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/scale_button.dart';
 import '../../../models/project_phase.dart';
+import '../../../components/molecules/financial_summary_card.dart';
+import '../../../utils/debouncer.dart';
 
 class CustomerDashboardScreen extends StatefulWidget {
   const CustomerDashboardScreen({super.key});
@@ -26,10 +28,9 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
 
   // Server-side project search
   final TextEditingController _searchController = TextEditingController();
+  final Debouncer _searchDebouncer = Debouncer(delay: const Duration(milliseconds: 400));
   List<ProjectCard> _searchResults = [];
   bool _isSearching = false;
-  String _lastSearchQuery = '';
-  static const _searchDebounceMs = 400;
 
   // Phase filter (null = All)
   ProjectPhase? _selectedPhase;
@@ -45,29 +46,21 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
+    _searchDebouncer.dispose();
     super.dispose();
   }
 
   void _onSearchChanged() {
     setState(() {}); // Update section title and clear button
     final q = _searchController.text.trim();
-    if (q == _lastSearchQuery) return;
-    _lastSearchQuery = q;
-    _debounceSearch();
-  }
-
-  void _debounceSearch() {
-    Future.delayed(const Duration(milliseconds: _searchDebounceMs), () {
-      if (!mounted) return;
-      if (_searchController.text.trim() != _lastSearchQuery) return;
-      _runSearch(_searchController.text.trim());
+    _searchDebouncer.run(() {
+      if (mounted) _runSearch(q);
     });
   }
 
   Future<void> _runSearch(String query) async {
     setState(() {
       _isSearching = true;
-      _lastSearchQuery = query;
     });
     try {
       final response = await DashboardService.searchProjects(
@@ -334,8 +327,22 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 30),
-                
+                const SizedBox(height: 16),
+
+                // Financial Summary — visible to CUSTOMER and ADMIN only
+                if (['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN']
+                    .contains(_dashboardData!.user.role.toUpperCase()) &&
+                    _dashboardData!.quickStats.totalAmount > 0) ...[
+                  FadeEntry(
+                    delay: 350.ms,
+                    child: FinancialSummaryCard(
+                      totalAmount: _dashboardData!.quickStats.totalAmount,
+                      pendingAmount: _dashboardData!.quickStats.pendingAmount,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+
                 // Project search (server-side)
                 FadeEntry(
                   delay: 380.ms,
@@ -502,7 +509,6 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
                 icon: const Icon(Icons.clear_rounded),
                 onPressed: () {
                   _searchController.clear();
-                  _lastSearchQuery = '';
                   _searchResults = [];
                   setState(() {});
                 },

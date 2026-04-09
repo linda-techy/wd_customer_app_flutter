@@ -70,6 +70,38 @@ class PaymentService {
     }
   }
 
+  /// Get all invoices for a project (by UUID).
+  /// Returns ISSUED, PAID, and CANCELLED invoices — DRAFT is filtered server-side.
+  Future<List<CustomerInvoice>> getProjectInvoices({
+    required String projectUuid,
+    int page = 0,
+    int size = 20,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '${ApiConfig.baseUrl}/api/customer/invoices',
+        queryParameters: {
+          'projectId': projectUuid,
+          'page': page,
+          'size': size,
+        },
+        options: Options(headers: await _getAuthHeaders()),
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data['data'];
+        if (data != null && data['content'] != null) {
+          return (data['content'] as List)
+              .map((json) => CustomerInvoice.fromJson(json))
+              .toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Calculate payment summary from list of schedules
   PaymentSummary calculateSummary(List<PaymentSchedule> schedules) {
     double totalAmount = 0.0;

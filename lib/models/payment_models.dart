@@ -86,6 +86,51 @@ class PaymentTransaction {
   }
 }
 
+/// Customer-facing invoice model — maps CustomerInvoiceDto from the backend.
+/// Status values: ISSUED | PAID | CANCELLED (DRAFT filtered out server-side).
+class CustomerInvoice {
+  final int id;
+  final String invoiceNumber;
+  final DateTime invoiceDate;
+  final DateTime? dueDate;
+  final double subTotal;
+  final double gstAmount;
+  final double totalAmount;
+  final String status;
+  final DateTime createdAt;
+
+  CustomerInvoice({
+    required this.id,
+    required this.invoiceNumber,
+    required this.invoiceDate,
+    this.dueDate,
+    required this.subTotal,
+    required this.gstAmount,
+    required this.totalAmount,
+    required this.status,
+    required this.createdAt,
+  });
+
+  factory CustomerInvoice.fromJson(Map<String, dynamic> json) {
+    return CustomerInvoice(
+      id: json['id'] ?? 0,
+      invoiceNumber: json['invoiceNumber'] ?? '',
+      invoiceDate: DateTime.parse(json['invoiceDate']),
+      dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate']) : null,
+      subTotal: (json['subTotal'] ?? 0).toDouble(),
+      gstAmount: (json['gstAmount'] ?? 0).toDouble(),
+      totalAmount: (json['totalAmount'] ?? 0).toDouble(),
+      status: json['status'] ?? 'ISSUED',
+      createdAt: DateTime.parse(json['createdAt']),
+    );
+  }
+
+  bool get isPaid => status == 'PAID';
+  bool get isIssued => status == 'ISSUED';
+  bool get isCancelled => status == 'CANCELLED';
+  bool get isOverdue => dueDate != null && !isPaid && dueDate!.isBefore(DateTime.now());
+}
+
 // Payment summary for dashboard display
 class PaymentSummary {
   final double totalAmount;

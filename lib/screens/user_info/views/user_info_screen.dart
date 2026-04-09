@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import '../../../constants.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/scale_button.dart';
@@ -39,8 +38,8 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
       final userInfo = await AuthService.getUserInfo();
       if (userInfo != null && mounted) {
         setState(() {
-          _firstNameController.text = userInfo.firstName ?? '';
-          _lastNameController.text = userInfo.lastName ?? '';
+          _firstNameController.text = userInfo.firstName;
+          _lastNameController.text = userInfo.lastName;
           _emailController.text = userInfo.email;
           _isLoading = false;
         });
@@ -61,20 +60,23 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
         return;
       }
 
-      final body = jsonEncode({
-        'firstName': _firstNameController.text.trim(),
-        'lastName': _lastNameController.text.trim(),
-        'phone': _phoneController.text.trim(),
-        'whatsapp': _whatsappController.text.trim(),
-      });
-
-      final response = await http
-          .put(
-            Uri.parse('${ApiConfig.baseUrl}/auth/profile'),
-            headers: ApiConfig.getAuthHeaders(token),
-            body: body,
-          )
-          .timeout(ApiConfig.receiveTimeout);
+      final dio = Dio(BaseOptions(
+        connectTimeout: ApiConfig.connectionTimeout,
+        receiveTimeout: ApiConfig.receiveTimeout,
+      ));
+      final response = await dio.put(
+        '${ApiConfig.baseUrl}/auth/profile',
+        data: {
+          'firstName': _firstNameController.text.trim(),
+          'lastName': _lastNameController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'whatsapp': _whatsappController.text.trim(),
+        },
+        options: Options(
+          headers: ApiConfig.getAuthHeaders(token),
+          validateStatus: (_) => true,
+        ),
+      );
 
       if (response.statusCode == 200) {
         if (mounted) {

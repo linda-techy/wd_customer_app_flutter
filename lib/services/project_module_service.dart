@@ -1,34 +1,36 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import '../models/project_module_models.dart';
 
 class ProjectModuleService {
   final String baseUrl;
   final String? token;
 
+  late final Dio _dio;
+
   ProjectModuleService({
     required this.baseUrl,
     this.token,
-  });
-
-  Map<String, String> get headers => {
-        'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      };
+  }) {
+    _dio = Dio(BaseOptions(baseUrl: baseUrl));
+    if (token != null) {
+      _dio.options.headers['Authorization'] = 'Bearer $token';
+    }
+    _dio.options.headers['Content-Type'] = 'application/json';
+  }
 
   // ===== DOCUMENT METHODS =====
 
   Future<List<DocumentCategory>> getDocumentCategories(String projectId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/projects/$projectId/documents/categories'),
-      headers: headers,
+    final response = await _dio.get(
+      '/api/projects/$projectId/documents/categories',
     );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
-        (data) => (data as List).map((e) => DocumentCategory.fromJson(e)).toList(),
+        response.data,
+        (data) =>
+            (data as List).map((e) => DocumentCategory.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
     } else {
@@ -36,18 +38,23 @@ class ProjectModuleService {
     }
   }
 
-  Future<List<ProjectDocument>> getDocuments(String projectId, {int? categoryId}) async {
-    var uri = Uri.parse('$baseUrl/api/projects/$projectId/documents');
+  Future<List<ProjectDocument>> getDocuments(String projectId,
+      {int? categoryId}) async {
+    final queryParameters = <String, dynamic>{};
     if (categoryId != null) {
-      uri = uri.replace(queryParameters: {'categoryId': categoryId.toString()});
+      queryParameters['categoryId'] = categoryId.toString();
     }
 
-    final response = await http.get(uri, headers: headers);
+    final response = await _dio.get(
+      '/api/projects/$projectId/documents',
+      queryParameters: queryParameters.isNotEmpty ? queryParameters : null,
+    );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
-        (data) => (data as List).map((e) => ProjectDocument.fromJson(e)).toList(),
+        response.data,
+        (data) =>
+            (data as List).map((e) => ProjectDocument.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
     } else {
@@ -61,25 +68,21 @@ class ProjectModuleService {
     int categoryId, {
     String? description,
   }) async {
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('$baseUrl/api/projects/$projectId/documents'),
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(file.path,
+          filename: file.path.split('/').last),
+      'categoryId': categoryId.toString(),
+      if (description != null) 'description': description,
+    });
+
+    final response = await _dio.post(
+      '/api/projects/$projectId/documents',
+      data: formData,
     );
-
-    if (token != null) {
-      request.headers['Authorization'] = 'Bearer $token';
-    }
-
-    request.files.add(await http.MultipartFile.fromPath('file', file.path));
-    request.fields['categoryId'] = categoryId.toString();
-    if (description != null) request.fields['description'] = description;
-
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
+        response.data,
         (data) => ProjectDocument.fromJson(data),
       );
       return apiResponse.data!;
@@ -90,18 +93,23 @@ class ProjectModuleService {
 
   // ===== QUALITY CHECK METHODS =====
 
-  Future<List<QualityCheck>> getQualityChecks(String projectId, {String? status}) async {
-    var uri = Uri.parse('$baseUrl/api/projects/$projectId/quality-check');
+  Future<List<QualityCheck>> getQualityChecks(String projectId,
+      {String? status}) async {
+    final queryParameters = <String, dynamic>{};
     if (status != null) {
-      uri = uri.replace(queryParameters: {'status': status});
+      queryParameters['status'] = status;
     }
 
-    final response = await http.get(uri, headers: headers);
+    final response = await _dio.get(
+      '/api/projects/$projectId/quality-check',
+      queryParameters: queryParameters.isNotEmpty ? queryParameters : null,
+    );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
-        (data) => (data as List).map((e) => QualityCheck.fromJson(e)).toList(),
+        response.data,
+        (data) =>
+            (data as List).map((e) => QualityCheck.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
     } else {
@@ -117,21 +125,20 @@ class ProjectModuleService {
     String? sopReference,
     int? assignedToId,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/api/projects/$projectId/quality-check'),
-      headers: headers,
-      body: json.encode({
+    final response = await _dio.post(
+      '/api/projects/$projectId/quality-check',
+      data: {
         'title': title,
         'description': description,
         'priority': priority,
         'sopReference': sopReference,
         'assignedToId': assignedToId,
-      }),
+      },
     );
 
     if (response.statusCode == 201) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
+        response.data,
         (data) => QualityCheck.fromJson(data),
       );
       return apiResponse.data!;
@@ -145,15 +152,14 @@ class ProjectModuleService {
     int qcId,
     String resolutionNotes,
   ) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/api/projects/$projectId/quality-check/$qcId'),
-      headers: headers,
-      body: json.encode({'resolutionNotes': resolutionNotes}),
+    final response = await _dio.put(
+      '/api/projects/$projectId/quality-check/$qcId',
+      data: {'resolutionNotes': resolutionNotes},
     );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
+        response.data,
         (data) => QualityCheck.fromJson(data),
       );
       return apiResponse.data!;
@@ -165,15 +171,15 @@ class ProjectModuleService {
   // ===== ACTIVITY FEED METHODS =====
 
   Future<List<ActivityFeed>> getActivities(String projectId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/projects/$projectId/activities'),
-      headers: headers,
+    final response = await _dio.get(
+      '/api/projects/$projectId/activities',
     );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
-        (data) => (data as List).map((e) => ActivityFeed.fromJson(e)).toList(),
+        response.data,
+        (data) =>
+            (data as List).map((e) => ActivityFeed.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
     } else {
@@ -182,18 +188,24 @@ class ProjectModuleService {
   }
 
   /// Get combined activity feed with site reports and queries
-  Future<List<CombinedActivityItem>> getCombinedActivities(String projectId, {String? type}) async {
-    var uri = Uri.parse('$baseUrl/api/projects/$projectId/activities/combined');
+  Future<List<CombinedActivityItem>> getCombinedActivities(String projectId,
+      {String? type}) async {
+    final queryParameters = <String, dynamic>{};
     if (type != null) {
-      uri = uri.replace(queryParameters: {'type': type});
+      queryParameters['type'] = type;
     }
 
-    final response = await http.get(uri, headers: headers);
+    final response = await _dio.get(
+      '/api/projects/$projectId/activities/combined',
+      queryParameters: queryParameters.isNotEmpty ? queryParameters : null,
+    );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
-        (data) => (data as List).map((e) => CombinedActivityItem.fromJson(e)).toList(),
+        response.data,
+        (data) => (data as List)
+            .map((e) => CombinedActivityItem.fromJson(e))
+            .toList(),
       );
       return apiResponse.data ?? [];
     } else {
@@ -202,20 +214,22 @@ class ProjectModuleService {
   }
 
   /// Get combined activities grouped by date
-  Future<Map<DateTime, List<CombinedActivityItem>>> getCombinedActivitiesGrouped(String projectId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/projects/$projectId/activities/combined/grouped'),
-      headers: headers,
+  Future<Map<DateTime, List<CombinedActivityItem>>>
+      getCombinedActivitiesGrouped(String projectId) async {
+    final response = await _dio.get(
+      '/api/projects/$projectId/activities/combined/grouped',
     );
 
     if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
+      final jsonData = response.data;
       if (jsonData['success'] == true && jsonData['data'] != null) {
         final Map<String, dynamic> data = jsonData['data'];
         return data.map((key, value) {
           return MapEntry(
             DateTime.parse(key),
-            (value as List).map((e) => CombinedActivityItem.fromJson(e)).toList(),
+            (value as List)
+                .map((e) => CombinedActivityItem.fromJson(e))
+                .toList(),
           );
         });
       }
@@ -227,18 +241,23 @@ class ProjectModuleService {
 
   // ===== GALLERY METHODS =====
 
-  Future<List<GalleryImage>> getGalleryImages(String projectId, {DateTime? date}) async {
-    var uri = Uri.parse('$baseUrl/api/projects/$projectId/gallery');
+  Future<List<GalleryImage>> getGalleryImages(String projectId,
+      {DateTime? date}) async {
+    final queryParameters = <String, dynamic>{};
     if (date != null) {
-      uri = uri.replace(queryParameters: {'date': date.toIso8601String().split('T')[0]});
+      queryParameters['date'] = date.toIso8601String().split('T')[0];
     }
 
-    final response = await http.get(uri, headers: headers);
+    final response = await _dio.get(
+      '/api/projects/$projectId/gallery',
+      queryParameters: queryParameters.isNotEmpty ? queryParameters : null,
+    );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
-        (data) => (data as List).map((e) => GalleryImage.fromJson(e)).toList(),
+        response.data,
+        (data) =>
+            (data as List).map((e) => GalleryImage.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
     } else {
@@ -247,14 +266,14 @@ class ProjectModuleService {
   }
 
   /// Get gallery images grouped by date
-  Future<Map<DateTime, List<GalleryImage>>> getGalleryImagesGrouped(String projectId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/projects/$projectId/gallery/grouped'),
-      headers: headers,
+  Future<Map<DateTime, List<GalleryImage>>> getGalleryImagesGrouped(
+      String projectId) async {
+    final response = await _dio.get(
+      '/api/projects/$projectId/gallery/grouped',
     );
 
     if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
+      final jsonData = response.data;
       if (jsonData['success'] == true && jsonData['data'] != null) {
         final Map<String, dynamic> data = jsonData['data'];
         return data.map((key, value) {
@@ -279,32 +298,35 @@ class ProjectModuleService {
     String? locationTag,
     List<String>? tags,
   }) async {
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('$baseUrl/api/projects/$projectId/gallery'),
+    final fields = <String, dynamic>{
+      'file': await MultipartFile.fromFile(file.path,
+          filename: file.path.split('/').last),
+      if (caption != null) 'caption': caption,
+      if (takenDate != null)
+        'takenDate': takenDate.toIso8601String().split('T')[0],
+      if (siteReportId != null) 'siteReportId': siteReportId.toString(),
+      if (locationTag != null) 'locationTag': locationTag,
+    };
+
+    // Dio FormData handles repeated keys via MultiValue — for tags we use
+    // a plain comma-separated string or repeated fields. The original code
+    // overwrote the single 'tags' field on each iteration, so we replicate
+    // that behaviour: only the last tag would have been sent. Keep identical
+    // semantics by passing tags as a list entry if provided.
+    if (tags != null && tags.isNotEmpty) {
+      fields['tags'] = tags.last;
+    }
+
+    final formData = FormData.fromMap(fields);
+
+    final response = await _dio.post(
+      '/api/projects/$projectId/gallery',
+      data: formData,
     );
-
-    if (token != null) {
-      request.headers['Authorization'] = 'Bearer $token';
-    }
-
-    request.files.add(await http.MultipartFile.fromPath('file', file.path));
-    if (caption != null) request.fields['caption'] = caption;
-    if (takenDate != null) request.fields['takenDate'] = takenDate.toIso8601String().split('T')[0];
-    if (siteReportId != null) request.fields['siteReportId'] = siteReportId.toString();
-    if (locationTag != null) request.fields['locationTag'] = locationTag;
-    if (tags != null) {
-      for (var tag in tags) {
-        request.fields['tags'] = tag;
-      }
-    }
-
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 201) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
+        response.data,
         (data) => GalleryImage.fromJson(data),
       );
       return apiResponse.data!;
@@ -315,18 +337,23 @@ class ProjectModuleService {
 
   // ===== OBSERVATION (SNAGS) METHODS =====
 
-  Future<List<Observation>> getObservations(String projectId, {String? status}) async {
-    var uri = Uri.parse('$baseUrl/api/projects/$projectId/observations');
+  Future<List<Observation>> getObservations(String projectId,
+      {String? status}) async {
+    final queryParameters = <String, dynamic>{};
     if (status != null) {
-      uri = uri.replace(queryParameters: {'status': status});
+      queryParameters['status'] = status;
     }
 
-    final response = await http.get(uri, headers: headers);
+    final response = await _dio.get(
+      '/api/projects/$projectId/observations',
+      queryParameters: queryParameters.isNotEmpty ? queryParameters : null,
+    );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
-        (data) => (data as List).map((e) => Observation.fromJson(e)).toList(),
+        response.data,
+        (data) =>
+            (data as List).map((e) => Observation.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
     } else {
@@ -336,15 +363,15 @@ class ProjectModuleService {
 
   /// Get active (OPEN, IN_PROGRESS) observations/snags
   Future<List<Observation>> getActiveObservations(String projectId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/projects/$projectId/observations/active'),
-      headers: headers,
+    final response = await _dio.get(
+      '/api/projects/$projectId/observations/active',
     );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
-        (data) => (data as List).map((e) => Observation.fromJson(e)).toList(),
+        response.data,
+        (data) =>
+            (data as List).map((e) => Observation.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
     } else {
@@ -354,15 +381,15 @@ class ProjectModuleService {
 
   /// Get resolved observations/snags
   Future<List<Observation>> getResolvedObservations(String projectId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/projects/$projectId/observations/resolved'),
-      headers: headers,
+    final response = await _dio.get(
+      '/api/projects/$projectId/observations/resolved',
     );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
-        (data) => (data as List).map((e) => Observation.fromJson(e)).toList(),
+        response.data,
+        (data) =>
+            (data as List).map((e) => Observation.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
     } else {
@@ -372,13 +399,12 @@ class ProjectModuleService {
 
   /// Get observation counts (active, resolved, total)
   Future<Map<String, int>> getObservationCounts(String projectId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/projects/$projectId/observations/counts'),
-      headers: headers,
+    final response = await _dio.get(
+      '/api/projects/$projectId/observations/counts',
     );
 
     if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
+      final jsonData = response.data;
       if (jsonData['success'] == true && jsonData['data'] != null) {
         return Map<String, int>.from(jsonData['data']);
       }
@@ -397,30 +423,28 @@ class ProjectModuleService {
     int? reportedByRoleId,
     String? location,
   }) async {
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('$baseUrl/api/projects/$projectId/observations'),
+    final fields = <String, dynamic>{
+      'title': title,
+      'description': description,
+      'priority': priority,
+      if (reportedByRoleId != null)
+        'reportedByRoleId': reportedByRoleId.toString(),
+      if (location != null) 'location': location,
+      if (image != null)
+        'image': await MultipartFile.fromFile(image.path,
+            filename: image.path.split('/').last),
+    };
+
+    final formData = FormData.fromMap(fields);
+
+    final response = await _dio.post(
+      '/api/projects/$projectId/observations',
+      data: formData,
     );
-
-    if (token != null) {
-      request.headers['Authorization'] = 'Bearer $token';
-    }
-
-    request.fields['title'] = title;
-    request.fields['description'] = description;
-    request.fields['priority'] = priority;
-    if (reportedByRoleId != null) request.fields['reportedByRoleId'] = reportedByRoleId.toString();
-    if (location != null) request.fields['location'] = location;
-    if (image != null) {
-      request.files.add(await http.MultipartFile.fromPath('image', image.path));
-    }
-
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 201) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
+        response.data,
         (data) => Observation.fromJson(data),
       );
       return apiResponse.data!;
@@ -434,15 +458,14 @@ class ProjectModuleService {
     int obsId,
     String resolutionNotes,
   ) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/api/projects/$projectId/observations/$obsId'),
-      headers: headers,
-      body: json.encode({'resolutionNotes': resolutionNotes}),
+    final response = await _dio.put(
+      '/api/projects/$projectId/observations/$obsId',
+      data: {'resolutionNotes': resolutionNotes},
     );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
+        response.data,
         (data) => Observation.fromJson(data),
       );
       return apiResponse.data!;
@@ -453,18 +476,23 @@ class ProjectModuleService {
 
   // ===== QUERY METHODS =====
 
-  Future<List<ProjectQuery>> getQueries(String projectId, {String? status}) async {
-    var uri = Uri.parse('$baseUrl/api/projects/$projectId/queries');
+  Future<List<ProjectQuery>> getQueries(String projectId,
+      {String? status}) async {
+    final queryParameters = <String, dynamic>{};
     if (status != null) {
-      uri = uri.replace(queryParameters: {'status': status});
+      queryParameters['status'] = status;
     }
 
-    final response = await http.get(uri, headers: headers);
+    final response = await _dio.get(
+      '/api/projects/$projectId/queries',
+      queryParameters: queryParameters.isNotEmpty ? queryParameters : null,
+    );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
-        (data) => (data as List).map((e) => ProjectQuery.fromJson(e)).toList(),
+        response.data,
+        (data) =>
+            (data as List).map((e) => ProjectQuery.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
     } else {
@@ -481,22 +509,21 @@ class ProjectModuleService {
     int? raisedByRoleId,
     int? assignedToId,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/api/projects/$projectId/queries'),
-      headers: headers,
-      body: json.encode({
+    final response = await _dio.post(
+      '/api/projects/$projectId/queries',
+      data: {
         'title': title,
         'description': description,
         'priority': priority,
         'category': category,
         'raisedByRoleId': raisedByRoleId,
         'assignedToId': assignedToId,
-      }),
+      },
     );
 
     if (response.statusCode == 201) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
+        response.data,
         (data) => ProjectQuery.fromJson(data),
       );
       return apiResponse.data!;
@@ -510,15 +537,14 @@ class ProjectModuleService {
     int queryId,
     String resolution,
   ) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/api/projects/$projectId/queries/$queryId'),
-      headers: headers,
-      body: json.encode({'resolution': resolution}),
+    final response = await _dio.put(
+      '/api/projects/$projectId/queries/$queryId',
+      data: {'resolution': resolution},
     );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
+        response.data,
         (data) => ProjectQuery.fromJson(data),
       );
       return apiResponse.data!;
@@ -529,18 +555,23 @@ class ProjectModuleService {
 
   // ===== CCTV METHODS =====
 
-  Future<List<CctvCamera>> getCameras(String projectId, {bool installedOnly = false}) async {
-    var uri = Uri.parse('$baseUrl/api/projects/$projectId/cctv');
+  Future<List<CctvCamera>> getCameras(String projectId,
+      {bool installedOnly = false}) async {
+    final queryParameters = <String, dynamic>{};
     if (installedOnly) {
-      uri = uri.replace(queryParameters: {'installedOnly': 'true'});
+      queryParameters['installedOnly'] = 'true';
     }
 
-    final response = await http.get(uri, headers: headers);
+    final response = await _dio.get(
+      '/api/projects/$projectId/cctv',
+      queryParameters: queryParameters.isNotEmpty ? queryParameters : null,
+    );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
-        (data) => (data as List).map((e) => CctvCamera.fromJson(e)).toList(),
+        response.data,
+        (data) =>
+            (data as List).map((e) => CctvCamera.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
     } else {
@@ -551,14 +582,13 @@ class ProjectModuleService {
   // ===== 360 VIEW METHODS =====
 
   Future<List<View360>> get360Views(String projectId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/projects/$projectId/360-views'),
-      headers: headers,
+    final response = await _dio.get(
+      '/api/projects/$projectId/360-views',
     );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
+        response.data,
         (data) => (data as List).map((e) => View360.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
@@ -568,14 +598,13 @@ class ProjectModuleService {
   }
 
   Future<View360> increment360ViewCount(String projectId, int viewId) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/api/projects/$projectId/360-views/$viewId/increment-count'),
-      headers: headers,
+    final response = await _dio.post(
+      '/api/projects/$projectId/360-views/$viewId/increment-count',
     );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
+        response.data,
         (data) => View360.fromJson(data),
       );
       return apiResponse.data!;
@@ -587,15 +616,15 @@ class ProjectModuleService {
   // ===== SITE VISIT METHODS =====
 
   Future<List<SiteVisit>> getSiteVisits(String projectId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/projects/$projectId/site-visits'),
-      headers: headers,
+    final response = await _dio.get(
+      '/api/projects/$projectId/site-visits',
     );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
-        (data) => (data as List).map((e) => SiteVisit.fromJson(e)).toList(),
+        response.data,
+        (data) =>
+            (data as List).map((e) => SiteVisit.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
     } else {
@@ -605,15 +634,15 @@ class ProjectModuleService {
 
   /// Get completed site visits (with checkout time)
   Future<List<SiteVisit>> getCompletedSiteVisits(String projectId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/projects/$projectId/site-visits/completed'),
-      headers: headers,
+    final response = await _dio.get(
+      '/api/projects/$projectId/site-visits/completed',
     );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
-        (data) => (data as List).map((e) => SiteVisit.fromJson(e)).toList(),
+        response.data,
+        (data) =>
+            (data as List).map((e) => SiteVisit.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
     } else {
@@ -623,15 +652,15 @@ class ProjectModuleService {
 
   /// Get ongoing site visits (without checkout time)
   Future<List<SiteVisit>> getOngoingSiteVisits(String projectId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/projects/$projectId/site-visits/ongoing'),
-      headers: headers,
+    final response = await _dio.get(
+      '/api/projects/$projectId/site-visits/ongoing',
     );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
-        (data) => (data as List).map((e) => SiteVisit.fromJson(e)).toList(),
+        response.data,
+        (data) =>
+            (data as List).map((e) => SiteVisit.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
     } else {
@@ -649,10 +678,9 @@ class ProjectModuleService {
     required double latitude,
     required double longitude,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/api/projects/$projectId/site-visits/check-in'),
-      headers: headers,
-      body: json.encode({
+    final response = await _dio.post(
+      '/api/projects/$projectId/site-visits/check-in',
+      data: {
         'purpose': purpose,
         'location': location,
         'weatherConditions': weatherConditions,
@@ -660,17 +688,17 @@ class ProjectModuleService {
         'attendees': attendees,
         'latitude': latitude,
         'longitude': longitude,
-      }),
+      },
     );
 
     if (response.statusCode == 201) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
+        response.data,
         (data) => SiteVisit.fromJson(data),
       );
       return apiResponse.data!;
     } else {
-      final body = json.decode(response.body);
+      final body = response.data;
       throw Exception(body['message'] ?? 'Failed to check in');
     }
   }
@@ -683,25 +711,24 @@ class ProjectModuleService {
     required double latitude,
     required double longitude,
   }) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/api/projects/$projectId/site-visits/$visitId/check-out'),
-      headers: headers,
-      body: json.encode({
+    final response = await _dio.put(
+      '/api/projects/$projectId/site-visits/$visitId/check-out',
+      data: {
         'notes': notes,
         'findings': findings,
         'latitude': latitude,
         'longitude': longitude,
-      }),
+      },
     );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
+        response.data,
         (data) => SiteVisit.fromJson(data),
       );
       return apiResponse.data!;
     } else {
-      final body = json.decode(response.body);
+      final body = response.data;
       throw Exception(body['message'] ?? 'Failed to check out');
     }
   }
@@ -709,15 +736,15 @@ class ProjectModuleService {
   // ===== FEEDBACK METHODS =====
 
   Future<List<FeedbackForm>> getFeedbackForms(String projectId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/projects/$projectId/feedback'),
-      headers: headers,
+    final response = await _dio.get(
+      '/api/projects/$projectId/feedback',
     );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
-        (data) => (data as List).map((e) => FeedbackForm.fromJson(e)).toList(),
+        response.data,
+        (data) =>
+            (data as List).map((e) => FeedbackForm.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
     } else {
@@ -732,19 +759,18 @@ class ProjectModuleService {
     String? comments,
     Map<String, dynamic>? responseData,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/api/projects/$projectId/feedback/$formId/responses'),
-      headers: headers,
-      body: json.encode({
+    final response = await _dio.post(
+      '/api/projects/$projectId/feedback/$formId/responses',
+      data: {
         'rating': rating,
         'comments': comments,
         'responseData': responseData,
-      }),
+      },
     );
 
     if (response.statusCode == 201) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
+        response.data,
         (data) => FeedbackForm.fromJson(data),
       );
       return apiResponse.data!;
@@ -755,17 +781,21 @@ class ProjectModuleService {
 
   // ===== BOQ METHODS =====
 
-  Future<List<BoqItem>> getBoqItems(String projectId, {int? workTypeId}) async {
-    var uri = Uri.parse('$baseUrl/api/projects/$projectId/boq');
+  Future<List<BoqItem>> getBoqItems(String projectId,
+      {int? workTypeId}) async {
+    final queryParameters = <String, dynamic>{};
     if (workTypeId != null) {
-      uri = uri.replace(queryParameters: {'workTypeId': workTypeId.toString()});
+      queryParameters['workTypeId'] = workTypeId.toString();
     }
 
-    final response = await http.get(uri, headers: headers);
+    final response = await _dio.get(
+      '/api/projects/$projectId/boq',
+      queryParameters: queryParameters.isNotEmpty ? queryParameters : null,
+    );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
+        response.data,
         (data) => (data as List).map((e) => BoqItem.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
@@ -775,15 +805,15 @@ class ProjectModuleService {
   }
 
   Future<List<BoqWorkType>> getBoqWorkTypes(String projectId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/projects/$projectId/boq/work-types'),
-      headers: headers,
+    final response = await _dio.get(
+      '/api/projects/$projectId/boq/work-types',
     );
 
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse.fromJson(
-        json.decode(response.body),
-        (data) => (data as List).map((e) => BoqWorkType.fromJson(e)).toList(),
+        response.data,
+        (data) =>
+            (data as List).map((e) => BoqWorkType.fromJson(e)).toList(),
       );
       return apiResponse.data ?? [];
     } else {
@@ -791,4 +821,3 @@ class ProjectModuleService {
     }
   }
 }
-

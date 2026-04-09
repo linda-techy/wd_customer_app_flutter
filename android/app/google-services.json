@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1065755678555",
+    "project_id": "walldot-customer-ccde3",
+    "storage_bucket": "walldot-customer-ccde3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1065755678555:android:41faca0b2377c7f8c52c7e",
+        "android_client_info": {
+          "package_name": "com.example.wd_cust_mobile_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPSD9lEXdHfX8eKDB4aCO6NmvY9NziQe4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
