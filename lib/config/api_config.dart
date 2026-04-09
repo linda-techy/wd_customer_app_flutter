@@ -11,7 +11,7 @@ class ApiConfig {
   static const String _prodApiUrl = 'https://cust-api.walldotbuilders.com';
 
   // Portal API (public endpoints — no auth required for lead/referral submission)
-  static const String _devPortalApiUrl = 'http://localhost:8081';
+  static const String _devPortalApiUrl = 'http://localhost:8080';
   static const String _prodPortalApiUrl = 'https://api.walldotbuilders.com';
 
   static String get portalApiBaseUrl {
