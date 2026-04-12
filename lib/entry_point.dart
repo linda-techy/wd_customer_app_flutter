@@ -160,14 +160,15 @@ class _EntryPointState extends State<EntryPoint> {
                           isDark: isDark,
                         ),
 
-                        _buildSidebarItem(
-                          context,
-                          icon: Icons.notifications_outlined,
-                          activeIcon: Icons.notifications,
-                          label: "Notifications",
-                          index: 1,
-                          isDark: isDark,
-                        ),
+                        if (_isLoggedIn)
+                          _buildSidebarItem(
+                            context,
+                            icon: Icons.notifications_outlined,
+                            activeIcon: Icons.notifications,
+                            label: "Notifications",
+                            index: 1,
+                            isDark: isDark,
+                          ),
                         _buildSidebarItem(
                           context,
                           icon: Icons.article_outlined,
@@ -227,36 +228,38 @@ class _EntryPointState extends State<EntryPoint> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-
-                        const SizedBox(width: 12),
-                        Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              setState(() {
-                                _currentIndex = 1; // Notifications index
-                              });
-                            },
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: _currentIndex == 1
-                                    ? logoRed
-                                    : logoRed.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(
-                                _currentIndex == 1
-                                    ? Icons.notifications
-                                    : Icons.notifications_outlined,
-                                color:
-                                    _currentIndex == 1 ? Colors.white : logoRed,
-                                size: 24,
+                        if (_isLoggedIn) ...[
+                          const SizedBox(width: 12),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _currentIndex = 1; // Notifications index
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: _currentIndex == 1
+                                      ? logoRed
+                                      : logoRed.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  _currentIndex == 1
+                                      ? Icons.notifications
+                                      : Icons.notifications_outlined,
+                                  color: _currentIndex == 1
+                                      ? Colors.white
+                                      : logoRed,
+                                  size: 24,
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
@@ -310,36 +313,37 @@ class _EntryPointState extends State<EntryPoint> {
           ],
         ),
         actions: [
-
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  setState(() {
-                    _currentIndex = 1; // Notifications index
-                  });
-                },
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color:
-                        _currentIndex == 1 ? logoRed : logoRed.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    _currentIndex == 1
-                        ? Icons.notifications
-                        : Icons.notifications_outlined,
-                    color: _currentIndex == 1 ? Colors.white : logoRed,
-                    size: 24,
+          if (_isLoggedIn)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      _currentIndex = 1; // Notifications index
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: _currentIndex == 1
+                          ? logoRed
+                          : logoRed.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      _currentIndex == 1
+                          ? Icons.notifications
+                          : Icons.notifications_outlined,
+                      color: _currentIndex == 1 ? Colors.white : logoRed,
+                      size: 24,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
         ],
       ),
       body: PageTransitionSwitcher(

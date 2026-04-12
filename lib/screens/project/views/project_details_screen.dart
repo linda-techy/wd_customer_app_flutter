@@ -17,6 +17,8 @@ import 'activity_feed_screen.dart';
 import 'snags_screen.dart';
 import 'site_visits_screen.dart';
 import 'boq_screen.dart';
+import 'payment_schedule_screen.dart';
+import 'co_review_screen.dart';
 import 'quality_check_screen.dart';
 import 'view_360_screen.dart';
 import 'feedback_dialog.dart';
@@ -771,6 +773,14 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
             nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId, projectUuid: projectUuid.isNotEmpty ? projectUuid : null)));
           }));
+        if (_canSeePayments())
+          list.add(_ActionItem('Payment Schedule', Icons.calendar_month_outlined, Colors.teal, () {
+            nav.push(MaterialPageRoute(builder: (_) => PaymentScheduleScreen(projectId: projectUuid)));
+          }));
+        if (_canSeeBOQ())
+          list.add(_ActionItem('Change Orders', Icons.edit_note_outlined, Colors.deepOrange, () {
+            nav.push(MaterialPageRoute(builder: (_) => CoReviewScreen(projectId: projectUuid)));
+          }));
         if (_canSeeCCTV())
           list.add(_ActionItem('CCTV', Icons.videocam_outlined, Colors.grey, () => nav.pushNamed(projectUuid.isNotEmpty ? projectCctvRoute(projectUuid) : cctvSurveillanceScreenRoute)));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
@@ -805,6 +815,14 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
             nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId, projectUuid: projectUuid.isNotEmpty ? projectUuid : null)));
           }));
+        if (_canSeePayments())
+          list.add(_ActionItem('Payment Schedule', Icons.calendar_month_outlined, Colors.teal, () {
+            nav.push(MaterialPageRoute(builder: (_) => PaymentScheduleScreen(projectId: projectUuid)));
+          }));
+        if (_canSeeBOQ())
+          list.add(_ActionItem('Change Orders', Icons.edit_note_outlined, Colors.deepOrange, () {
+            nav.push(MaterialPageRoute(builder: (_) => CoReviewScreen(projectId: projectUuid)));
+          }));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
           showFeedbackDialog(context: context, projectId: projectUuid);
         }));
@@ -820,6 +838,10 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         if (_canSeePayments())
           list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
             nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId, projectUuid: projectUuid.isNotEmpty ? projectUuid : null)));
+          }));
+        if (_canSeePayments())
+          list.add(_ActionItem('Payment Schedule', Icons.calendar_month_outlined, Colors.teal, () {
+            nav.push(MaterialPageRoute(builder: (_) => PaymentScheduleScreen(projectId: projectUuid)));
           }));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
           showFeedbackDialog(context: context, projectId: projectUuid);

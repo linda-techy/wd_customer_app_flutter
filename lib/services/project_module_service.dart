@@ -820,4 +820,40 @@ class ProjectModuleService {
       throw Exception('Failed to load work types');
     }
   }
+
+  /// Returns aggregated BOQ financial summary from the backend.
+  /// Only available for CUSTOMER / CUSTOMER_ADMIN / ADMIN roles (others get 403).
+  Future<BoqSummary> getBoqSummary(String projectId) async {
+    final response = await _dio.get('/api/projects/$projectId/boq/summary');
+    if (response.statusCode == 200 && response.data['success'] == true) {
+      return BoqSummary.fromJson(response.data['data'] as Map<String, dynamic>);
+    }
+    throw Exception('Failed to load BOQ summary');
+  }
+
+  /// Returns the latest customer BOQ approval status for this project.
+  /// Possible status values: 'PENDING', 'APPROVED', 'CHANGE_REQUESTED'
+  Future<Map<String, String>> getBoqApprovalStatus(String projectId) async {
+    final response = await _dio.get('/api/projects/$projectId/boq/approval');
+    if (response.statusCode == 200) {
+      final data = response.data['data'] as Map<String, dynamic>? ?? {};
+      return data.map((k, v) => MapEntry(k, v?.toString() ?? ''));
+    }
+    throw Exception('Failed to fetch BOQ approval status');
+  }
+
+  /// Submits a customer BOQ approval or change request.
+  /// [status] must be 'APPROVED' or 'CHANGE_REQUESTED'.
+  Future<void> submitBoqApproval(String projectId,
+      {required String status, String? message}) async {
+    final body = <String, String>{'status': status};
+    if (message != null && message.isNotEmpty) body['message'] = message;
+    final response = await _dio.post(
+      '/api/projects/$projectId/boq/approval',
+      data: body,
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to submit BOQ response');
+    }
+  }
 }

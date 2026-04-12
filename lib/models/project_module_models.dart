@@ -619,12 +619,22 @@ class BoqItem {
   final int projectId;
   final int workTypeId;
   final String workTypeName;
+  final int? categoryId;
+  final String? categoryName;
   final String? itemCode;
   final String description;
   final double quantity;
   final String unit;
   final double rate;
   final double amount;
+  final String? status;
+  final double executedQuantity;
+  final double billedQuantity;
+  final double remainingQuantity;
+  final double totalExecutedAmount;
+  final double totalBilledAmount;
+  final double executionPercentage;
+  final double billingPercentage;
   final String? specifications;
   final String? notes;
   final DateTime createdAt;
@@ -632,18 +642,30 @@ class BoqItem {
   final int createdById;
   final String createdByName;
   final bool isActive;
+  // BASE | ADDON | OPTIONAL | EXCLUSION
+  final String itemKind;
 
   BoqItem({
     required this.id,
     required this.projectId,
     required this.workTypeId,
     required this.workTypeName,
+    this.categoryId,
+    this.categoryName,
     this.itemCode,
     required this.description,
     required this.quantity,
     required this.unit,
     required this.rate,
     required this.amount,
+    this.status,
+    required this.executedQuantity,
+    required this.billedQuantity,
+    required this.remainingQuantity,
+    required this.totalExecutedAmount,
+    required this.totalBilledAmount,
+    required this.executionPercentage,
+    required this.billingPercentage,
     this.specifications,
     this.notes,
     required this.createdAt,
@@ -651,27 +673,114 @@ class BoqItem {
     required this.createdById,
     required this.createdByName,
     required this.isActive,
+    this.itemKind = 'BASE',
   });
 
+  bool get isAddon => itemKind == 'ADDON' || itemKind == 'OPTIONAL';
+  bool get isExclusion => itemKind == 'EXCLUSION';
+
   factory BoqItem.fromJson(Map<String, dynamic> json) {
+    double toDouble(dynamic v) => v == null ? 0.0 : (v as num).toDouble();
     return BoqItem(
       id: json['id'],
       projectId: json['projectId'],
       workTypeId: json['workTypeId'],
-      workTypeName: json['workTypeName'],
+      workTypeName: json['workTypeName'] ?? '',
+      categoryId: json['categoryId'],
+      categoryName: json['categoryName'],
       itemCode: json['itemCode'],
-      description: json['description'],
-      quantity: (json['quantity'] as num).toDouble(),
-      unit: json['unit'],
-      rate: (json['rate'] as num).toDouble(),
-      amount: (json['amount'] as num).toDouble(),
+      description: json['description'] ?? '',
+      quantity: toDouble(json['quantity']),
+      unit: json['unit'] ?? '',
+      rate: toDouble(json['rate']),
+      amount: toDouble(json['amount'] ?? json['totalAmount']),
+      status: json['status'],
+      executedQuantity: toDouble(json['executedQuantity']),
+      billedQuantity: toDouble(json['billedQuantity']),
+      remainingQuantity: toDouble(json['remainingQuantity']),
+      totalExecutedAmount: toDouble(json['totalExecutedAmount']),
+      totalBilledAmount: toDouble(json['totalBilledAmount']),
+      executionPercentage: toDouble(json['executionPercentage']),
+      billingPercentage: toDouble(json['billingPercentage']),
       specifications: json['specifications'],
       notes: json['notes'],
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
       createdById: json['createdById'],
-      createdByName: json['createdByName'],
+      createdByName: json['createdByName'] ?? '',
       isActive: json['isActive'] ?? true,
+      itemKind: json['itemKind'] ?? 'BASE',
+    );
+  }
+}
+
+class BoqWorkTypeSummary {
+  final int workTypeId;
+  final String workTypeName;
+  final double subtotal;
+  final int itemCount;
+
+  BoqWorkTypeSummary({
+    required this.workTypeId,
+    required this.workTypeName,
+    required this.subtotal,
+    required this.itemCount,
+  });
+
+  factory BoqWorkTypeSummary.fromJson(Map<String, dynamic> json) {
+    double toDouble(dynamic v) => v == null ? 0.0 : (v as num).toDouble();
+    return BoqWorkTypeSummary(
+      workTypeId: json['workTypeId'] ?? 0,
+      workTypeName: json['workTypeName'] ?? '',
+      subtotal: toDouble(json['subtotal']),
+      itemCount: json['itemCount'] ?? 0,
+    );
+  }
+}
+
+class BoqSummary {
+  final int projectId;
+  final double totalPlannedAmount;
+  final double totalExecutedAmount;
+  final double totalBilledAmount;
+  final double executionPercentage;
+  final double billingPercentage;
+  final int totalItems;
+  final List<BoqWorkTypeSummary> workTypeSummaries;
+  final double baseScopeAmount;
+  final double addonAmount;
+
+  BoqSummary({
+    required this.projectId,
+    required this.totalPlannedAmount,
+    required this.totalExecutedAmount,
+    required this.totalBilledAmount,
+    required this.executionPercentage,
+    required this.billingPercentage,
+    required this.totalItems,
+    required this.workTypeSummaries,
+    this.baseScopeAmount = 0.0,
+    this.addonAmount = 0.0,
+  });
+
+  double get costToComplete => totalPlannedAmount - totalExecutedAmount;
+  bool get hasAddons => addonAmount > 0;
+
+  factory BoqSummary.fromJson(Map<String, dynamic> json) {
+    double toDouble(dynamic v) => v == null ? 0.0 : (v as num).toDouble();
+    return BoqSummary(
+      projectId: json['projectId'] ?? 0,
+      totalPlannedAmount: toDouble(json['totalPlannedAmount']),
+      totalExecutedAmount: toDouble(json['totalExecutedAmount']),
+      totalBilledAmount: toDouble(json['totalBilledAmount']),
+      executionPercentage: toDouble(json['executionPercentage']),
+      billingPercentage: toDouble(json['billingPercentage']),
+      totalItems: json['totalItems'] ?? 0,
+      workTypeSummaries: (json['workTypeSummaries'] as List? ?? [])
+          .map((e) => BoqWorkTypeSummary.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      baseScopeAmount: toDouble(json['baseScopeAmount']),
+      addonAmount: toDouble(json['addonAmount']),
     );
   }
 }
