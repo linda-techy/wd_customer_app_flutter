@@ -17,7 +17,6 @@ dependencies:
   form_field_validator: ^1.1.0
   cached_network_image: ^3.2.0
   flutter_rating_bar: ^4.0.1
-  flutter_widget_from_html_core: ^0.15.1
   animations: ^2.0.11
   url_launcher: ^6.3.0
   shared_preferences: ^2.2.2
@@ -28,7 +27,6 @@ dependencies:
   share_plus: ^10.0.2  # For sharing files
   flutter_inappwebview: ^6.0.0  # For viewing Office documents (Excel, Word, PowerPoint)
   open_filex: ^4.4.0  # For opening files with external apps
-  permission_handler: ^11.0.1  # For handling file permissions
   mime: ^1.0.4  # For detecting file MIME types
   flutter_animate: ^4.5.2
   flutter_dotenv: ^6.0.0
@@ -69,13 +67,8 @@ flutter:
     - assets/env/.env.production
     - assets/images/
     - assets/icons/
-    - assets/Illustration/
-    - assets/flags/
     - assets/logo/
-    - assets/screens/
     - assets/construction/
-    - assets/onboarding/
-    - assets/portfolio/
 
   fonts:
     - family: Plus Jakarta
