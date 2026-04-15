@@ -208,6 +208,52 @@ class CustomerBoqService {
         res.data['changeOrder'] as Map<String, dynamic>);
   }
 
+  Future<Map<String, dynamic>?> getFinancialStages(String projectUuid) async {
+    try {
+      final res =
+          await _dio.get('/api/projects/$projectUuid/financial/stages');
+      return res.data as Map<String, dynamic>?;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getFinancialVOs(String projectUuid) async {
+    try {
+      final res = await _dio
+          .get('/api/projects/$projectUuid/financial/variation-orders');
+      return res.data as Map<String, dynamic>?;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getFinancialDeductions(
+      String projectUuid) async {
+    try {
+      final res =
+          await _dio.get('/api/projects/$projectUuid/financial/deductions');
+      return res.data as Map<String, dynamic>?;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getFinancialFinalAccount(
+      String projectUuid) async {
+    try {
+      final res =
+          await _dio.get('/api/projects/$projectUuid/financial/final-account');
+      return res.data as Map<String, dynamic>?;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
   void _check(dynamic data, String fallback) {
     if (data is Map && data['success'] == false) {
       throw Exception(data['message'] ?? fallback);
