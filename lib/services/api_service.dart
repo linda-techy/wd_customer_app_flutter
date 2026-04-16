@@ -3,11 +3,15 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../config/api_config.dart';
 import '../models/api_models.dart';
+import 'auth_interceptor.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
-  ApiService._internal();
+
+  ApiService._internal() {
+    _dio.interceptors.add(AuthInterceptor(_dio));
+  }
 
   final Dio _dio = Dio(BaseOptions(
     connectTimeout: ApiConfig.connectionTimeout,
