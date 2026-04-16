@@ -127,7 +127,7 @@ class _ReferAFriendScreenState extends State<ReferAFriendScreen>
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 15),
       ));
-      final url = '${ApiConfig.portalApiBaseUrl}/leads/referral';
+      final url = '${ApiConfig.baseUrl}/api/leads/referral';
       final response = await dio.post(
         url,
         data: body,
