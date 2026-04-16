@@ -9,6 +9,7 @@ import 'route/router.dart' as router;
 import 'theme/app_theme.dart';
 import 'services/auth_service.dart';
 import 'providers/theme_provider.dart';
+import 'providers/lead_provider.dart';
 import 'services/notification_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -34,8 +35,11 @@ Future<void> main() async {
   }
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => LeadProvider()),
+      ],
       child: const MyApp(),
     ),
   );
