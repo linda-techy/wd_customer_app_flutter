@@ -69,6 +69,14 @@ String project360ViewsRoute(dynamic projectId) => 'project_360_views/$projectId'
 // Referral Routes
 const String referAFriendScreenRoute = "refer_a_friend";
 
+// Lead / Enquiry Routes
+const String myEnquiriesScreenRoute = "my_enquiries";
+const String leadDetailScreenRoute = "lead_detail";
+const String newEnquiryScreenRoute = "new_enquiry";
+
+// Helper: build lead detail route with ID
+String leadDetailRoute(int id) => 'lead_detail/$id';
+
 // Dashboard Routes
 const String customerDashboardScreenRoute = "customer_dashboard";
 

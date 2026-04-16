@@ -27,6 +27,11 @@ export '/screens/profile/views/profile_screen.dart';
 export '/screens/profile/views/refer_a_friend_screen.dart';
 export '/screens/user_info/views/user_info_screen.dart';
 
+// Lead / Enquiry Screens
+export '/screens/leads/my_enquiries_screen.dart';
+export '/screens/leads/enquiry_detail_screen.dart';
+export '/screens/leads/new_enquiry_screen.dart';
+
 // Notifications
 export '/screens/notification/view/enable_notification_screen.dart';
 export '/screens/notification/view/no_notification_screen.dart';

@@ -249,6 +249,25 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         builder: (context) => const ReferAFriendScreen(),
       );
+    case myEnquiriesScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => const MyEnquiriesScreen(),
+      );
+    case newEnquiryScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => const NewEnquiryScreen(),
+      );
+    case leadDetailScreenRoute:
+      // Accepts either an int argument or a path like "lead_detail/123"
+      final id = settings.arguments as int?;
+      if (id != null) {
+        return MaterialPageRoute(
+          builder: (context) => EnquiryDetailScreen(leadId: id),
+        );
+      }
+      return MaterialPageRoute(
+        builder: (context) => const MyEnquiriesScreen(),
+      );
     case userInfoScreenRoute:
       return MaterialPageRoute(
         builder: (context) => const UserInfoScreen(),
