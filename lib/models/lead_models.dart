@@ -60,6 +60,7 @@ class CustomerLead {
       'proposal_sent' => 3,
       'negotiation' => 4,
       'converted' => 5,
+      'project_won' => 5,
       _ => 0,
     };
   }
