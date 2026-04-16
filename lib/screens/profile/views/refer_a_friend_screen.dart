@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
 import '../../../config/api_config.dart';
 import '../../../constants.dart';
+import '../../leads/my_referrals_screen.dart';
 
 /// Comprehensive Refer a Friend screen.
 /// Submits a referral lead to the portal API's public /leads/referral endpoint.
@@ -14,7 +15,9 @@ class ReferAFriendScreen extends StatefulWidget {
   State<ReferAFriendScreen> createState() => _ReferAFriendScreenState();
 }
 
-class _ReferAFriendScreenState extends State<ReferAFriendScreen> {
+class _ReferAFriendScreenState extends State<ReferAFriendScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   final _formKey = GlobalKey<FormState>();
 
   // ── Referrer (your info) ────────────────────────────────────────────────
@@ -42,7 +45,14 @@ class _ReferAFriendScreenState extends State<ReferAFriendScreen> {
   static const Color _brand = Color(0xFFD84940);
 
   @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
   void dispose() {
+    _tabController.dispose();
     _yourNameCtrl.dispose();
     _yourEmailCtrl.dispose();
     _yourPhoneCtrl.dispose();
@@ -188,8 +198,24 @@ class _ReferAFriendScreenState extends State<ReferAFriendScreen> {
         backgroundColor: _brand,
         foregroundColor: Colors.white,
         elevation: 0,
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          tabs: const [
+            Tab(text: 'New Referral'),
+            Tab(text: 'My Referrals'),
+          ],
+        ),
       ),
-      body: _submitted ? _buildSuccessView() : _buildFormView(),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _submitted ? _buildSuccessView() : _buildFormView(),
+          const MyReferralsScreen(),
+        ],
+      ),
     );
   }
 

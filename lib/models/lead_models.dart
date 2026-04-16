@@ -74,6 +74,33 @@ class CustomerLead {
   ];
 }
 
+class ReferralLead {
+  final int id;
+  final String friendName;
+  final String friendPhone;
+  final String projectType;
+  final String status;
+  final String createdAt;
+
+  const ReferralLead({
+    required this.id,
+    required this.friendName,
+    required this.friendPhone,
+    required this.projectType,
+    required this.status,
+    required this.createdAt,
+  });
+
+  factory ReferralLead.fromJson(Map<String, dynamic> json) => ReferralLead(
+    id: json['id'] is int ? json['id'] : 0,
+    friendName: json['friendName']?.toString() ?? '',
+    friendPhone: json['friendPhone']?.toString() ?? '',
+    projectType: json['projectType']?.toString() ?? '',
+    status: json['status']?.toString() ?? 'Processing',
+    createdAt: json['createdAt']?.toString() ?? '',
+  );
+}
+
 class NewEnquiryRequest {
   final String projectType;
   final String state;

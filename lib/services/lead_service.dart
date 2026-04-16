@@ -30,6 +30,23 @@ class LeadService {
     }
   }
 
+  static Future<List<Map<String, dynamic>>> getMyReferrals() async {
+    try {
+      final token = await AuthService.getAccessToken();
+      if (token == null) return [];
+      final response = await _dio.get(
+        '${ApiConfig.baseUrl}/api/leads/my-referrals',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      if (response.statusCode == 200 && response.data is List) {
+        return (response.data as List).cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
   static Future<CustomerLead?> getLeadDetail(int id) async {
     try {
       final token = await AuthService.getAccessToken();
