@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../constants.dart';
 import '../../models/lead_models.dart';
-import '../../services/lead_service.dart';
+import '../../providers/lead_provider.dart';
 import '../../route/route_constants.dart'; // myEnquiriesScreenRoute, leadDetailScreenRoute, newEnquiryScreenRoute
 
 class MyEnquiriesScreen extends StatefulWidget {
@@ -14,17 +15,11 @@ class MyEnquiriesScreen extends StatefulWidget {
 class _MyEnquiriesScreenState extends State<MyEnquiriesScreen> {
   static const Color _brand = Color(0xFFD84940);
 
-  late Future<List<CustomerLead>> _leadsFuture;
-
   @override
   void initState() {
     super.initState();
-    _leadsFuture = LeadService.getMyLeads();
-  }
-
-  Future<void> _refresh() async {
-    setState(() {
-      _leadsFuture = LeadService.getMyLeads();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<LeadProvider>().fetchMyLeads();
     });
   }
 
@@ -72,77 +67,83 @@ class _MyEnquiriesScreenState extends State<MyEnquiriesScreen> {
         elevation: 0,
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.pushNamed(context, newEnquiryScreenRoute).then((_) => _refresh()),
+        onPressed: () {
+          final provider = context.read<LeadProvider>();
+          Navigator.pushNamed(context, newEnquiryScreenRoute)
+              .then((_) => provider.fetchMyLeads());
+        },
         backgroundColor: _brand,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
         label: const Text('New Enquiry'),
       ),
-      body: RefreshIndicator(
-        color: _brand,
-        onRefresh: _refresh,
-        child: FutureBuilder<List<CustomerLead>>(
-          future: _leadsFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator(color: Color(0xFFD84940)));
-            }
+      body: Consumer<LeadProvider>(
+        builder: (context, provider, _) {
+          if (provider.isLoading && provider.leads.isEmpty) {
+            return const Center(child: CircularProgressIndicator(color: Color(0xFFD84940)));
+          }
 
-            final leads = snapshot.data ?? [];
+          final leads = provider.leads;
 
-            if (leads.isEmpty) {
-              return ListView(
-                children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.6,
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              color: _brand.withOpacity(0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(Icons.inbox_outlined, color: _brand, size: 40),
+          if (leads.isEmpty) {
+            return ListView(
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: _brand.withOpacity(0.1),
+                            shape: BoxShape.circle,
                           ),
-                          const SizedBox(height: 20),
-                          const Text(
-                            'No enquiries yet',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          child: const Icon(Icons.inbox_outlined, color: _brand, size: 40),
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          'No enquiries yet',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Submit a new project enquiry to get started',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Theme.of(context).textTheme.bodySmall?.color,
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Submit a new project enquiry to get started',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Theme.of(context).textTheme.bodySmall?.color,
-                            ),
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _brand,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
-                          const SizedBox(height: 24),
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _brand,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                            onPressed: () => Navigator.pushNamed(context, newEnquiryScreenRoute)
-                                .then((_) => _refresh()),
-                            icon: const Icon(Icons.add),
-                            label: const Text('New Project Enquiry'),
-                          ),
-                        ],
-                      ),
+                          onPressed: () {
+                            final provider = context.read<LeadProvider>();
+                            Navigator.pushNamed(context, newEnquiryScreenRoute)
+                                .then((_) => provider.fetchMyLeads());
+                          },
+                          icon: const Icon(Icons.add),
+                          label: const Text('New Project Enquiry'),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              );
-            }
+                ),
+              ],
+            );
+          }
 
-            return ListView.builder(
+          return RefreshIndicator(
+            color: _brand,
+            onRefresh: () => context.read<LeadProvider>().fetchMyLeads(),
+            child: ListView.builder(
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.all(defaultPadding),
               itemCount: leads.length,
@@ -157,16 +158,19 @@ class _MyEnquiriesScreenState extends State<MyEnquiriesScreen> {
                   formattedFollowUp: lead.nextFollowUp != null
                       ? _formatDate(lead.nextFollowUp!)
                       : null,
-                  onTap: () => Navigator.pushNamed(
-                    context,
-                    leadDetailScreenRoute,
-                    arguments: lead.id,
-                  ).then((_) => _refresh()),
+                  onTap: () {
+                    final provider = context.read<LeadProvider>();
+                    Navigator.pushNamed(
+                      context,
+                      leadDetailScreenRoute,
+                      arguments: lead.id,
+                    ).then((_) => provider.fetchMyLeads());
+                  },
                 );
               },
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }

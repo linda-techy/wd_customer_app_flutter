@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../models/lead_models.dart';
-import '../../services/lead_service.dart';
+import '../../providers/lead_provider.dart';
 
 class EnquiryDetailScreen extends StatefulWidget {
   const EnquiryDetailScreen({super.key, required this.leadId});
@@ -14,12 +15,12 @@ class EnquiryDetailScreen extends StatefulWidget {
 class _EnquiryDetailScreenState extends State<EnquiryDetailScreen> {
   static const Color _brand = Color(0xFFD84940);
 
-  late Future<CustomerLead?> _leadFuture;
-
   @override
   void initState() {
     super.initState();
-    _leadFuture = LeadService.getLeadDetail(widget.leadId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<LeadProvider>().fetchLeadDetail(widget.leadId);
+    });
   }
 
   String _formatDate(String raw) {
@@ -46,14 +47,13 @@ class _EnquiryDetailScreenState extends State<EnquiryDetailScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: FutureBuilder<CustomerLead?>(
-        future: _leadFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+      body: Consumer<LeadProvider>(
+        builder: (context, provider, _) {
+          if (provider.isLoading && provider.selectedLead == null) {
             return const Center(child: CircularProgressIndicator(color: Color(0xFFD84940)));
           }
 
-          final lead = snapshot.data;
+          final lead = provider.selectedLead;
           if (lead == null) {
             return Center(
               child: Column(
@@ -64,9 +64,7 @@ class _EnquiryDetailScreenState extends State<EnquiryDetailScreen> {
                   const Text('Could not load enquiry details.'),
                   const SizedBox(height: 12),
                   TextButton(
-                    onPressed: () => setState(() {
-                      _leadFuture = LeadService.getLeadDetail(widget.leadId);
-                    }),
+                    onPressed: () => context.read<LeadProvider>().fetchLeadDetail(widget.leadId),
                     child: const Text('Retry'),
                   ),
                 ],

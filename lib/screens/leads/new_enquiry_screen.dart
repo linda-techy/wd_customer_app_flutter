@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../constants.dart';
 import '../../models/lead_models.dart';
-import '../../services/lead_service.dart';
+import '../../providers/lead_provider.dart';
 
 class NewEnquiryScreen extends StatefulWidget {
   const NewEnquiryScreen({super.key});
@@ -62,7 +63,7 @@ class _NewEnquiryScreenState extends State<NewEnquiryScreen> {
       requirements: _requirementsCtrl.text.trim(),
     );
 
-    final success = await LeadService.submitEnquiry(request);
+    final success = await context.read<LeadProvider>().submitEnquiry(request);
 
     if (!mounted) return;
     setState(() => _isSubmitting = false);

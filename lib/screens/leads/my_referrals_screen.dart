@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../models/lead_models.dart';
-import '../../services/lead_service.dart';
+import '../../providers/lead_provider.dart';
 
 /// Displays the list of referrals this customer has made.
 /// Each card shows the friend's name, project type, status badge, and date.
@@ -12,44 +13,32 @@ class MyReferralsScreen extends StatefulWidget {
 }
 
 class _MyReferralsScreenState extends State<MyReferralsScreen> {
-  late Future<List<ReferralLead>> _future;
-
   static const Color _brand = Color(0xFFD84940);
 
   @override
   void initState() {
     super.initState();
-    _future = _fetchReferrals();
-  }
-
-  Future<List<ReferralLead>> _fetchReferrals() async {
-    final raw = await LeadService.getMyReferrals();
-    return raw.map((e) => ReferralLead.fromJson(e)).toList();
-  }
-
-  void _refresh() {
-    setState(() {
-      _future = _fetchReferrals();
-    });
+    Future.microtask(
+      () => context.read<LeadProvider>().fetchMyReferrals(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<ReferralLead>>(
-      future: _future,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    return Consumer<LeadProvider>(
+      builder: (context, provider, _) {
+        if (provider.isLoading && provider.referrals.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final referrals = snapshot.data ?? [];
+        final referrals = provider.referrals;
 
         if (referrals.isEmpty) {
           return _buildEmptyState();
         }
 
         return RefreshIndicator(
-          onRefresh: () async => _refresh(),
+          onRefresh: () => context.read<LeadProvider>().fetchMyReferrals(),
           child: ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: referrals.length,
