@@ -430,20 +430,19 @@ class _FinancialSummaryScreenState extends State<FinancialSummaryScreen>
     final fa = _finalAccount?['finalAccount'] as Map<String, dynamic>?;
     if (fa == null) {
       return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.account_balance_outlined,
-                  size: 56, color: Colors.grey),
-              SizedBox(height: 12),
-              Text(
-                  'Final account not yet prepared.\nYou will be notified when it is ready.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey, fontSize: 14)),
-            ],
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.info_outline, size: 48, color: Colors.amber),
+            SizedBox(height: 12),
+            Text('Final Account not yet prepared',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+            SizedBox(height: 8),
+            Text(
+              'This will be available after project completion',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
         ),
       );
     }
