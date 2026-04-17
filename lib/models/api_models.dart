@@ -23,6 +23,12 @@ class UserInfo {
   final String firstName;
   final String lastName;
   final String role;
+  final String phone;
+  final String whatsappNumber;
+  final String address;
+  final String companyName;
+  final String gstNumber;
+  final String customerType;
 
   UserInfo({
     required this.id,
@@ -30,6 +36,12 @@ class UserInfo {
     required this.firstName,
     required this.lastName,
     required this.role,
+    this.phone = '',
+    this.whatsappNumber = '',
+    this.address = '',
+    this.companyName = '',
+    this.gstNumber = '',
+    this.customerType = 'individual',
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
@@ -39,6 +51,12 @@ class UserInfo {
       firstName: json['firstName'] ?? '',
       lastName: json['lastName'] ?? '',
       role: json['role'] ?? '',
+      phone: json['phone'] ?? '',
+      whatsappNumber: json['whatsappNumber'] ?? '',
+      address: json['address'] ?? '',
+      companyName: json['companyName'] ?? '',
+      gstNumber: json['gstNumber'] ?? '',
+      customerType: json['customerType'] ?? 'individual',
     );
   }
 
@@ -49,6 +67,12 @@ class UserInfo {
       'firstName': firstName,
       'lastName': lastName,
       'role': role,
+      'phone': phone,
+      'whatsappNumber': whatsappNumber,
+      'address': address,
+      'companyName': companyName,
+      'gstNumber': gstNumber,
+      'customerType': customerType,
     };
   }
 

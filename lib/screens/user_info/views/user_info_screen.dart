@@ -21,6 +21,9 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
   final _phoneController = TextEditingController();
   final _whatsappController = TextEditingController();
   final _emailController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _companyNameController = TextEditingController();
+  final _gstNumberController = TextEditingController();
 
   // State
   bool _isEditing = false;
@@ -41,6 +44,9 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
           _firstNameController.text = userInfo.firstName;
           _lastNameController.text = userInfo.lastName;
           _emailController.text = userInfo.email;
+          _addressController.text = userInfo.address;
+          _companyNameController.text = userInfo.companyName;
+          _gstNumberController.text = userInfo.gstNumber;
           _isLoading = false;
         });
       } else if (mounted) {
@@ -70,7 +76,10 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
           'firstName': _firstNameController.text.trim(),
           'lastName': _lastNameController.text.trim(),
           'phone': _phoneController.text.trim(),
-          'whatsapp': _whatsappController.text.trim(),
+          'whatsappNumber': _whatsappController.text.trim(),
+          'address': _addressController.text.trim(),
+          'companyName': _companyNameController.text.trim(),
+          'gstNumber': _gstNumberController.text.trim(),
         },
         options: Options(
           headers: ApiConfig.getAuthHeaders(token),
@@ -110,6 +119,9 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
     _phoneController.dispose();
     _whatsappController.dispose();
     _emailController.dispose();
+    _addressController.dispose();
+    _companyNameController.dispose();
+    _gstNumberController.dispose();
     super.dispose();
   }
 
@@ -309,6 +321,12 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
           _buildTextField("Phone Number", Icons.phone_outlined, _phoneController),
           const SizedBox(height: 20),
           _buildTextField("WhatsApp Number", Icons.chat_outlined, _whatsappController),
+          const SizedBox(height: 20),
+          _buildTextField("Address", Icons.location_on_outlined, _addressController),
+          const SizedBox(height: 20),
+          _buildTextField("Company Name", Icons.business_outlined, _companyNameController),
+          const SizedBox(height: 20),
+          _buildTextField("GST Number", Icons.receipt_long_outlined, _gstNumberController),
         ],
       ),
     );
