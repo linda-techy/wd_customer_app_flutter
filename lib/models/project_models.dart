@@ -1,5 +1,5 @@
 // Project Status Enum
-enum ProjectStatus { active, paused, completed, planning }
+enum ProjectStatus { active, completed, suspended, cancelled, onHold }
 
 // QC Status Enum
 enum QCStatus { pending, completed, failed, inProgress }
@@ -12,6 +12,18 @@ enum QueryPriority { low, medium, high, urgent }
 
 // Document Type Enum
 enum DocumentType { floorPlan, structural, electrical, plumbing, other }
+
+ProjectStatus _parseProjectStatus(String? value) {
+  if (value == null) return ProjectStatus.active;
+  switch (value.toUpperCase()) {
+    case 'ACTIVE': return ProjectStatus.active;
+    case 'COMPLETED': return ProjectStatus.completed;
+    case 'SUSPENDED': return ProjectStatus.suspended;
+    case 'CANCELLED': return ProjectStatus.cancelled;
+    case 'ON_HOLD': return ProjectStatus.onHold;
+    default: return ProjectStatus.active;
+  }
+}
 
 // Project Model
 class Project {
@@ -66,10 +78,7 @@ class Project {
       location: json['location'],
       city: json['city'],
       area: json['area'],
-      status: ProjectStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-        orElse: () => ProjectStatus.planning,
-      ),
+      status: _parseProjectStatus(json['status'] as String?),
       progress: json['progress'].toDouble(),
       nextMilestone: json['nextMilestone'],
       nextMilestoneDate: DateTime.parse(json['nextMilestoneDate']),

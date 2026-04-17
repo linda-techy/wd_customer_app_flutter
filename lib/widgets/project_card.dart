@@ -263,20 +263,25 @@ class ProjectCard extends StatelessWidget {
         textColor = Colors.green[700]!;
         statusText = 'Active';
         break;
-      case ProjectStatus.paused:
-        backgroundColor = Colors.orange.withOpacity(0.1);
-        textColor = Colors.orange[700]!;
-        statusText = 'Paused';
-        break;
       case ProjectStatus.completed:
         backgroundColor = Colors.blue.withOpacity(0.1);
         textColor = Colors.blue[700]!;
         statusText = 'Completed';
         break;
-      case ProjectStatus.planning:
+      case ProjectStatus.suspended:
+        backgroundColor = Colors.orange.withOpacity(0.1);
+        textColor = Colors.orange[700]!;
+        statusText = 'Suspended';
+        break;
+      case ProjectStatus.cancelled:
+        backgroundColor = Colors.red.withOpacity(0.1);
+        textColor = Colors.red[700]!;
+        statusText = 'Cancelled';
+        break;
+      case ProjectStatus.onHold:
         backgroundColor = Colors.grey.withOpacity(0.1);
         textColor = Colors.grey[700]!;
-        statusText = 'Planning';
+        statusText = 'On Hold';
         break;
     }
 
