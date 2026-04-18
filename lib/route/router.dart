@@ -12,6 +12,8 @@ import 'package:wd_cust_mobile_app/screens/project/views/activity_feed_screen.da
 import 'package:wd_cust_mobile_app/screens/project/views/boq_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/quality_check_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/view_360_screen.dart';
+import 'package:wd_cust_mobile_app/screens/project/views/warranties_screen.dart';
+import 'package:wd_cust_mobile_app/screens/project/views/delay_logs_screen.dart';
 import 'fade_slide_page_route.dart';
 import 'screen_export.dart';
 
@@ -181,6 +183,22 @@ Route<dynamic> generateRoute(RouteSettings settings) {
             return MaterialPageRoute(
               settings: settings,
               builder: (context) => View360Screen(projectId: projectIdStr),
+            );
+          }
+          break;
+        case 'warranties':
+          if (projectIdStr.isNotEmpty) {
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => WarrantiesScreen(projectId: projectIdStr),
+            );
+          }
+          break;
+        case 'delay_logs':
+          if (projectIdStr.isNotEmpty) {
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => DelayLogsScreen(projectId: projectIdStr),
             );
           }
           break;

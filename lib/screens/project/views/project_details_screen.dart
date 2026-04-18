@@ -24,6 +24,8 @@ import 'quality_check_screen.dart';
 import 'view_360_screen.dart';
 import 'feedback_dialog.dart';
 import 'tasks_screen.dart';
+import 'warranties_screen.dart';
+import 'delay_logs_screen.dart';
 
 class ProjectDetailsScreen extends StatefulWidget {
   const ProjectDetailsScreen({super.key, this.project, this.projectId});
@@ -715,6 +717,12 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         list.add(_ActionItem('360° Views', Icons.view_in_ar, Colors.cyan, () {
           nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectUuid)));
         }));
+        list.add(_ActionItem('Warranties', Icons.verified_user, Colors.teal, () {
+          nav.push(MaterialPageRoute(builder: (_) => WarrantiesScreen(projectId: projectUuid)));
+        }));
+        list.add(_ActionItem('Delay Logs', Icons.schedule, Colors.amber, () {
+          nav.push(MaterialPageRoute(builder: (_) => DelayLogsScreen(projectId: projectUuid)));
+        }));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
           showFeedbackDialog(context: context, projectId: projectUuid);
         }));
@@ -745,6 +753,12 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           }));
         list.add(_ActionItem('360° Views', Icons.view_in_ar, Colors.cyan, () {
           nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectUuid)));
+        }));
+        list.add(_ActionItem('Warranties', Icons.verified_user, Colors.teal, () {
+          nav.push(MaterialPageRoute(builder: (_) => WarrantiesScreen(projectId: projectUuid)));
+        }));
+        list.add(_ActionItem('Delay Logs', Icons.schedule, Colors.amber, () {
+          nav.push(MaterialPageRoute(builder: (_) => DelayLogsScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
           showFeedbackDialog(context: context, projectId: projectUuid);
@@ -798,6 +812,12 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           }));
         if (_canSeeCCTV())
           list.add(_ActionItem('CCTV', Icons.videocam_outlined, Colors.grey, () => nav.pushNamed(projectUuid.isNotEmpty ? projectCctvRoute(projectUuid) : cctvSurveillanceScreenRoute)));
+        list.add(_ActionItem('Warranties', Icons.verified_user, Colors.teal, () {
+          nav.push(MaterialPageRoute(builder: (_) => WarrantiesScreen(projectId: projectUuid)));
+        }));
+        list.add(_ActionItem('Delay Logs', Icons.schedule, Colors.amber, () {
+          nav.push(MaterialPageRoute(builder: (_) => DelayLogsScreen(projectId: projectUuid)));
+        }));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
           showFeedbackDialog(context: context, projectId: projectUuid);
         }));
@@ -845,6 +865,12 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           list.add(_ActionItem('Financials', Icons.account_balance_outlined, Colors.indigo, () {
             nav.push(MaterialPageRoute(builder: (_) => FinancialSummaryScreen(projectId: projectUuid)));
           }));
+        list.add(_ActionItem('Warranties', Icons.verified_user, Colors.teal, () {
+          nav.push(MaterialPageRoute(builder: (_) => WarrantiesScreen(projectId: projectUuid)));
+        }));
+        list.add(_ActionItem('Delay Logs', Icons.schedule, Colors.amber, () {
+          nav.push(MaterialPageRoute(builder: (_) => DelayLogsScreen(projectId: projectUuid)));
+        }));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
           showFeedbackDialog(context: context, projectId: projectUuid);
         }));
@@ -872,6 +898,12 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           list.add(_ActionItem('Financials', Icons.account_balance_outlined, Colors.indigo, () {
             nav.push(MaterialPageRoute(builder: (_) => FinancialSummaryScreen(projectId: projectUuid)));
           }));
+        list.add(_ActionItem('Warranties', Icons.verified_user, Colors.teal, () {
+          nav.push(MaterialPageRoute(builder: (_) => WarrantiesScreen(projectId: projectUuid)));
+        }));
+        list.add(_ActionItem('Delay Logs', Icons.schedule, Colors.amber, () {
+          nav.push(MaterialPageRoute(builder: (_) => DelayLogsScreen(projectId: projectUuid)));
+        }));
         list.add(_ActionItem('Feedback', Icons.feedback_outlined, Colors.pink, () {
           showFeedbackDialog(context: context, projectId: projectUuid);
         }));
