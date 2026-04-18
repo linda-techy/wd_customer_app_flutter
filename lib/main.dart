@@ -1,6 +1,7 @@
 import 'package:app_links/app_links.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  MediaKit.ensureInitialized();
 
   // Register FCM background handler before runApp()
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
