@@ -805,6 +805,141 @@ class ApiResponse<T> {
   }
 }
 
+// ─── Warranty ────────────────────────────────────────────────────────────────
+
+class ProjectWarranty {
+  final int id;
+  final String componentName;
+  final String? description;
+  final String? providerName;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final String status;
+  final String? coverageDetails;
+
+  ProjectWarranty({
+    required this.id,
+    required this.componentName,
+    this.description,
+    this.providerName,
+    this.startDate,
+    this.endDate,
+    required this.status,
+    this.coverageDetails,
+  });
+
+  bool get isActive => status.toUpperCase() == 'ACTIVE';
+  bool get isExpired => status.toUpperCase() == 'EXPIRED';
+
+  factory ProjectWarranty.fromJson(Map<String, dynamic> json) {
+    return ProjectWarranty(
+      id: json['id'],
+      componentName: json['componentName'] ?? '',
+      description: json['description'],
+      providerName: json['providerName'],
+      startDate: json['startDate'] != null ? DateTime.tryParse(json['startDate']) : null,
+      endDate: json['endDate'] != null ? DateTime.tryParse(json['endDate']) : null,
+      status: json['status'] ?? 'UNKNOWN',
+      coverageDetails: json['coverageDetails'],
+    );
+  }
+}
+
+// ─── Delay Log ───────────────────────────────────────────────────────────────
+
+class DelayLog {
+  final int id;
+  final String delayType;
+  final DateTime fromDate;
+  final DateTime? toDate;
+  final String? reasonText;
+  final bool isOpen;
+  final int impactDays;
+
+  DelayLog({
+    required this.id,
+    required this.delayType,
+    required this.fromDate,
+    this.toDate,
+    this.reasonText,
+    required this.isOpen,
+    required this.impactDays,
+  });
+
+  factory DelayLog.fromJson(Map<String, dynamic> json) {
+    return DelayLog(
+      id: json['id'],
+      delayType: json['delayType'] ?? '',
+      fromDate: DateTime.parse(json['fromDate']),
+      toDate: json['toDate'] != null ? DateTime.tryParse(json['toDate']) : null,
+      reasonText: json['reasonText'],
+      isOpen: json['isOpen'] ?? true,
+      impactDays: (json['impactDays'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+
+// ─── BOQ Invoice ─────────────────────────────────────────────────────────────
+
+class BoqInvoice {
+  final int id;
+  final String? invoiceNumber;
+  final String? invoiceType;
+  final double subtotalExGst;
+  final double gstRate;
+  final double gstAmount;
+  final double totalInclGst;
+  final double totalCreditApplied;
+  final double netAmountDue;
+  final String status;
+  final DateTime? issueDate;
+  final DateTime? dueDate;
+  final DateTime? sentAt;
+  final DateTime? paidAt;
+
+  BoqInvoice({
+    required this.id,
+    this.invoiceNumber,
+    this.invoiceType,
+    required this.subtotalExGst,
+    required this.gstRate,
+    required this.gstAmount,
+    required this.totalInclGst,
+    required this.totalCreditApplied,
+    required this.netAmountDue,
+    required this.status,
+    this.issueDate,
+    this.dueDate,
+    this.sentAt,
+    this.paidAt,
+  });
+
+  factory BoqInvoice.fromJson(Map<String, dynamic> json) {
+    double toDouble(dynamic v) {
+      if (v == null) return 0.0;
+      if (v is num) return v.toDouble();
+      return double.tryParse(v.toString()) ?? 0.0;
+    }
+
+    return BoqInvoice(
+      id: json['id'],
+      invoiceNumber: json['invoiceNumber'],
+      invoiceType: json['invoiceType'],
+      subtotalExGst: toDouble(json['subtotalExGst']),
+      gstRate: toDouble(json['gstRate']),
+      gstAmount: toDouble(json['gstAmount']),
+      totalInclGst: toDouble(json['totalInclGst']),
+      totalCreditApplied: toDouble(json['totalCreditApplied']),
+      netAmountDue: toDouble(json['netAmountDue']),
+      status: json['status'] ?? 'UNKNOWN',
+      issueDate: json['issueDate'] != null ? DateTime.tryParse(json['issueDate']) : null,
+      dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate']) : null,
+      sentAt: json['sentAt'] != null ? DateTime.tryParse(json['sentAt']) : null,
+      paidAt: json['paidAt'] != null ? DateTime.tryParse(json['paidAt']) : null,
+    );
+  }
+}
+
 /// Combined activity item for timeline display (site reports + queries)
 class CombinedActivityItem {
   final int id;
