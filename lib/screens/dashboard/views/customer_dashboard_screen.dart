@@ -12,6 +12,7 @@ import '../../../components/animations/scale_button.dart';
 import '../../../models/project_phase.dart';
 import '../../../components/molecules/financial_summary_card.dart';
 import '../../../utils/debouncer.dart';
+import '../../../core/constants/role_constants.dart';
 
 class CustomerDashboardScreen extends StatefulWidget {
   const CustomerDashboardScreen({super.key});
@@ -330,7 +331,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
                 const SizedBox(height: 16),
 
                 // Financial Summary — visible to CUSTOMER and ADMIN only
-                if (['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN']
+                if (RoleConstants.financialAllowedRoles
                     .contains(_dashboardData!.user.role.toUpperCase()) &&
                     _dashboardData!.quickStats.totalAmount > 0) ...[
                   FadeEntry(

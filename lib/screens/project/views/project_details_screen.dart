@@ -10,6 +10,7 @@ import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/scale_button.dart';
 import '../../../models/project_phase.dart';
 import '../../../widgets/milestone_timeline.dart';
+import '../../../core/constants/role_constants.dart';
 import 'design_package_selection_screen.dart';
 import '../../site_reports/site_reports_screen.dart';
 import '../../payments/views/payments_screen.dart';
@@ -130,13 +131,13 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   }
 
   // ─── Role-based feature visibility helpers ──────────────────────────────────
-  bool _canSeePayments()      => ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN'].contains(_userRole);
-  bool _canSeeBOQ()           => ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN', 'ARCHITECT', 'INTERIOR_DESIGNER'].contains(_userRole);
-  bool _canSeeQualityChecks() => ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN', 'ARCHITECT', 'SITE_ENGINEER', 'CONTRACTOR', 'BUILDER'].contains(_userRole);
-  bool _canSeeObservations()  => ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN', 'ARCHITECT', 'SITE_ENGINEER', 'CONTRACTOR', 'BUILDER'].contains(_userRole);
-  bool _canSeeSnags()         => ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN', 'ARCHITECT', 'INTERIOR_DESIGNER', 'SITE_ENGINEER', 'CONTRACTOR', 'BUILDER'].contains(_userRole);
-  bool _canSeeCCTV()          => ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN', 'ARCHITECT'].contains(_userRole);
-  bool _canSeeQueries()       => ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN', 'ARCHITECT', 'INTERIOR_DESIGNER', 'SITE_ENGINEER', 'CONTRACTOR', 'BUILDER'].contains(_userRole);
+  bool _canSeePayments()      => RoleConstants.financialAllowedRoles.contains(_userRole);
+  bool _canSeeBOQ()           => [...RoleConstants.boqAllowedRoles, 'ARCHITECT', 'INTERIOR_DESIGNER'].contains(_userRole);
+  bool _canSeeQualityChecks() => [...RoleConstants.financialAllowedRoles, 'ARCHITECT', 'SITE_ENGINEER', 'CONTRACTOR', 'BUILDER'].contains(_userRole);
+  bool _canSeeObservations()  => [...RoleConstants.financialAllowedRoles, 'ARCHITECT', 'SITE_ENGINEER', 'CONTRACTOR', 'BUILDER'].contains(_userRole);
+  bool _canSeeSnags()         => [...RoleConstants.financialAllowedRoles, 'ARCHITECT', 'INTERIOR_DESIGNER', 'SITE_ENGINEER', 'CONTRACTOR', 'BUILDER'].contains(_userRole);
+  bool _canSeeCCTV()          => [...RoleConstants.financialAllowedRoles, 'ARCHITECT'].contains(_userRole);
+  bool _canSeeQueries()       => [...RoleConstants.financialAllowedRoles, 'ARCHITECT', 'INTERIOR_DESIGNER', 'SITE_ENGINEER', 'CONTRACTOR', 'BUILDER'].contains(_userRole);
   // ─────────────────────────────────────────────────────────────────────────────
 
   @override

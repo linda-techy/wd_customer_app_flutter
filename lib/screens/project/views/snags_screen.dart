@@ -7,6 +7,7 @@ import '../../../services/auth_service.dart';
 import '../../../services/project_module_service.dart';
 import '../../../models/project_module_models.dart';
 import '../../../config/api_config.dart';
+import '../../../core/constants/role_constants.dart';
 
 class SnagsScreen extends StatefulWidget {
   final String projectId;
@@ -160,7 +161,7 @@ class _SnagsScreenState extends State<SnagsScreen>
         ),
       ),
       // FAB visible only to roles that can create observations
-      floatingActionButton: ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN']
+      floatingActionButton: RoleConstants.financialAllowedRoles
               .contains(_userRole.toUpperCase())
           ? FloatingActionButton.extended(
               onPressed: _showCreateDialog,

@@ -4,6 +4,8 @@ import '../../../models/project_module_models.dart';
 import '../../../services/project_module_service.dart';
 import '../../../services/auth_service.dart';
 import '../../../config/api_config.dart';
+import '../../../core/constants/role_constants.dart';
+import '../../../utils/currency_formatter.dart';
 
 class BoqScreen extends StatefulWidget {
   final String projectId;
@@ -13,7 +15,7 @@ class BoqScreen extends StatefulWidget {
 }
 
 class _BoqScreenState extends State<BoqScreen> {
-  static const _boqAllowedRoles = ['CUSTOMER', 'ADMIN', 'CUSTOMER_ADMIN', 'ARCHITECT', 'INTERIOR_DESIGNER'];
+  static const _boqAllowedRoles = [...RoleConstants.boqAllowedRoles, 'ARCHITECT', 'INTERIOR_DESIGNER'];
   static const _primaryColor = Color(0xFFD32F2F);
 
   ProjectModuleService? _service;
@@ -118,12 +120,7 @@ class _BoqScreenState extends State<BoqScreen> {
   double get _totalAllItems =>
       _summary?.totalPlannedAmount ?? _items.fold<double>(0, (s, i) => s + i.amount);
 
-  String _formatCurrency(double amount) {
-    if (amount >= 10000000) return '₹${(amount / 10000000).toStringAsFixed(2)} Cr';
-    if (amount >= 100000) return '₹${(amount / 100000).toStringAsFixed(2)} L';
-    if (amount >= 1000) return '₹${(amount / 1000).toStringAsFixed(1)}K';
-    return '₹${amount.toStringAsFixed(0)}';
-  }
+  String _formatCurrency(double amount) => CurrencyFormatter.formatShort(amount);
 
   String _formatQuantity(double qty, String unit) {
     final qtyStr = qty == qty.truncateToDouble()
