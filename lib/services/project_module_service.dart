@@ -858,6 +858,38 @@ class ProjectModuleService {
     }
   }
 
+  // ===== WARRANTY METHODS =====
+
+  Future<List<ProjectWarranty>> getWarranties(String projectId) async {
+    final response = await _dio.get(
+      '/api/customer/projects/$projectId/warranties',
+    );
+
+    if (response.statusCode == 200) {
+      final data = response.data as Map<String, dynamic>;
+      final list = data['warranties'] as List? ?? [];
+      return list.map((e) => ProjectWarranty.fromJson(e as Map<String, dynamic>)).toList();
+    } else {
+      throw Exception('Failed to load warranties');
+    }
+  }
+
+  // ===== DELAY LOG METHODS =====
+
+  Future<List<DelayLog>> getDelayLogs(String projectId) async {
+    final response = await _dio.get(
+      '/api/customer/projects/$projectId/delays',
+    );
+
+    if (response.statusCode == 200) {
+      final data = response.data as Map<String, dynamic>;
+      final list = data['delays'] as List? ?? [];
+      return list.map((e) => DelayLog.fromJson(e as Map<String, dynamic>)).toList();
+    } else {
+      throw Exception('Failed to load delay logs');
+    }
+  }
+
   // ===== TASK METHODS =====
 
   Future<List<ProjectTask>> getProjectTasks(String projectUuid, {String? status}) async {

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../config/api_config.dart';
 import 'auth_service.dart';
+import '../models/project_module_models.dart';
 
 // ─── Models ──────────────────────────────────────────────────────────────────
 
@@ -252,6 +253,15 @@ class CustomerBoqService {
       if (e.response?.statusCode == 404) return null;
       rethrow;
     }
+  }
+
+  Future<List<BoqInvoice>> getBoqInvoices(String projectUuid) async {
+    final res = await _dio
+        .get('/api/projects/$projectUuid/financial/boq-invoices');
+    _check(res.data, 'Failed to load BOQ invoices');
+    return ((res.data['invoices'] ?? []) as List)
+        .map((j) => BoqInvoice.fromJson(j as Map<String, dynamic>))
+        .toList();
   }
 
   void _check(dynamic data, String fallback) {
