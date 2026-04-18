@@ -7,6 +7,8 @@ import 'dart:async';
 
 import '../../../constants.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/content_service.dart';
+import '../../../models/content_models.dart';
 import '../../../utils/responsive.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/hover_card.dart';
@@ -25,29 +27,14 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentLiveActivityIndex = 0;
   Timer? _liveActivityTimer;
 
-  final List<Map<String, String>> liveActivities = [
-    {
-      'name': 'Bijeeshmon',
-      'location': 'Arnattukara',
-      'action': 'Project Completed'
-    },
-    {
-      'name': 'Akhil Johnson',
-      'location': 'Poochinipadam',
-      'action': 'Foundation Started'
-    },
-    {
-      'name': 'Sarah Thomas',
-      'location': 'Thrissur',
-      'action': 'Design Approved'
-    },
-  ];
+  List<LiveActivity> _liveActivities = [];
+  bool _isLoadingActivities = true;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
-    _startLiveActivityTimer();
+    _loadLiveActivities();
   }
 
   @override
@@ -56,15 +43,23 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  void _startLiveActivityTimer() {
-    _liveActivityTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
-      if (mounted) {
-        setState(() {
-          _currentLiveActivityIndex =
-              (_currentLiveActivityIndex + 1) % liveActivities.length;
-        });
-      }
+  Future<void> _loadLiveActivities() async {
+    final activities = await ContentService.getLiveActivities();
+    if (!mounted) return;
+    setState(() {
+      _liveActivities = activities;
+      _isLoadingActivities = false;
     });
+    if (_liveActivities.isNotEmpty) {
+      _liveActivityTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+        if (mounted) {
+          setState(() {
+            _currentLiveActivityIndex =
+                (_currentLiveActivityIndex + 1) % _liveActivities.length;
+          });
+        }
+      });
+    }
   }
 
   Future<void> _loadUserData() async {
@@ -481,15 +476,44 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildLiveActivityTicker(BuildContext context) {
-    final activity = liveActivities[_currentLiveActivityIndex];
     final horizontalPadding = ResponsiveSpacing.getHorizontalPadding(context);
     final padding = ResponsiveSpacing.getPadding(context);
     final bodySize = ResponsiveFontSize.getBody(context);
 
+    if (_isLoadingActivities) {
+      return Container(
+        margin: EdgeInsets.symmetric(horizontal: horizontalPadding),
+        padding: EdgeInsets.symmetric(horizontal: padding, vertical: 12),
+        decoration: BoxDecoration(
+          color: blackColor5,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: blackColor10),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.bolt, color: Colors.amber, size: 20),
+            SizedBox(width: padding),
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_liveActivities.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final safeIndex = _currentLiveActivityIndex % _liveActivities.length;
+    final activity = _liveActivities[safeIndex];
+
     return AnimatedSwitcher(
       duration: 500.ms,
       child: Container(
-        key: ValueKey(_currentLiveActivityIndex),
+        key: ValueKey(safeIndex),
         margin: EdgeInsets.symmetric(horizontal: horizontalPadding),
         padding: EdgeInsets.symmetric(horizontal: padding, vertical: 12),
         decoration: BoxDecoration(
@@ -507,14 +531,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(color: blackColor, fontSize: bodySize),
                   children: [
                     TextSpan(
-                        text: "${activity['name']} ",
+                        text: '${activity.customerName} ',
                         style: const TextStyle(fontWeight: FontWeight.bold)),
-                    const TextSpan(text: "from "),
+                    const TextSpan(text: 'from '),
                     TextSpan(
-                        text: "${activity['location']}: ",
+                        text: '${activity.location}: ',
                         style: const TextStyle(fontWeight: FontWeight.w600)),
                     TextSpan(
-                        text: "${activity['action']}",
+                        text: activity.action,
                         style: const TextStyle(
                             color: successColor, fontWeight: FontWeight.bold)),
                   ],

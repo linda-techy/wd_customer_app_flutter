@@ -217,28 +217,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
               400.ms,
             ),
             _buildAnimatedTile(
+              "Edit Profile",
+              "assets/icons/Profile.svg",
+              () => Navigator.pushNamed(context, editUserInfoScreenRoute),
+              420.ms,
+            ),
+            _buildAnimatedTile(
+              "Change Password",
+              "assets/icons/Profile.svg",
+              () => Navigator.pushNamed(context, currentPasswordScreenRoute),
+              440.ms,
+            ),
+            _buildAnimatedTile(
               "Floor Plans & 3D Designs",
               "assets/icons/document.svg",
               () => Navigator.pushNamed(context, floorPlanScreenRoute),
-              450.ms,
+              470.ms,
             ),
             _buildAnimatedTile(
               "Site Visits & Surveillance",
               "assets/icons/Location.svg",
               () => Navigator.pushNamed(context, cctvSurveillanceScreenRoute),
-              500.ms,
+              520.ms,
             ),
             _buildAnimatedTile(
               "Project Documents",
               "assets/icons/document.svg",
               () => Navigator.pushNamed(context, documentsScreenRoute),
-              550.ms,
+              570.ms,
             ),
             _buildAnimatedTile(
               "Payment & Invoices",
               "assets/icons/card.svg",
-              () => Navigator.pushNamed(context, paymentsScreenRoute), // Linked existing route
-              600.ms,
+              () => Navigator.pushNamed(context, paymentsScreenRoute),
+              620.ms,
             ),
             const SizedBox(height: defaultPadding / 2),
             _buildAnimatedTile(
@@ -286,7 +298,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           // Support Section
           _buildSectionHeader("Support & Information", 850.ms),
-          
+
+          _buildAnimatedTile(
+            "Help & Support",
+            "assets/icons/Chat.svg",
+            () => Navigator.pushNamed(context, getHelpScreenRoute),
+            870.ms,
+          ),
           _buildAnimatedTile(
             "Request Site Visit",
             "assets/icons/Location.svg",
@@ -298,7 +316,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               );
             },
-            900.ms,
+            920.ms,
           ),
           _buildAnimatedTile(
             "Contact Support",
@@ -312,7 +330,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               );
             },
-            950.ms,
+            970.ms,
           ),
           _buildAnimatedTile(
             "About Walldot Builders",
@@ -320,7 +338,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             () {
               _showAboutDialog();
             },
-            1000.ms,
+            1020.ms,
           ),
 
           const SizedBox(height: defaultPadding * 4),

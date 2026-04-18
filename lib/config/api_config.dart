@@ -80,4 +80,16 @@ class ApiConfig {
         'Accept': 'application/json',
         'Authorization': 'Bearer $token',
       };
+
+  // Content endpoints (public)
+  static const String blogsEndpoint = '/api/public/content/blogs';
+  static const String portfolioEndpoint = '/api/public/content/portfolio';
+  static const String liveActivitiesEndpoint = '/api/public/content/live-activities';
+
+  // Support endpoints (authenticated)
+  static const String supportTicketsEndpoint = '/api/support/tickets';
+
+  // Auth endpoints (additional)
+  static const String changePasswordEndpoint = '/auth/change-password';
+  static const String updateProfileEndpoint = '/auth/profile';
 }

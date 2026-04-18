@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../entry_point.dart';
 import '../screens/dashboard/views/customer_dashboard_screen.dart';
 import '../models/api_models.dart';
+import '../screens/support/views/ticket_detail_screen.dart';
 
 import 'package:wd_cust_mobile_app/screens/payments/views/payments_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/site_updates_screen.dart';
@@ -289,6 +290,18 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case userInfoScreenRoute:
       return MaterialPageRoute(
         builder: (context) => const UserInfoScreen(),
+      );
+    case editUserInfoScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => const EditUserInfoScreen(),
+      );
+    case currentPasswordScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => const ChangePasswordScreen(),
+      );
+    case getHelpScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => const HelpCenterScreen(),
       );
     // Notifications
     case notificationsScreenRoute:
