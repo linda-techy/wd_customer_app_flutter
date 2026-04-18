@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../services/customer_boq_service.dart';
+import '../../../services/reports/financial_summary_report.dart';
 import '../../../design_tokens/app_colors.dart';
 
 /// Shows the customer their full financial picture:
@@ -78,6 +79,11 @@ class _FinancialSummaryScreenState extends State<FinancialSummaryScreen>
         title: const Text('Financial Summary', style: TextStyle(fontSize: 16)),
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _load),
+          IconButton(
+            icon: const Icon(Icons.download),
+            tooltip: 'Export PDF',
+            onPressed: _isLoading ? null : _exportPdf,
+          ),
         ],
         bottom: TabBar(
           controller: _tabs,
@@ -107,6 +113,29 @@ class _FinancialSummaryScreenState extends State<FinancialSummaryScreen>
                   ],
                 ),
     );
+  }
+
+  // ── Export ────────────────────────────────────────────────────────────────
+
+  Future<void> _exportPdf() async {
+    try {
+      // Resolve a display name from projectId (UUID) — use it as-is for now
+      await FinancialSummaryReport.generate(
+        projectName: 'Project ${widget.projectId}',
+        stages: _stages,
+        variationOrders: _variationOrders,
+        deductions: _deductions,
+        finalAccount: _finalAccount,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Export failed: $e'),
+              backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
   Widget _buildError() => Center(

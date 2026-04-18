@@ -4,6 +4,7 @@ import '../../../models/project_module_models.dart';
 import '../../../services/project_module_service.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/boq_diff_service.dart';
+import '../../../services/reports/boq_report.dart';
 import '../../../config/api_config.dart';
 import '../../../core/constants/role_constants.dart';
 import '../../../utils/currency_formatter.dart';
@@ -239,6 +240,45 @@ class _BoqScreenState extends State<BoqScreen> {
     }
   }
 
+  // ── Export ───────────────────────────────────────────────────────────────
+
+  void _showExportOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf),
+              title: const Text('Export as PDF'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _exportPdf();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _exportPdf() async {
+    try {
+      await BoqReport.generate(
+        projectName: 'Project ${widget.projectId}',
+        revisionInfo: _revisionCount > 0 ? 'Revision $_revisionCount' : '',
+        boqItems: _items,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
@@ -272,6 +312,12 @@ class _BoqScreenState extends State<BoqScreen> {
               onPressed: () => Navigator.of(context).pushNamed(
                 projectBoqDiffRoute(widget.projectId),
               ),
+            ),
+          if (_items.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.download),
+              tooltip: 'Export PDF',
+              onPressed: () => _showExportOptions(context),
             ),
           IconButton(
             icon: const Icon(Icons.refresh),

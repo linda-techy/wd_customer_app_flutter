@@ -1,11 +1,36 @@
 import 'package:flutter/material.dart';
 import '../../models/site_report_models.dart';
+import '../../services/reports/site_report_pdf.dart';
 import 'site_report_photo_viewer.dart';
 
-class SiteReportDetailScreen extends StatelessWidget {
+class SiteReportDetailScreen extends StatefulWidget {
   final SiteReport report;
 
   const SiteReportDetailScreen({super.key, required this.report});
+
+  @override
+  State<SiteReportDetailScreen> createState() => _SiteReportDetailScreenState();
+}
+
+class _SiteReportDetailScreenState extends State<SiteReportDetailScreen> {
+  bool _exporting = false;
+
+  Future<void> _exportPdf() async {
+    setState(() => _exporting = true);
+    try {
+      await SiteReportPdf.generate(report: widget.report);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Export failed: $e'),
+              backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,6 +38,22 @@ class SiteReportDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Site Report Details'),
         elevation: 0,
+        actions: [
+          if (_exporting)
+            const Padding(
+              padding: EdgeInsets.all(14),
+              child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2)),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.download),
+              tooltip: 'Export PDF',
+              onPressed: _exportPdf,
+            ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -29,60 +70,60 @@ class SiteReportDetailScreen extends StatelessWidget {
                   children: [
                     // Title
                     Text(
-                      report.title,
+                      widget.report.title,
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     // Report Type Badge
-                    _buildReportTypeBadge(report.reportType),
-                    
+                    _buildReportTypeBadge(widget.report.reportType),
+
                     const SizedBox(height: 16),
                     const Divider(),
                     const SizedBox(height: 12),
-                    
+
                     // Project Info
                     _buildInfoRow(
                       Icons.business,
                       'Project',
-                      report.projectName ?? 'Project #${report.projectId}',
+                      widget.report.projectName ?? 'Project #${widget.report.projectId}',
                     ),
                     const SizedBox(height: 8),
-                    
+
                     // Date
                     _buildInfoRow(
                       Icons.calendar_today,
                       'Date',
-                      report.formattedDate,
+                      widget.report.formattedDate,
                     ),
                     const SizedBox(height: 8),
-                    
+
                     // Status
                     _buildInfoRow(
                       Icons.info_outline,
                       'Status',
-                      report.status,
+                      widget.report.status,
                     ),
-                    
+
                     // Submitted By
-                    if (report.submittedByName != null) ...[
+                    if (widget.report.submittedByName != null) ...[
                       const SizedBox(height: 8),
                       _buildInfoRow(
                         Icons.person,
                         'Submitted By',
-                        report.submittedByName!,
+                        widget.report.submittedByName!,
                       ),
                     ],
                   ],
                 ),
               ),
             ),
-            
+
             // Description Card
-            if (report.description != null && report.description!.isNotEmpty)
+            if (widget.report.description != null && widget.report.description!.isNotEmpty)
               Card(
                 margin: const EdgeInsets.all(16),
                 child: Padding(
@@ -99,7 +140,7 @@ class SiteReportDetailScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        report.description!,
+                        widget.report.description!,
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.grey[800],
@@ -110,9 +151,9 @@ class SiteReportDetailScreen extends StatelessWidget {
                   ),
                 ),
               ),
-            
+
             // Photos Section
-            if (report.photos.isNotEmpty)
+            if (widget.report.photos.isNotEmpty)
               Card(
                 margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 child: Padding(
@@ -124,7 +165,7 @@ class SiteReportDetailScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Photos (${report.photos.length})',
+                            'Photos (${widget.report.photos.length})',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -142,7 +183,7 @@ class SiteReportDetailScreen extends StatelessWidget {
                           crossAxisSpacing: 8,
                           mainAxisSpacing: 8,
                         ),
-                        itemCount: report.photos.length,
+                        itemCount: widget.report.photos.length,
                         itemBuilder: (context, index) {
                           return GestureDetector(
                             onTap: () {
@@ -150,7 +191,7 @@ class SiteReportDetailScreen extends StatelessWidget {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => SiteReportPhotoViewer(
-                                    photos: report.photos,
+                                    photos: widget.report.photos,
                                     initialIndex: index,
                                   ),
                                 ),
@@ -162,12 +203,13 @@ class SiteReportDetailScreen extends StatelessWidget {
                                 fit: StackFit.expand,
                                 children: [
                                   Image.network(
-                                    report.photos[index].fullUrl,
+                                    widget.report.photos[index].fullUrl,
                                     fit: BoxFit.cover,
                                     errorBuilder: (context, error, stackTrace) {
                                       return Container(
                                         color: Colors.grey[300],
-                                        child: const Icon(Icons.broken_image, color: Colors.grey),
+                                        child: const Icon(Icons.broken_image,
+                                            color: Colors.grey),
                                       );
                                     },
                                   ),
@@ -236,7 +278,7 @@ class SiteReportDetailScreen extends StatelessWidget {
   Widget _buildReportTypeBadge(ReportType type) {
     Color backgroundColor;
     Color textColor;
-    
+
     switch (type) {
       case ReportType.dailyProgress:
         backgroundColor = Colors.blue.shade50;

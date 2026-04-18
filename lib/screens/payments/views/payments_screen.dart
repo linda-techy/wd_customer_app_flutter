@@ -5,10 +5,13 @@ import '../../../../components/animations/hover_card.dart';
 import '../../../../components/animations/fade_entry.dart';
 import '../../../../services/payment_service.dart';
 import '../../../../services/customer_boq_service.dart';
+import '../../../../services/reports/payment_report.dart';
 import '../../../../models/payment_models.dart';
 import '../../../../models/project_module_models.dart';
 import 'package:intl/intl.dart';
 import '../../../../utils/currency_formatter.dart';
+import '../../../../config/api_config.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PaymentsScreen extends StatefulWidget {
   final int? projectId;       // DB id for payment schedule queries
@@ -116,6 +119,14 @@ class _PaymentsScreenState extends State<PaymentsScreen>
         backgroundColor: surfaceColor,
         elevation: 0,
         iconTheme: const IconThemeData(color: blackColor),
+        actions: [
+          if (_schedules.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.download),
+              tooltip: 'Export',
+              onPressed: () => _showExportOptions(context),
+            ),
+        ],
         bottom: hasTabs
             ? TabBar(
                 controller: _tabController,
@@ -160,6 +171,82 @@ class _PaymentsScreenState extends State<PaymentsScreen>
                     )
                   : _buildScheduleTab(),
     );
+  }
+
+  // ── Export ───────────────────────────────────────────────────────────────
+
+  void _showExportOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf),
+              title: const Text('Export as PDF'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _exportPdf();
+              },
+            ),
+            if (widget.projectId != null)
+              ListTile(
+                leading: const Icon(Icons.table_chart),
+                title: const Text('Export as CSV'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _exportCsv();
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _exportPdf() async {
+    try {
+      await PaymentReport.generate(
+        projectName: widget.projectId != null
+            ? 'Project #${widget.projectId}'
+            : 'All Projects',
+        schedules: _schedules,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('PDF export failed: $e'),
+              backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportCsv() async {
+    if (widget.projectId == null) return;
+    final url = Uri.parse(
+        '${ApiConfig.baseUrl}/api/projects/${widget.projectId}/export/payments');
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not open export URL')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('CSV export failed: $e'),
+              backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
   Widget _buildScheduleTab() {

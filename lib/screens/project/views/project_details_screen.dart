@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../models/api_models.dart';
 import '../../../route/route_constants.dart';
+import '../../../services/reports/progress_report.dart';
 import '../../../services/dashboard_service.dart';
 import '../../../services/auth_service.dart';
 import '../../../constants.dart';
@@ -167,6 +168,26 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
     );
   }
 
+  Future<void> _exportProgressPdf() async {
+    if (_projectDetails == null) return;
+    final projectName = _projectDetails!.name;
+    try {
+      await ProgressReport.generate(
+        projectDetails: _projectDetails!,
+        phases: _constructionPhases,
+        projectName: projectName,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Export failed: $e'),
+              backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   Widget _buildSliverAppBar(ProjectCard? p) {
     return SliverAppBar(
       expandedHeight: 280,
@@ -174,6 +195,14 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
       pinned: true,
       backgroundColor: surfaceColor,
       elevation: 0,
+      actions: [
+        if (_projectDetails != null)
+          IconButton(
+            icon: const Icon(Icons.download, color: Colors.white),
+            tooltip: 'Export Progress Summary',
+            onPressed: _exportProgressPdf,
+          ),
+      ],
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,
