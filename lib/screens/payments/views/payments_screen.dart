@@ -8,6 +8,7 @@ import '../../../../services/customer_boq_service.dart';
 import '../../../../models/payment_models.dart';
 import '../../../../models/project_module_models.dart';
 import 'package:intl/intl.dart';
+import '../../../../utils/currency_formatter.dart';
 
 class PaymentsScreen extends StatefulWidget {
   final int? projectId;       // DB id for payment schedule queries
@@ -649,10 +650,7 @@ class _PaymentsScreenState extends State<PaymentsScreen>
     );
   }
 
-  String _formatAmount(double amount) {
-    final formatter = NumberFormat("#,##,##0.00", "en_IN");
-    return formatter.format(amount);
-  }
+  String _formatAmount(double amount) => CurrencyFormatter.formatCompact(amount);
 
   String _formatDate(String dateStr) {
     try {

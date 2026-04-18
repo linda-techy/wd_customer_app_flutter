@@ -6,6 +6,7 @@ import '../../../services/project_module_service.dart';
 import '../../../services/dashboard_service.dart';
 import '../../../models/project_module_models.dart' hide ApiResponse;
 import '../../../models/api_models.dart';
+import '../../../utils/currency_formatter.dart';
 
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key, this.projectId});
@@ -988,14 +989,5 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     return Icons.build;
   }
 
-  String _formatCurrency(double amount) {
-    if (amount >= 10000000) {
-      return '₹${(amount / 10000000).toStringAsFixed(2)} Cr';
-    } else if (amount >= 100000) {
-      return '₹${(amount / 100000).toStringAsFixed(2)} L';
-    } else if (amount >= 1000) {
-      return '₹${(amount / 1000).toStringAsFixed(1)}K';
-    }
-    return '₹${amount.toStringAsFixed(0)}';
-  }
+  String _formatCurrency(double amount) => CurrencyFormatter.formatShort(amount);
 }
