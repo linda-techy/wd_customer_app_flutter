@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../models/project_module_models.dart';
 import '../../../services/project_module_service.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/boq_diff_service.dart';
 import '../../../config/api_config.dart';
 import '../../../core/constants/role_constants.dart';
 import '../../../utils/currency_formatter.dart';
+import '../../../route/route_constants.dart';
 
 class BoqScreen extends StatefulWidget {
   final String projectId;
@@ -31,6 +33,9 @@ class _BoqScreenState extends State<BoqScreen> {
   String _approvalStatus = 'PENDING'; // PENDING | APPROVED | CHANGE_REQUESTED
   bool _submittingApproval = false;
   bool _canSubmitApproval = false; // only CUSTOMER / CUSTOMER_ADMIN
+
+  // Diff feature: track whether 2+ revisions exist for the "Compare" button
+  int _revisionCount = 0;
 
   @override
   void initState() {
@@ -68,17 +73,21 @@ class _BoqScreenState extends State<BoqScreen> {
         _service!.getBoqItems(widget.projectId),
         if (_canSubmitApproval) _service!.getBoqSummary(widget.projectId),
         if (_canSubmitApproval) _service!.getBoqApprovalStatus(widget.projectId),
+        BoqDiffService.getRevisions(widget.projectId),
       ]);
       final items = results[0] as List<BoqItem>;
       BoqSummary? summary;
-      if (_canSubmitApproval && results.length > 1) {
+      if (_canSubmitApproval && results.length > 2) {
         summary = results[1] as BoqSummary;
         final approvalData = results[2] as Map<String, String>;
         _approvalStatus = approvalData['status'] ?? 'PENDING';
       }
+      // Last result is always the revisions list (regardless of role)
+      final revisions = results.last as List;
       setState(() {
         _items = items;
         _summary = summary;
+        _revisionCount = revisions.length;
         _expandedGroups.clear();
         _isLoading = false;
       });
@@ -256,6 +265,14 @@ class _BoqScreenState extends State<BoqScreen> {
         backgroundColor: _primaryColor,
         foregroundColor: Colors.white,
         actions: [
+          if (_revisionCount >= 2)
+            IconButton(
+              icon: const Icon(Icons.compare_arrows),
+              tooltip: 'Compare Revisions',
+              onPressed: () => Navigator.of(context).pushNamed(
+                projectBoqDiffRoute(widget.projectId),
+              ),
+            ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadData,

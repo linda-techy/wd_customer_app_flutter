@@ -13,6 +13,7 @@ import 'package:wd_cust_mobile_app/screens/project/views/snags_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/site_visits_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/activity_feed_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/boq_screen.dart';
+import 'package:wd_cust_mobile_app/screens/project/views/boq_diff_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/quality_check_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/view_360_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/warranties_screen.dart';
@@ -170,6 +171,14 @@ Route<dynamic> generateRoute(RouteSettings settings) {
             return MaterialPageRoute(
               settings: settings,
               builder: (context) => BoqScreen(projectId: projectIdStr),
+            );
+          }
+          break;
+        case 'project_boq_diff':
+          if (projectIdStr.isNotEmpty) {
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => BoqDiffScreen(projectId: projectIdStr),
             );
           }
           break;

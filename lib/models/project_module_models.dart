@@ -364,52 +364,50 @@ class ProjectQuery {
 
 class CctvCamera {
   final int id;
-  final int projectId;
+  final int? projectId;
   final String cameraName;
   final String? location;
+  final String? provider;
+  final String? streamProtocol;
   final String? streamUrl;
   final String? snapshotUrl;
-  final bool isInstalled;
   final bool isActive;
-  final DateTime? installationDate;
-  final DateTime? lastActive;
-  final String? cameraType;
   final String? resolution;
-  final String? notes;
+  final DateTime? installationDate;
 
   CctvCamera({
     required this.id,
-    required this.projectId,
+    this.projectId,
     required this.cameraName,
     this.location,
+    this.provider,
+    this.streamProtocol,
     this.streamUrl,
     this.snapshotUrl,
-    required this.isInstalled,
     required this.isActive,
-    this.installationDate,
-    this.lastActive,
-    this.cameraType,
     this.resolution,
-    this.notes,
+    this.installationDate,
   });
 
   factory CctvCamera.fromJson(Map<String, dynamic> json) {
     return CctvCamera(
-      id: json['id'],
+      id: json['id'] ?? 0,
       projectId: json['projectId'],
-      cameraName: json['cameraName'],
+      cameraName: json['cameraName'] ?? json['camera_name'] ?? '',
       location: json['location'],
-      streamUrl: json['streamUrl'],
-      snapshotUrl: json['snapshotUrl'],
-      isInstalled: json['isInstalled'] ?? false,
-      isActive: json['isActive'] ?? true,
-      installationDate: json['installationDate'] != null ? DateTime.parse(json['installationDate']) : null,
-      lastActive: json['lastActive'] != null ? DateTime.parse(json['lastActive']) : null,
-      cameraType: json['cameraType'],
+      provider: json['provider'],
+      streamProtocol: json['streamProtocol'] ?? json['stream_protocol'],
+      streamUrl: json['streamUrl'] ?? json['stream_url'],
+      snapshotUrl: json['snapshotUrl'] ?? json['snapshot_url'],
+      isActive: json['isActive'] ?? json['is_active'] ?? true,
       resolution: json['resolution'],
-      notes: json['notes'],
+      installationDate: json['installationDate'] != null
+          ? DateTime.tryParse(json['installationDate'])
+          : null,
     );
   }
+
+  bool get hasStream => streamUrl != null && streamUrl!.isNotEmpty;
 }
 
 class View360 {

@@ -8,9 +8,12 @@ list(APPEND FLUTTER_PLUGIN_LIST
   flutter_inappwebview_windows
   flutter_secure_storage_windows
   geolocator_windows
+  media_kit_libs_windows_video
+  media_kit_video
   share_plus
   syncfusion_pdfviewer_windows
   url_launcher_windows
+  volume_controller
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

@@ -4,6 +4,7 @@ import '../../../config/api_config.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/project_module_service.dart';
 import '../../../models/project_module_models.dart';
+import 'cctv_player_screen.dart';
 
 class CctvSurveillanceScreen extends StatefulWidget {
   const CctvSurveillanceScreen({super.key, this.projectId});
@@ -271,20 +272,30 @@ class _CctvSurveillanceScreenState extends State<CctvSurveillanceScreen> {
                 ),
 
                 // Stream URL Button
-                if (camera?.streamUrl != null && camera!.streamUrl!.isNotEmpty)
+                if (camera != null && camera.hasStream)
                   Positioned(
                     bottom: defaultPadding,
                     right: defaultPadding,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Icon(
-                        Icons.play_circle_outline,
-                        color: Colors.white,
-                        size: 28,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CctvPlayerScreen(camera: camera),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(
+                          Icons.play_circle_outline,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
                     ),
                   ),
@@ -437,14 +448,14 @@ class _CctvSurveillanceScreenState extends State<CctvSurveillanceScreen> {
                     ),
                   ],
                 ),
-                if (camera.cameraType != null) ...[
+                if (camera.provider != null) ...[
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       Icon(Icons.camera, size: 16, color: Colors.grey[600]),
                       const SizedBox(width: 6),
                       Text(
-                        'Type: ${camera.cameraType}',
+                        'Provider: ${camera.provider}',
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 13,
@@ -470,23 +481,20 @@ class _CctvSurveillanceScreenState extends State<CctvSurveillanceScreen> {
                     ],
                   ),
                 ],
-                if (camera.notes != null && camera.notes!.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      camera.notes!,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 13,
-                        fontStyle: FontStyle.italic,
+                if (camera.streamProtocol != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.settings_input_antenna, size: 16, color: Colors.grey[600]),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Protocol: ${camera.streamProtocol}',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 13,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ],

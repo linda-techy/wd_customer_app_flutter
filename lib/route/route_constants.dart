@@ -47,6 +47,7 @@ const String projectSnagsScreenRoute = "project_snags";
 const String projectSiteVisitsScreenRoute = "project_site_visits";
 const String projectActivityFeedScreenRoute = "project_activity_feed";
 const String projectBoqScreenRoute = "project_boq";
+const String projectBoqDiffScreenRoute = "project_boq_diff";
 const String projectQualityCheckScreenRoute = "project_quality_check";
 const String project360ViewsScreenRoute = "project_360_views";
 
@@ -63,6 +64,7 @@ String projectSnagsRoute(dynamic projectId) => 'project_snags/$projectId';
 String projectSiteVisitsRoute(dynamic projectId) => 'project_site_visits/$projectId';
 String projectActivityFeedRoute(dynamic projectId) => 'project_activity_feed/$projectId';
 String projectBoqRoute(dynamic projectId) => 'project_boq/$projectId';
+String projectBoqDiffRoute(dynamic projectId) => 'project_boq_diff/$projectId';
 String projectQualityCheckRoute(dynamic projectId) => 'project_quality_check/$projectId';
 String project360ViewsRoute(dynamic projectId) => 'project_360_views/$projectId';
 
