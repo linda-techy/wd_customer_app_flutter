@@ -10,7 +10,9 @@ export '/route/route_constants.dart';
 // Main Screens
 export '/screens/home/views/home_screen.dart';
 export '/screens/blog/views/blog_screen.dart';
+export '/screens/blog/views/blog_detail_screen.dart';
 export '/screens/portfolio/views/portfolio_screen.dart';
+export '/screens/portfolio/views/portfolio_detail_screen.dart';
 
 // Project Screens
 export '/screens/project/views/project_screen.dart';

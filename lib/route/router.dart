@@ -3,6 +3,8 @@ import '../entry_point.dart';
 import '../screens/dashboard/views/customer_dashboard_screen.dart';
 import '../models/api_models.dart';
 import '../screens/support/views/ticket_detail_screen.dart';
+import 'package:wd_cust_mobile_app/screens/blog/views/blog_detail_screen.dart';
+import 'package:wd_cust_mobile_app/screens/portfolio/views/portfolio_detail_screen.dart';
 
 import 'package:wd_cust_mobile_app/screens/payments/views/payments_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/site_updates_screen.dart';
@@ -208,6 +210,22 @@ Route<dynamic> generateRoute(RouteSettings settings) {
             return FadeSlidePageRoute(
               settings: settings,
               page: SiteUpdatesScreen(projectId: projectIdStr),
+            );
+          }
+          break;
+        case 'blog_details':
+          if (projectIdStr.isNotEmpty) {
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => BlogDetailScreen(slug: projectIdStr),
+            );
+          }
+          break;
+        case 'portfolio_details':
+          if (projectIdStr.isNotEmpty) {
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => PortfolioDetailScreen(slug: projectIdStr),
             );
           }
           break;

@@ -1,27 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:intl/intl.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../constants.dart';
 import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/scale_button.dart';
+import '../../../services/content_service.dart';
+import '../../../models/content_models.dart';
 
-String _formatRelativeDate(DateTime date) {
-  final now = DateTime.now();
-  final diff = now.difference(date);
-  if (diff.inDays == 0) return 'Today';
-  if (diff.inDays == 1) return 'Yesterday';
-  if (diff.inDays < 7) return '${diff.inDays} days ago';
-  if (diff.inDays < 30) return '${(diff.inDays / 7).floor()} weeks ago';
-  if (diff.inDays < 365) {
-    final months = (diff.inDays / 30).floor();
-    return months == 1 ? '1 month ago' : '$months months ago';
-  }
-  return DateFormat('MMMM yyyy').format(date);
+class BlogScreen extends StatefulWidget {
+  const BlogScreen({super.key});
+
+  @override
+  State<BlogScreen> createState() => _BlogScreenState();
 }
 
-class BlogScreen extends StatelessWidget {
-  const BlogScreen({super.key});
+class _BlogScreenState extends State<BlogScreen> {
+  List<BlogPost> _blogs = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBlogs();
+  }
+
+  Future<void> _loadBlogs() async {
+    setState(() => _isLoading = true);
+    try {
+      final result = await ContentService.getBlogs();
+      if (mounted) {
+        setState(() {
+          _blogs = (result['content'] as List<BlogPost>?) ?? [];
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,26 +48,35 @@ class BlogScreen extends StatelessWidget {
         physics: const BouncingScrollPhysics(),
         slivers: [
           _buildSliverAppBar(),
-          SliverPadding(
-            padding: const EdgeInsets.all(defaultPadding),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  return FadeEntry(
-                    delay: (100 + (index * 100)).ms,
-                    child: _buildBlogCard(context, index),
-                  );
-                },
-                childCount: 6,
+          if (_isLoading)
+            const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator(color: primaryColor)),
+            )
+          else if (_blogs.isEmpty)
+            const SliverFillRemaining(
+              child: Center(child: Text('No blog posts yet')),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.all(defaultPadding),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    return FadeEntry(
+                      delay: (100 + (index * 100)).ms,
+                      child: _buildBlogCard(context, _blogs[index]),
+                    );
+                  },
+                  childCount: _blogs.length,
+                ),
               ),
             ),
-          ),
           const SliverToBoxAdapter(child: SizedBox(height: 80)),
         ],
       ),
     );
   }
-  
+
   Widget _buildSliverAppBar() {
     return SliverAppBar(
       expandedHeight: 220,
@@ -60,234 +86,177 @@ class BlogScreen extends StatelessWidget {
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
-           fit: StackFit.expand,
-           children: [
-             Image.asset(
-               "assets/construction/hero_indian.png",
-               fit: BoxFit.cover,
-             ).animate().fadeIn(duration: 800.ms),
-             Container(
-               color: Colors.black.withOpacity(0.6),
-             ),
-             Positioned(
-               bottom: 30,
-               left: 20,
-               right: 20,
-               child: Column(
-                 crossAxisAlignment: CrossAxisAlignment.start,
-                 mainAxisSize: MainAxisSize.min,
-                 children: [
-                   Container(
-                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                     decoration: BoxDecoration(
-                       color: primaryColor,
-                       borderRadius: BorderRadius.circular(20),
-                     ),
-                     child: const Text("KERALA & INDIA", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                   ).animate().slideX(begin: -0.2),
-                   const SizedBox(height: 12),
-                   const Text(
-                     "Construction Insights\nനിർമ്മാണ ട്രെൻഡ്സ് ആൻഡ് ടിപ്സ്",
-                     style: TextStyle(
-                       fontFamily: grandisExtendedFont,
-                       fontSize: 28,
-                       fontWeight: FontWeight.bold,
-                       color: Colors.white,
-                       height: 1.15,
-                     ),
-                   ).animate().fadeIn().slideY(begin: 0.1),
-                 ],
-               ),
-             ),
-           ],
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
+              "assets/construction/hero_indian.png",
+              fit: BoxFit.cover,
+            ).animate().fadeIn(duration: 800.ms),
+            Container(
+              color: Colors.black.withOpacity(0.6),
+            ),
+            Positioned(
+              bottom: 30,
+              left: 20,
+              right: 20,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: primaryColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      "KERALA & INDIA",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ).animate().slideX(begin: -0.2),
+                  const SizedBox(height: 12),
+                  const Text(
+                    "Construction Insights\nനിർമ്മാണ ട്രെൻഡ്സ് ആൻഡ് ടിപ്സ്",
+                    style: TextStyle(
+                      fontFamily: grandisExtendedFont,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      height: 1.15,
+                    ),
+                  ).animate().fadeIn().slideY(begin: 0.1),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildBlogCard(BuildContext context, int index) {
-    final now = DateTime.now();
-    // Content loaded from CMS
-    final blogData = [
-      {
-        'title': 'Kerala-Style Home Design: Traditional Nalukettu to Modern',
-        'category': 'Kerala Homes',
-        'date': _formatRelativeDate(now.subtract(const Duration(days: 5))),
-        'readTime': '6 min read',
-        'description': 'From nalukettu and sloping roofs to contemporary Kerala villas—design ideas and cost per sq ft that suit Kerala climate and culture.',
-        'image': 'assets/construction/residential_indian.png',
-        'isAsset': true,
-      },
-      {
-        'title': 'Monsoon-Proofing Your Building in Kerala',
-        'category': 'Kerala Tips',
-        'date': _formatRelativeDate(now.subtract(const Duration(days: 12))),
-        'readTime': '5 min read',
-        'description': 'Waterproofing, drainage, and material choices that stand up to heavy rains—essential for every builder and homeowner in Kerala.',
-        'image': 'assets/construction/construction_site.jpg',
-        'isAsset': true,
-      },
-      {
-        'title': 'Construction Cost in Kerala & India ${now.year}: Per Sq Ft Guide',
-        'category': 'Cost & Budget',
-        'date': _formatRelativeDate(now.subtract(const Duration(days: 30))),
-        'readTime': '8 min read',
-        'description': 'Latest rates for residential and commercial construction across Kerala and major Indian cities. Plan your budget with real numbers.',
-        'image': 'assets/construction/hero_indian.png',
-        'isAsset': true,
-      },
-      {
-        'title': 'RERA & Building Rules in Kerala: What You Must Know',
-        'category': 'Regulations',
-        'date': _formatRelativeDate(now.subtract(const Duration(days: 45))),
-        'readTime': '7 min read',
-        'description': 'RERA registration, local body approvals, and Kerala building rules—stay compliant and avoid delays and penalties.',
-        'image': 'assets/construction/commercial_indian.png',
-        'isAsset': true,
-      },
-      {
-        'title': 'Eco-Friendly Materials Popular in South India',
-        'category': 'Sustainability',
-        'date': _formatRelativeDate(now.subtract(const Duration(days: 60))),
-        'readTime': '6 min read',
-        'description': 'Laterite, bamboo, recycled aggregates, and low-carbon options that work well in Kerala and Tamil Nadu climates.',
-        'image': 'assets/construction/landscape_indian.png',
-        'isAsset': true,
-      },
-      {
-        'title': 'Commercial Construction Trends in Kerala',
-        'category': 'Commercial',
-        'date': _formatRelativeDate(now.subtract(const Duration(days: 75))),
-        'readTime': '5 min read',
-        'description': 'Office spaces, retail, and mixed-use projects—trends and best practices for developers and investors in Kerala.',
-        'image': 'assets/construction/commercial_project.jpg',
-        'isAsset': true,
-      },
-    ];
-
-    final data = blogData[index % blogData.length];
-
+  Widget _buildBlogCard(BuildContext context, BlogPost blog) {
     return HoverCard(
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 24),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: blackColor.withOpacity(0.05),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image Header
-            Stack(
-              children: [
+      child: GestureDetector(
+        onTap: () => Navigator.pushNamed(context, 'blog_details/${blog.slug}'),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: blackColor.withOpacity(0.05),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image Header
+              if (blog.imageUrl != null && blog.imageUrl!.isNotEmpty)
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                  child: (data['isAsset'] == true)
-                      ? Image.asset(
-                          (data['image'] as String?) ?? '',
-                          height: 200,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        )
-                      : Image.network(
-                          (data['image'] as String?) ?? '',
-                          height: 200,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                ),
-                Positioned(
-                  top: 16,
-                  right: 16,
+                  child: CachedNetworkImage(
+                    imageUrl: blog.imageUrl!,
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => Container(
+                      height: 200,
+                      color: Colors.grey[200],
+                      child: const Center(child: CircularProgressIndicator()),
+                    ),
+                    errorWidget: (_, __, ___) => Container(
+                      height: 200,
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.image_not_supported, size: 48),
+                    ),
+                  ),
+                )
+              else
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      (data['category'] as String?) ?? '',
-                      style: const TextStyle(
-                        color: blackColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    height: 120,
+                    color: primaryColor.withOpacity(0.1),
+                    child: const Center(child: Icon(Icons.article_outlined, size: 48, color: primaryColor)),
                   ),
                 ),
-              ],
-            ),
 
-            // Content
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        (data['date'] as String?) ?? '',
-                        style: const TextStyle(color: blackColor40, fontSize: 12),
-                      ),
-                      const SizedBox(width: 8),
-                      const CircleAvatar(radius: 2, backgroundColor: blackColor40),
-                      const SizedBox(width: 8),
-                      Text(
-                        (data['readTime'] as String?) ?? '',
-                        style: const TextStyle(color: blackColor40, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    (data['title'] as String?) ?? '',
-                    style: const TextStyle(
-                      fontFamily: grandisExtendedFont,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: blackColor,
-                      height: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    (data['description'] as String?) ?? '',
-                    style: const TextStyle(
-                      color: blackColor60,
-                      height: 1.5,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ScaleButton(
-                    onTap: () {},
-                    child: const Row(
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Text(
-                          "Read Article",
-                          style: TextStyle(
-                            color: primaryColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                        if (blog.author.isNotEmpty) ...[
+                          Text(
+                            blog.author,
+                            style: const TextStyle(color: blackColor40, fontSize: 12),
                           ),
-                        ),
-                        SizedBox(width: 8),
-                        Icon(Icons.arrow_forward_rounded, size: 16, color: primaryColor),
+                          const SizedBox(width: 8),
+                          const CircleAvatar(radius: 2, backgroundColor: blackColor40),
+                          const SizedBox(width: 8),
+                        ],
+                        if (blog.publishedAt != null)
+                          Text(
+                            blog.publishedAt!.split('T').first,
+                            style: const TextStyle(color: blackColor40, fontSize: 12),
+                          ),
                       ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    Text(
+                      blog.title,
+                      style: const TextStyle(
+                        fontFamily: grandisExtendedFont,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: blackColor,
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      blog.excerpt,
+                      style: const TextStyle(
+                        color: blackColor60,
+                        height: 1.5,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ScaleButton(
+                      onTap: () => Navigator.pushNamed(context, 'blog_details/${blog.slug}'),
+                      child: const Row(
+                        children: [
+                          Text(
+                            "Read Article",
+                            style: TextStyle(
+                              color: primaryColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Icon(Icons.arrow_forward_rounded, size: 16, color: primaryColor),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
