@@ -4,7 +4,9 @@ import '../../../../constants.dart';
 import '../../../../components/animations/hover_card.dart';
 import '../../../../components/animations/fade_entry.dart';
 import '../../../../services/payment_service.dart';
+import '../../../../services/customer_boq_service.dart';
 import '../../../../models/payment_models.dart';
+import '../../../../models/project_module_models.dart';
 import 'package:intl/intl.dart';
 
 class PaymentsScreen extends StatefulWidget {
@@ -25,23 +27,45 @@ class _PaymentsScreenState extends State<PaymentsScreen>
   String? _errorMessage;
   List<PaymentSchedule> _schedules = [];
   List<CustomerInvoice> _invoices = [];
+  List<BoqInvoice> _boqInvoices = [];
+  bool _boqInvoicesLoading = false;
   PaymentSummary? _summary;
 
   @override
   void initState() {
     super.initState();
-    // Show invoices tab only when a project UUID is available
+    // Show invoices + BOQ invoices tabs only when a project UUID is available
     _tabController = TabController(
-      length: widget.projectUuid != null ? 2 : 1,
+      length: widget.projectUuid != null ? 3 : 1,
       vsync: this,
     );
     _loadPayments();
+    if (widget.projectUuid != null) {
+      _loadBoqInvoices();
+    }
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadBoqInvoices() async {
+    if (widget.projectUuid == null) return;
+    setState(() => _boqInvoicesLoading = true);
+    try {
+      final svc = await CustomerBoqService.create();
+      final invoices = await svc.getBoqInvoices(widget.projectUuid!);
+      if (mounted) {
+        setState(() {
+          _boqInvoices = invoices;
+          _boqInvoicesLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _boqInvoicesLoading = false);
+    }
   }
 
   Future<void> _loadPayments() async {
@@ -101,6 +125,7 @@ class _PaymentsScreenState extends State<PaymentsScreen>
                 tabs: const [
                   Tab(icon: Icon(Icons.schedule_rounded, size: 18), text: 'Schedule'),
                   Tab(icon: Icon(Icons.receipt_long_rounded, size: 18), text: 'Invoices'),
+                  Tab(icon: Icon(Icons.description_outlined, size: 18), text: 'BOQ Invoices'),
                 ],
               )
             : null,
@@ -129,6 +154,7 @@ class _PaymentsScreenState extends State<PaymentsScreen>
                       children: [
                         _buildScheduleTab(),
                         _buildInvoicesTab(),
+                        _buildBoqInvoicesTab(),
                       ],
                     )
                   : _buildScheduleTab(),
@@ -197,6 +223,169 @@ class _PaymentsScreenState extends State<PaymentsScreen>
       padding: const EdgeInsets.all(20),
       itemCount: _invoices.length,
       itemBuilder: (context, index) => _buildInvoiceItem(_invoices[index], index),
+    );
+  }
+
+  Widget _buildBoqInvoicesTab() {
+    if (_boqInvoicesLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_boqInvoices.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.description_outlined, size: 60, color: blackColor40),
+            SizedBox(height: 16),
+            Text('No BOQ invoices found',
+                style: TextStyle(color: blackColor60)),
+            SizedBox(height: 8),
+            Text('BOQ invoices will appear here once issued.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: blackColor40, fontSize: 13)),
+          ],
+        ),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: _boqInvoices.length,
+      itemBuilder: (context, index) =>
+          _buildBoqInvoiceCard(_boqInvoices[index], index),
+    );
+  }
+
+  Widget _buildBoqInvoiceCard(BoqInvoice invoice, int index) {
+    final Color statusColor;
+    final String statusLabel;
+    switch (invoice.status.toUpperCase()) {
+      case 'PAID':
+        statusColor = successColor;
+        statusLabel = 'PAID';
+        break;
+      case 'OVERDUE':
+        statusColor = errorColor;
+        statusLabel = 'OVERDUE';
+        break;
+      case 'DISPUTED':
+        statusColor = Colors.amber[700]!;
+        statusLabel = 'DISPUTED';
+        break;
+      case 'SENT':
+        statusColor = Colors.blue;
+        statusLabel = 'SENT';
+        break;
+      default:
+        statusColor = blackColor40;
+        statusLabel = invoice.status;
+    }
+
+    final typeLabel = invoice.invoiceType == 'CHANGE_ORDER' ? 'CO' : 'Stage';
+
+    return FadeEntry(
+      delay: Duration(milliseconds: 100 * index),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: HoverCard(
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: blackColor.withOpacity(0.05)),
+              boxShadow: [
+                BoxShadow(
+                  color: blackColor.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.description_outlined,
+                      color: statusColor, size: 20),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            invoice.invoiceNumber ?? 'Invoice #${invoice.id}',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 15),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.blueGrey.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              typeLabel,
+                              style: const TextStyle(
+                                  color: Colors.blueGrey,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        invoice.dueDate != null
+                            ? 'Due: ${DateFormat('MMM dd, yyyy').format(invoice.dueDate!)}'
+                            : invoice.issueDate != null
+                                ? 'Issued: ${DateFormat('MMM dd, yyyy').format(invoice.issueDate!)}'
+                                : 'No date',
+                        style:
+                            const TextStyle(color: blackColor60, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '₹${_formatAmount(invoice.netAmountDue)}',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        statusLabel,
+                        style: TextStyle(
+                            color: statusColor,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
