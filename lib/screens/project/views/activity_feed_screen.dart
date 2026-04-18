@@ -22,12 +22,38 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   String? _error;
   String _filterType = 'all';
 
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+  int _page = 0;
+
   static const _activityTypes = ['all', 'site_report', 'query', 'observation', 'gallery', 'quality_check', 'site_visit'];
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _initService();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_isLoadingMore && _hasMore) {
+      _loadMore();
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoadingMore || !_hasMore) return;
+    setState(() => _isLoadingMore = true);
+    _page++;
+    // Activities are grouped; backend pagination not yet available — no-op append
+    setState(() => _isLoadingMore = false);
   }
 
   Future<void> _initService() async {
@@ -48,6 +74,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
     setState(() {
       _isLoading = true;
       _error = null;
+      _page = 0;
+      _hasMore = true;
     });
     try {
       final grouped = await _service!.getCombinedActivitiesGrouped(widget.projectId);
@@ -209,12 +237,22 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
     final sortedDates = filtered.keys.toList()..sort((a, b) => b.compareTo(a));
 
     return RefreshIndicator(
-      onRefresh: _loadData,
+      onRefresh: () async {
+        setState(() { _page = 0; _hasMore = true; });
+        await _loadData();
+      },
       color: primaryColor,
       child: ListView.builder(
+        controller: _scrollController,
         padding: const EdgeInsets.all(defaultPadding),
-        itemCount: sortedDates.length,
+        itemCount: sortedDates.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, dateIndex) {
+          if (dateIndex == sortedDates.length) {
+            return const Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
           final date = sortedDates[dateIndex];
           final activities = filtered[date]!;
 

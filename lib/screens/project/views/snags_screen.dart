@@ -30,17 +30,42 @@ class _SnagsScreenState extends State<SnagsScreen>
   String? _authToken;
   String _userRole = 'VIEWER'; // Resolved on init; restricts create FAB
 
+  final ScrollController _activeScrollController = ScrollController();
+  final ScrollController _resolvedScrollController = ScrollController();
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+  int _page = 0;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _activeScrollController.addListener(_onScroll);
+    _resolvedScrollController.addListener(_onScroll);
     _initialize();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _activeScrollController.dispose();
+    _resolvedScrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    final ctrl = _tabController.index == 0 ? _activeScrollController : _resolvedScrollController;
+    if (ctrl.position.pixels >= ctrl.position.maxScrollExtent - 200 && !_isLoadingMore && _hasMore) {
+      _loadMore();
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoadingMore || !_hasMore) return;
+    setState(() => _isLoadingMore = true);
+    _page++;
+    // Snags are loaded in full currently; no-op until backend supports pagination
+    setState(() => _isLoadingMore = false);
   }
 
   Future<void> _initialize() async {
@@ -72,6 +97,8 @@ class _SnagsScreenState extends State<SnagsScreen>
       setState(() {
         isLoading = true;
         error = null;
+        _page = 0;
+        _hasMore = true;
       });
 
       // Load active, resolved snags and counts in parallel
@@ -257,13 +284,24 @@ class _SnagsScreenState extends State<SnagsScreen>
       );
     }
 
+    final scrollCtrl = isActive ? _activeScrollController : _resolvedScrollController;
     return RefreshIndicator(
-      onRefresh: _loadSnags,
+      onRefresh: () async {
+        setState(() { _page = 0; _hasMore = true; });
+        await _loadSnags();
+      },
       color: primaryColor,
       child: ListView.builder(
+        controller: scrollCtrl,
         padding: const EdgeInsets.all(defaultPadding),
-        itemCount: snags.length,
+        itemCount: snags.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
+          if (index == snags.length) {
+            return const Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
           return _buildSnagCard(snags[index], index);
         },
       ),

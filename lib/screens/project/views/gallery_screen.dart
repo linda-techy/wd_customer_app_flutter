@@ -27,10 +27,36 @@ class _GalleryScreenState extends State<GalleryScreen> {
   String? _authToken;
   bool _isGroupedView = true; // Toggle between grouped and grid view
 
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+  int _page = 0;
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _initialize();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_isLoadingMore && _hasMore) {
+      _loadMore();
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoadingMore || !_hasMore) return;
+    setState(() => _isLoadingMore = true);
+    _page++;
+    // Gallery images are loaded in full; no-op until backend supports pagination
+    setState(() => _isLoadingMore = false);
   }
 
   Future<void> _initialize() async {
@@ -57,6 +83,8 @@ class _GalleryScreenState extends State<GalleryScreen> {
       setState(() {
         isLoading = true;
         error = null;
+        _page = 0;
+        _hasMore = true;
       });
 
       final loadedImages = await service!.getGalleryImages(widget.projectId);
@@ -192,15 +220,25 @@ class _GalleryScreenState extends State<GalleryScreen> {
       ..sort((a, b) => b.compareTo(a));
 
     return RefreshIndicator(
-      onRefresh: _loadImages,
+      onRefresh: () async {
+        setState(() { _page = 0; _hasMore = true; });
+        await _loadImages();
+      },
       color: primaryColor,
       child: ListView.builder(
+        controller: _scrollController,
         padding: const EdgeInsets.all(defaultPadding),
-        itemCount: sortedDates.length,
+        itemCount: sortedDates.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, dateIndex) {
+          if (dateIndex == sortedDates.length) {
+            return const Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
           final date = sortedDates[dateIndex];
           final dateImages = groupedImages[date]!;
-          
+
           return _buildDateSection(date, dateImages, dateIndex);
         },
       ),
@@ -376,9 +414,13 @@ class _GalleryScreenState extends State<GalleryScreen> {
         if (constraints.maxWidth > 1200) crossAxisCount = 5;
 
         return RefreshIndicator(
-          onRefresh: _loadImages,
+          onRefresh: () async {
+            setState(() { _page = 0; _hasMore = true; });
+            await _loadImages();
+          },
           color: primaryColor,
           child: GridView.builder(
+            controller: _scrollController,
             padding: const EdgeInsets.all(defaultPadding),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,

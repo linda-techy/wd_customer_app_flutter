@@ -22,16 +22,53 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
   String? _errorMessage;
   bool _isTimelineView = true;
 
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+  int _page = 0;
+  static const int _pageSize = 20;
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _loadReports();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_isLoadingMore && _hasMore) {
+      _loadMore();
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoadingMore || !_hasMore) return;
+    setState(() => _isLoadingMore = true);
+    _page++;
+    try {
+      final more = await _siteReportService.getCustomerSiteReports(
+        projectId: widget.projectId,
+      );
+      setState(() {
+        _reports.addAll(more);
+        _hasMore = more.length >= _pageSize;
+      });
+    } catch (_) {}
+    setState(() => _isLoadingMore = false);
   }
 
   Future<void> _loadReports() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _page = 0;
+      _hasMore = true;
     });
 
     try {
@@ -109,16 +146,26 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
     }
 
     return RefreshIndicator(
-      onRefresh: _loadReports,
+      onRefresh: () async {
+        setState(() { _page = 0; _hasMore = true; });
+        await _loadReports();
+      },
       child: _isTimelineView ? _buildTimelineView() : _buildCardList(),
     );
   }
 
   Widget _buildCardList() {
     return ListView.builder(
+      controller: _scrollController,
       padding: const EdgeInsets.all(16),
-      itemCount: _reports.length,
+      itemCount: _reports.length + (_isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index == _reports.length) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
         final report = _reports[index];
         return _buildReportCard(report);
       },
@@ -142,9 +189,16 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
       ..sort((a, b) => b.compareTo(a));
 
     return ListView.builder(
+      controller: _scrollController,
       padding: const EdgeInsets.all(16),
-      itemCount: sortedDates.length,
+      itemCount: sortedDates.length + (_isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index == sortedDates.length) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
         final date = sortedDates[index];
         final reports = groupedReports[date]!;
         return _buildDateGroup(date, reports);

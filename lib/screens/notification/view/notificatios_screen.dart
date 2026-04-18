@@ -21,6 +21,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   String? _error;
   final List<ConstructionNotification> notifications = [];
 
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+  int _page = 0;
+  static const int _pageSize = 50;
+
   List<ConstructionNotification> get filteredNotifications {
     if (selectedFilter == 'All') return notifications;
     if (selectedFilter == 'Unread') return notifications.where((n) => !n.isRead).toList();
@@ -88,13 +94,56 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _loadNotifications();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_isLoadingMore && _hasMore) {
+      _loadMore();
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoadingMore || !_hasMore) return;
+    setState(() => _isLoadingMore = true);
+    _page++;
+    try {
+      final token = await AuthService.getAccessToken();
+      if (token == null) { setState(() => _isLoadingMore = false); return; }
+      final dio = Dio(BaseOptions(
+        connectTimeout: ApiConfig.connectionTimeout,
+        receiveTimeout: ApiConfig.receiveTimeout,
+      ));
+      final response = await dio.get(
+        '${ApiConfig.baseUrl}/api/notifications?page=$_page&size=$_pageSize',
+        options: Options(headers: ApiConfig.getAuthHeaders(token), validateStatus: (_) => true),
+      );
+      if (response.statusCode == 200) {
+        final data = (response.data['data'] as Map<String, dynamic>?) ?? {};
+        final rawList = (data['notifications'] as List<dynamic>?) ?? [];
+        final loaded = rawList.map((e) => _mapNotification(e as Map<String, dynamic>)).toList();
+        setState(() {
+          notifications.addAll(loaded);
+          _hasMore = loaded.length >= _pageSize;
+        });
+      }
+    } catch (_) {}
+    setState(() => _isLoadingMore = false);
   }
 
   Future<void> _loadNotifications() async {
     setState(() {
       _isLoading = true;
       _error = null;
+      _page = 0;
+      _hasMore = true;
     });
 
     try {
@@ -206,7 +255,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     return Scaffold(
       backgroundColor: surfaceColor,
-      body: CustomScrollView(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          setState(() { _page = 0; _hasMore = true; });
+          await _loadNotifications();
+        },
+        child: CustomScrollView(
+        controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
@@ -317,16 +372,23 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         : SliverList(
                             delegate: SliverChildBuilderDelegate(
                               (context, index) {
+                                if (index == filteredNotifications.length) {
+                                  return const Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: Center(child: CircularProgressIndicator()),
+                                  );
+                                }
                                 return FadeEntry(
                                   delay: (index * 50).ms,
                                   child: _buildNotificationItem(filteredNotifications[index]),
                                 );
                               },
-                              childCount: filteredNotifications.length,
+                              childCount: filteredNotifications.length + (_isLoadingMore ? 1 : 0),
                             ),
                           ),
           ),
         ],
+      ),
       ),
     );
   }

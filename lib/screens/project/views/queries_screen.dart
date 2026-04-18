@@ -15,8 +15,30 @@ class _QueriesScreenState extends State<QueriesScreen> {
   bool _isLoading = true;
   String? _error;
 
+  final ScrollController _scrollController = ScrollController();
+  int _page = 0;
+  static const int _pageSize = 20;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
+
   @override
-  void initState() { super.initState(); _initService(); }
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    _initService();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_isLoadingMore && _hasMore) {
+      _loadMore();
+    }
+  }
 
   Future<void> _initService() async {
     final token = await AuthService.getAccessToken();
@@ -26,13 +48,31 @@ class _QueriesScreenState extends State<QueriesScreen> {
 
   Future<void> _loadData() async {
     if (_service == null) return;
-    setState(() { _isLoading = true; _error = null; });
+    setState(() { _isLoading = true; _error = null; _page = 0; _hasMore = true; });
     try {
       final queries = await _service!.getQueries(widget.projectId);
-      setState(() { _queries = queries; _isLoading = false; });
+      setState(() {
+        _queries = queries;
+        _hasMore = queries.length >= _pageSize;
+        _isLoading = false;
+      });
     } catch (e) {
       setState(() { _error = e.toString(); _isLoading = false; });
     }
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoadingMore || !_hasMore || _service == null) return;
+    setState(() => _isLoadingMore = true);
+    _page++;
+    try {
+      final more = await _service!.getQueries(widget.projectId);
+      setState(() {
+        _queries.addAll(more);
+        _hasMore = more.length >= _pageSize;
+      });
+    } catch (_) {}
+    setState(() => _isLoadingMore = false);
   }
 
   void _showCreateQueryDialog() {
@@ -89,9 +129,16 @@ class _QueriesScreenState extends State<QueriesScreen> {
                   : RefreshIndicator(
                       onRefresh: _loadData,
                       child: ListView.builder(
+                        controller: _scrollController,
                         padding: const EdgeInsets.all(16),
-                        itemCount: _queries.length,
+                        itemCount: _queries.length + (_isLoadingMore ? 1 : 0),
                         itemBuilder: (context, index) {
+                          if (index == _queries.length) {
+                            return const Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Center(child: CircularProgressIndicator()),
+                            );
+                          }
                           final query = _queries[index];
                           final status = query['status']?.toString() ?? 'Open';
                           final isResolved = status.toLowerCase().contains('resolved') || status.toLowerCase().contains('closed');
