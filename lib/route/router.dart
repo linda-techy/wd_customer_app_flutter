@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../entry_point.dart';
 import '../screens/dashboard/views/customer_dashboard_screen.dart';
 import '../models/api_models.dart';
-import '../screens/support/views/ticket_detail_screen.dart';
 import 'package:wd_cust_mobile_app/screens/blog/views/blog_detail_screen.dart';
 import 'package:wd_cust_mobile_app/screens/portfolio/views/portfolio_detail_screen.dart';
 
