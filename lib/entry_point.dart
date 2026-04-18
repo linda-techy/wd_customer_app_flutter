@@ -57,6 +57,10 @@ class _EntryPointState extends State<EntryPoint> {
       } else if (_forceProjectDashboard) {
         _currentIndex = 3; // Dashboard tab
         _forceProjectDashboard = false;
+      } else if (isLoggedIn) {
+        // For logged-in users, default to the Dashboard tab (index 3)
+        // instead of the marketing Home tab.
+        _currentIndex = 3;
       }
     });
   }

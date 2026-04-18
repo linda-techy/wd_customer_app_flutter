@@ -18,6 +18,12 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
 
+  // Catch synchronous Flutter framework errors (layout, rendering, etc.)
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    debugPrint('[FlutterError] ${details.exceptionAsString()}');
+  };
+
   // Register FCM background handler before runApp()
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
@@ -36,14 +42,22 @@ Future<void> main() async {
     _configureWeb();
   }
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => LeadProvider()),
-      ],
-      child: const MyApp(),
-    ),
+  // Catch unhandled async/zone errors
+  runZonedGuarded(
+    () {
+      runApp(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (_) => ThemeProvider()),
+            ChangeNotifierProvider(create: (_) => LeadProvider()),
+          ],
+          child: const MyApp(),
+        ),
+      );
+    },
+    (error, stack) {
+      debugPrint('[UncaughtError] $error\n$stack');
+    },
   );
 }
 
@@ -54,12 +68,17 @@ void _configureWeb() {
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
+  /// Global navigator key — used by [NotificationService] to navigate on
+  /// notification tap without needing a BuildContext.
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
+
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  final GlobalKey<NavigatorState> _navigatorKey = MyApp.navigatorKey;
   late final AppLinks _appLinks;
   StreamSubscription<Uri>? _deepLinkSub;
   Uri? _pendingDeepLink;

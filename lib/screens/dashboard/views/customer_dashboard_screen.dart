@@ -195,7 +195,9 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
     final user = _dashboardData!.user;
     final projects = _dashboardData!.projects;
 
-    return CustomScrollView(
+    return RefreshIndicator(
+      onRefresh: _loadDashboardData,
+      child: CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
         // Premium Sliver App Bar
@@ -391,6 +393,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
           ),
         ),
       ],
+    ),
     );
   }
 
