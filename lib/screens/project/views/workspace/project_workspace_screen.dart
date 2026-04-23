@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../providers/project_workspace_provider.dart';
 import '_placeholder_tab.dart';
+import 'project_info_tab.dart';
 
 class ProjectWorkspaceScreen extends StatefulWidget {
   final String projectUuid;
@@ -28,7 +29,7 @@ class _ProjectWorkspaceScreenState extends State<ProjectWorkspaceScreen> {
         body: IndexedStack(
           index: _currentIndex,
           children: const [
-            PlaceholderTab(title: 'Info'), // Task 14 will swap to ProjectInfoTab
+            ProjectInfoTab(),
             PlaceholderTab(title: 'Timeline'),
             PlaceholderTab(title: 'Queries'),
             PlaceholderTab(title: 'Live'),
