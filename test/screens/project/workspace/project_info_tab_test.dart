@@ -15,9 +15,14 @@ import 'package:wd_cust_mobile_app/screens/project/views/workspace/project_info_
 class _StubWorkspaceProvider extends ProjectWorkspaceProvider {
   final ProjectDetails? _stubDetails;
   final List<TeamContact>? _stubTeam;
+  final bool _stubTeamLoadFailed;
 
-  _StubWorkspaceProvider(this._stubDetails, this._stubTeam)
-      : super('test-uuid');
+  _StubWorkspaceProvider(
+    this._stubDetails,
+    this._stubTeam, {
+    bool teamLoadFailed = false,
+  })  : _stubTeamLoadFailed = teamLoadFailed,
+        super('test-uuid');
 
   @override
   Future<void> load({bool force = false}) async {} // no-op
@@ -36,6 +41,9 @@ class _StubWorkspaceProvider extends ProjectWorkspaceProvider {
 
   @override
   String? get error => null;
+
+  @override
+  bool get teamLoadFailed => _stubTeamLoadFailed;
 }
 
 // ---------------------------------------------------------------------------
@@ -179,6 +187,34 @@ void main() {
           find.text('No team contacts available yet.'),
           findsOneWidget,
         );
+      },
+    );
+
+    testWidgets(
+      'shows team-load-failure message when teamLoadFailed is true, even when details loaded',
+      (tester) async {
+        tester.view.physicalSize = const Size(800, 2400);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.reset);
+
+        final provider = _StubWorkspaceProvider(
+          _makeDetails(contractValueDisplay: '₹1.20 Cr'),
+          null, // team never loaded
+          teamLoadFailed: true,
+        );
+
+        await tester.pumpWidget(_buildTestApp(provider));
+        await tester.pump();
+
+        // Project header still renders (details loaded successfully)
+        expect(find.text('Test Project Alpha'), findsWidgets);
+
+        // Team card shows the failure copy, not the empty-state copy
+        expect(
+          find.text('Couldn\'t load team contacts. Pull down to refresh.'),
+          findsOneWidget,
+        );
+        expect(find.text('No team contacts available yet.'), findsNothing);
       },
     );
   });

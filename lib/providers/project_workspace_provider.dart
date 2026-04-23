@@ -17,11 +17,13 @@ class ProjectWorkspaceProvider with ChangeNotifier {
   List<TeamContact>? _team;
   bool _isLoading = false;
   String? _error;
+  bool _teamLoadFailed = false;
 
   ProjectDetails? get details => _details;
   List<TeamContact>? get team => _team;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  bool get teamLoadFailed => _teamLoadFailed;
 
   Future<void> load({bool force = false}) async {
     if (_isLoading) return;
@@ -29,24 +31,32 @@ class ProjectWorkspaceProvider with ChangeNotifier {
 
     _setLoading(true);
     _error = null;
+    _teamLoadFailed = false;
 
     try {
-      final results = await Future.wait([
-        DashboardService.getProjectDetails(projectUuid),
-        DashboardService.getProjectTeam(projectUuid),
-      ]);
-
-      final detailsResponse = results[0] as ApiResponse<ProjectDetails>;
-      final teamResponse = results[1] as ApiResponse<List<TeamContact>>;
-
+      // Fetch project details first; a failure here is fatal for the whole tab.
+      final detailsResponse = await DashboardService.getProjectDetails(projectUuid);
       _details = detailsResponse.data;
-      _team = teamResponse.data;
 
       if (!detailsResponse.success || _details == null) {
         _error = detailsResponse.error?.message ?? 'Failed to load project details.';
-      } else if (!teamResponse.success || _team == null) {
-        _error = teamResponse.error?.message ?? 'Failed to load team contacts.';
-        // Keep _details so callers can still render the header.
+        _setLoading(false);
+        return;
+      }
+
+      // Fetch team separately so a team failure doesn't hide project details.
+      try {
+        final teamResponse = await DashboardService.getProjectTeam(projectUuid);
+        if (teamResponse.success) {
+          _team = teamResponse.data ?? const [];
+        } else {
+          _teamLoadFailed = true;
+          debugPrint('ProjectWorkspaceProvider: team load failed — '
+              '${teamResponse.error?.message}');
+        }
+      } catch (e) {
+        _teamLoadFailed = true;
+        debugPrint('ProjectWorkspaceProvider: team load threw: $e');
       }
     } catch (e) {
       _error = e.toString();

@@ -31,7 +31,6 @@ class ProjectInfoTab extends StatelessWidget {
     }
 
     final details = provider.details!;
-    final team = provider.team ?? const [];
 
     return RefreshIndicator(
       onRefresh: provider.refresh,
@@ -46,7 +45,10 @@ class ProjectInfoTab extends StatelessWidget {
           const SizedBox(height: 12),
           _AddressCard(details: details),
           const SizedBox(height: 12),
-          _TeamCard(team: team),
+          _TeamCard(
+            team: provider.team,
+            teamLoadFailed: provider.teamLoadFailed,
+          ),
           const SizedBox(height: 12),
           _DocumentsCard(details: details),
           const SizedBox(height: 24),
@@ -245,11 +247,31 @@ class _AddressCard extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _TeamCard extends StatelessWidget {
-  final List<TeamContact> team;
-  const _TeamCard({required this.team});
+  final List<TeamContact>? team;
+  final bool teamLoadFailed;
+  const _TeamCard({required this.team, required this.teamLoadFailed});
 
   @override
   Widget build(BuildContext context) {
+    Widget body;
+    if (teamLoadFailed) {
+      body = const Text(
+        'Couldn\'t load team contacts. Pull down to refresh.',
+        style: TextStyle(color: Colors.red),
+      );
+    } else if (team == null) {
+      body = const Center(child: CircularProgressIndicator());
+    } else if (team!.isEmpty) {
+      body = const Text(
+        'No team contacts available yet.',
+        style: TextStyle(color: Colors.grey),
+      );
+    } else {
+      body = Column(
+        children: team!.map((m) => _TeamMemberTile(member: m)).toList(),
+      );
+    }
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -258,13 +280,7 @@ class _TeamCard extends StatelessWidget {
           children: [
             Text('Team', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 12),
-            if (team.isEmpty)
-              const Text(
-                'No team contacts available yet.',
-                style: TextStyle(color: Colors.grey),
-              )
-            else
-              ...team.map((m) => _TeamMemberTile(member: m)),
+            body,
           ],
         ),
       ),
