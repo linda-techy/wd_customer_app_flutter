@@ -167,19 +167,43 @@ class _ContractCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _InfoCard(
-      title: 'Contract',
-      children: [
-        _InfoRow(
-          label: 'Design Package',
-          value: details.designPackage,
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Contract', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Text(
+              details.contractValueDisplay ?? 'Not set',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _InfoRow(
+              label: 'Start',
+              value: details.startDate,
+            ),
+            _InfoRow(
+              label: 'Est. completion',
+              value: details.estimatedCompletionDate,
+            ),
+            _InfoRow(
+              label: 'Package',
+              value: details.designPackage,
+            ),
+            _InfoRow(
+              label: 'Agreement Signed',
+              value: details.isDesignAgreementSigned ? 'Yes' : 'No',
+            ),
+            _InfoRow(label: 'Responsible Person', value: details.responsiblePerson),
+          ],
         ),
-        _InfoRow(
-          label: 'Agreement Signed',
-          value: details.isDesignAgreementSigned ? 'Yes' : 'No',
-        ),
-        _InfoRow(label: 'Responsible Person', value: details.responsiblePerson),
-      ],
+      ),
     );
   }
 }

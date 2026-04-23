@@ -42,7 +42,11 @@ class _StubWorkspaceProvider extends ProjectWorkspaceProvider {
 // Helpers
 // ---------------------------------------------------------------------------
 
-ProjectDetails _makeDetails({String? designPackage}) => ProjectDetails(
+ProjectDetails _makeDetails({
+  String? contractValueDisplay,
+  String? designPackage,
+}) =>
+    ProjectDetails(
       id: 1,
       projectUuid: 'test-uuid',
       name: 'Test Project Alpha',
@@ -53,6 +57,7 @@ ProjectDetails _makeDetails({String? designPackage}) => ProjectDetails(
       phase: 'Construction',
       projectType: 'Residential',
       designPackage: designPackage,
+      contractValueDisplay: contractValueDisplay,
       startDate: '2025-01-15',
       endDate: '2025-12-31',
       sqFeet: 2500.0,
@@ -91,10 +96,15 @@ Widget _buildTestApp(_StubWorkspaceProvider provider) {
 void main() {
   group('ProjectInfoTab', () {
     testWidgets(
-      'renders project name, design package and team contacts with visibility-gated buttons',
+      'renders project name, contract value and team contacts with visibility-gated buttons',
       (tester) async {
+        // Use a tall surface so the ListView renders all cards including Team.
+        tester.view.physicalSize = const Size(800, 2400);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.reset);
+
         final provider = _StubWorkspaceProvider(
-          _makeDetails(designPackage: 'Premium Package'),
+          _makeDetails(contractValueDisplay: '₹1.20 Cr', designPackage: 'Premium Package'),
           [_pmContact, _archContact],
         );
 
@@ -104,12 +114,12 @@ void main() {
         // Header card — project name visible
         expect(find.text('Test Project Alpha'), findsWidgets);
 
-        // Key-facts / contract — design package rendered
-        expect(find.text('Premium Package'), findsOneWidget);
+        // Contract card — INR-formatted value rendered as headline
+        expect(find.text('₹1.20 Cr'), findsOneWidget);
 
-        // Team — both names visible (may be off-screen in small test viewport)
-        expect(find.text('Jane PM', skipOffstage: false), findsOneWidget);
-        expect(find.text('Bob Architect', skipOffstage: false), findsOneWidget);
+        // Team — both names visible
+        expect(find.text('Jane PM'), findsOneWidget);
+        expect(find.text('Bob Architect'), findsOneWidget);
 
         // PM has phone → call button enabled (onPressed != null)
         final callButtons = tester.widgetList<IconButton>(
@@ -118,7 +128,6 @@ void main() {
                 w is IconButton &&
                 (w.icon as Icon?)?.icon == Icons.phone &&
                 w.onPressed != null,
-            skipOffstage: false,
           ),
         );
         expect(callButtons, isNotEmpty);
@@ -130,7 +139,6 @@ void main() {
                 w is IconButton &&
                 (w.icon as Icon?)?.icon == Icons.phone &&
                 w.onPressed == null,
-            skipOffstage: false,
           ),
         );
         expect(disabledCallButtons, isNotEmpty);
@@ -138,10 +146,10 @@ void main() {
     );
 
     testWidgets(
-      'shows "Not set" placeholder when design package is null',
+      'shows "Not set" placeholder when contract value is null',
       (tester) async {
         final provider = _StubWorkspaceProvider(
-          _makeDetails(designPackage: null),
+          _makeDetails(contractValueDisplay: null),
           const [],
         );
 
@@ -155,8 +163,12 @@ void main() {
     testWidgets(
       'shows "No team contacts available yet" placeholder for empty team',
       (tester) async {
+        tester.view.physicalSize = const Size(800, 2400);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.reset);
+
         final provider = _StubWorkspaceProvider(
-          _makeDetails(designPackage: 'Basic'),
+          _makeDetails(contractValueDisplay: '₹50.00 L', designPackage: 'Basic'),
           const [],
         );
 
@@ -164,7 +176,7 @@ void main() {
         await tester.pump();
 
         expect(
-          find.text('No team contacts available yet.', skipOffstage: false),
+          find.text('No team contacts available yet.'),
           findsOneWidget,
         );
       },

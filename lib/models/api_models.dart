@@ -437,6 +437,8 @@ class ProjectDetails {
   final List<ProjectDocumentSummary> documents;
   final ProgressData? progressData;
   final double designProgress;
+  final String? contractValueDisplay;
+  final String? estimatedCompletionDate;
 
   ProjectDetails({
     required this.id,
@@ -460,6 +462,8 @@ class ProjectDetails {
     this.documents = const [],
     this.progressData,
     this.designProgress = 0.0,
+    this.contractValueDisplay,
+    this.estimatedCompletionDate,
   });
 
   factory ProjectDetails.fromJson(Map<String, dynamic> json) {
@@ -494,6 +498,8 @@ class ProjectDetails {
           ? ProgressData.fromJson(json['progressData'])
           : null,
       designProgress: (json['designProgress'] ?? 0).toDouble(),
+      contractValueDisplay: json['contractValueDisplay'] as String?,
+      estimatedCompletionDate: json['estimatedCompletionDate'] as String?,
     );
   }
 }
