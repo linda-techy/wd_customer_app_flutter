@@ -17,6 +17,7 @@ import 'package:wd_cust_mobile_app/screens/project/views/quality_check_screen.da
 import 'package:wd_cust_mobile_app/screens/project/views/view_360_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/warranties_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/delay_logs_screen.dart';
+import 'package:wd_cust_mobile_app/screens/project/views/workspace/project_workspace_screen.dart';
 import 'fade_slide_page_route.dart';
 import 'screen_export.dart';
 
@@ -234,6 +235,14 @@ Route<dynamic> generateRoute(RouteSettings settings) {
             return MaterialPageRoute(
               settings: settings,
               builder: (context) => PortfolioDetailScreen(slug: projectIdStr),
+            );
+          }
+          break;
+        case 'project_workspace':
+          if (projectIdStr.isNotEmpty) {
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => ProjectWorkspaceScreen(projectUuid: projectIdStr),
             );
           }
           break;

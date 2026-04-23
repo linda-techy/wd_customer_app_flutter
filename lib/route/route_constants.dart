@@ -42,6 +42,9 @@ const String projectTimelineScreenRoute = "project_timeline";
 const String projectMilestonesScreenRoute = "project_milestones";
 const String projectGalleryScreenRoute = "project_gallery";
 
+// Workspace Routes
+const String projectWorkspaceScreenRoute = "project_workspace";
+
 // New Module Routes
 const String projectSnagsScreenRoute = "project_snags";
 const String projectSiteVisitsScreenRoute = "project_site_visits";
@@ -68,6 +71,7 @@ String projectBoqDiffRoute(dynamic projectId) => 'project_boq_diff/$projectId';
 String projectQualityCheckRoute(dynamic projectId) => 'project_quality_check/$projectId';
 String project360ViewsRoute(dynamic projectId) => 'project_360_views/$projectId';
 String projectTimelineRoute(dynamic projectId) => 'project_timeline/$projectId';
+String projectWorkspaceRoute(dynamic projectId) => 'project_workspace/$projectId';
 
 // Referral Routes
 const String referAFriendScreenRoute = "refer_a_friend";
