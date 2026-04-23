@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../config/api_config.dart';
 import '../models/api_models.dart';
+import '../models/team_contact.dart';
 import 'auth_interceptor.dart';
 
 class ApiService {
@@ -623,6 +624,49 @@ class ApiService {
           statusCode: 0,
         ),
       );
+    }
+  }
+
+  /// Fetch the team contacts visible to the customer for a project.
+  Future<ApiResponse<List<TeamContact>>> getProjectTeam(
+      String projectUuid, String accessToken) async {
+    try {
+      final url =
+          '${ApiConfig.baseUrl}/api/dashboard/projects/$projectUuid/team';
+
+      final response = await _dio.get(
+        url,
+        options: Options(headers: ApiConfig.getAuthHeaders(accessToken)),
+      );
+
+      if (response.statusCode == 200) {
+        final list = response.data as List<dynamic>?;
+        final team = (list ?? [])
+            .map((e) => TeamContact.fromJson(e as Map<String, dynamic>))
+            .toList();
+        return ApiResponse.success(team);
+      } else {
+        final data = response.data;
+        return ApiResponse.error(data != null
+            ? ApiError.fromJson(data as Map<String, dynamic>)
+            : ApiError(
+                message: 'Failed to load team (${response.statusCode})',
+                statusCode: response.statusCode ?? 0));
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return ApiResponse.error(
+            ApiError(message: 'No internet connection.', statusCode: 0));
+      }
+      return ApiResponse.error(ApiError(
+          message:
+              'Failed to get project team: ${e.response?.data?['message'] ?? e.toString()}',
+          statusCode: e.response?.statusCode ?? 0));
+    } catch (e) {
+      return ApiResponse.error(ApiError(
+          message: 'Failed to get project team: ${e.toString()}',
+          statusCode: 0));
     }
   }
 

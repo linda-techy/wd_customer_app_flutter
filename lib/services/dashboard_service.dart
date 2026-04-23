@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/api_models.dart';
+import '../models/team_contact.dart';
 import 'api_service.dart';
 import 'auth_service.dart';
 
@@ -196,6 +197,35 @@ class DashboardService {
     } catch (e) {
       return ApiResponse.error(
           ApiError(message: 'Failed to get project phases: ${e.toString()}', statusCode: 0));
+    }
+  }
+
+  /// Fetch the team contacts visible to the customer for a project.
+  static Future<ApiResponse<List<TeamContact>>> getProjectTeam(
+      String projectUuid) async {
+    try {
+      final accessToken = await AuthService.getAccessToken();
+      if (accessToken == null) {
+        return ApiResponse.error(
+            ApiError(message: 'No access token found. Please login again.', statusCode: 401));
+      }
+      if (await AuthService.isTokenExpired()) {
+        final refreshed = await AuthService.refreshAccessToken();
+        if (!refreshed) {
+          return ApiResponse.error(
+              ApiError(message: 'Session expired. Please login again.', statusCode: 401));
+        }
+        final newToken = await AuthService.getAccessToken();
+        if (newToken == null) {
+          return ApiResponse.error(
+              ApiError(message: 'Failed to get new access token.', statusCode: 401));
+        }
+        return await _apiService.getProjectTeam(projectUuid, newToken);
+      }
+      return await _apiService.getProjectTeam(projectUuid, accessToken);
+    } catch (e) {
+      return ApiResponse.error(
+          ApiError(message: 'Failed to get project team: ${e.toString()}', statusCode: 0));
     }
   }
 

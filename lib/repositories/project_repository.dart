@@ -1,4 +1,5 @@
 import '../models/project_models.dart';
+import '../models/team_contact.dart';
 
 // Abstract repository interface for project data
 abstract class ProjectRepository {
@@ -47,4 +48,7 @@ abstract class ProjectRepository {
 
   // Progress Data
   Future<List<ProgressDataPoint>> getProgressData(String projectId);
+
+  // Team
+  Future<List<TeamContact>> fetchTeam(String projectUuid);
 }
