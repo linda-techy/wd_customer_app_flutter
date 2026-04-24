@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../providers/project_workspace_provider.dart';
 import '_placeholder_tab.dart';
+import 'internal_timeline_tab.dart';
 import 'project_info_tab.dart';
 
 class ProjectWorkspaceScreen extends StatefulWidget {
@@ -28,11 +29,11 @@ class _ProjectWorkspaceScreenState extends State<ProjectWorkspaceScreen> {
         appBar: AppBar(title: const Text('Project Workspace')),
         body: IndexedStack(
           index: _currentIndex,
-          children: const [
-            ProjectInfoTab(),
-            PlaceholderTab(title: 'Timeline'),
-            PlaceholderTab(title: 'Queries'),
-            PlaceholderTab(title: 'Live'),
+          children: [
+            const ProjectInfoTab(),
+            InternalTimelineTab(projectUuid: widget.projectUuid),
+            const PlaceholderTab(title: 'Queries'),
+            const PlaceholderTab(title: 'Live'),
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
