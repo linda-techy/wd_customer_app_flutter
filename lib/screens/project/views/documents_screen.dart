@@ -155,10 +155,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 icon: const Icon(Icons.search, color: blackColor),
                 onPressed: () {},
               ),
-              IconButton(
-                icon: const Icon(Icons.add_circle_outline, color: primaryColor),
-                onPressed: () {},
-              ),
             ]
           : [],
     );
