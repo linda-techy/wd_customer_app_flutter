@@ -1,5 +1,6 @@
 import '../models/project_models.dart';
 import '../models/team_contact.dart';
+import '../models/timeline_item.dart';
 
 // Abstract repository interface for project data
 abstract class ProjectRepository {
@@ -51,4 +52,9 @@ abstract class ProjectRepository {
 
   // Team
   Future<List<TeamContact>> fetchTeam(String projectUuid);
+
+  // Timeline
+  Future<TimelinePage> fetchTimeline(String projectUuid, String bucket,
+      {int page = 0, int size = 20});
+  Future<TimelineSummary> fetchTimelineSummary(String projectUuid);
 }

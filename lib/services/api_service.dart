@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../config/api_config.dart';
 import '../models/api_models.dart';
 import '../models/team_contact.dart';
+import '../models/timeline_item.dart';
 import 'auth_interceptor.dart';
 
 class ApiService {
@@ -666,6 +667,91 @@ class ApiService {
     } catch (e) {
       return ApiResponse.error(ApiError(
           message: 'Failed to get project team: ${e.toString()}',
+          statusCode: 0));
+    }
+  }
+
+  /// Fetch paginated timeline tasks for a project bucket (week / upcoming / completed).
+  Future<ApiResponse<TimelinePage>> getTimeline(
+      String projectUuid, String bucket, String accessToken,
+      {int page = 0, int size = 20}) async {
+    try {
+      final url =
+          '${ApiConfig.baseUrl}/api/customer/projects/$projectUuid/timeline'
+          '?bucket=$bucket&page=$page&size=$size';
+
+      final response = await _dio.get(
+        url,
+        options: Options(headers: ApiConfig.getAuthHeaders(accessToken)),
+      );
+
+      if (response.statusCode == 200) {
+        final timelinePage = TimelinePage.fromJson(
+            response.data as Map<String, dynamic>);
+        return ApiResponse.success(timelinePage);
+      } else {
+        final data = response.data;
+        return ApiResponse.error(data != null
+            ? ApiError.fromJson(data as Map<String, dynamic>)
+            : ApiError(
+                message: 'Failed to load timeline (${response.statusCode})',
+                statusCode: response.statusCode ?? 0));
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return ApiResponse.error(
+            ApiError(message: 'No internet connection.', statusCode: 0));
+      }
+      return ApiResponse.error(ApiError(
+          message:
+              'Failed to get timeline: ${e.response?.data?['message'] ?? e.toString()}',
+          statusCode: e.response?.statusCode ?? 0));
+    } catch (e) {
+      return ApiResponse.error(ApiError(
+          message: 'Failed to get timeline: ${e.toString()}',
+          statusCode: 0));
+    }
+  }
+
+  /// Fetch timeline summary counts + project progress for a project.
+  Future<ApiResponse<TimelineSummary>> getTimelineSummary(
+      String projectUuid, String accessToken) async {
+    try {
+      final url =
+          '${ApiConfig.baseUrl}/api/customer/projects/$projectUuid/timeline/summary';
+
+      final response = await _dio.get(
+        url,
+        options: Options(headers: ApiConfig.getAuthHeaders(accessToken)),
+      );
+
+      if (response.statusCode == 200) {
+        final summary = TimelineSummary.fromJson(
+            response.data as Map<String, dynamic>);
+        return ApiResponse.success(summary);
+      } else {
+        final data = response.data;
+        return ApiResponse.error(data != null
+            ? ApiError.fromJson(data as Map<String, dynamic>)
+            : ApiError(
+                message:
+                    'Failed to load timeline summary (${response.statusCode})',
+                statusCode: response.statusCode ?? 0));
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown) {
+        return ApiResponse.error(
+            ApiError(message: 'No internet connection.', statusCode: 0));
+      }
+      return ApiResponse.error(ApiError(
+          message:
+              'Failed to get timeline summary: ${e.response?.data?['message'] ?? e.toString()}',
+          statusCode: e.response?.statusCode ?? 0));
+    } catch (e) {
+      return ApiResponse.error(ApiError(
+          message: 'Failed to get timeline summary: ${e.toString()}',
           statusCode: 0));
     }
   }
