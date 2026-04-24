@@ -29,11 +29,17 @@ class TimelineProvider with ChangeNotifier {
       } else if (!summaryResp.success) {
         _error = summaryResp.error?.message ?? 'Failed to load timeline summary';
       }
-      for (final bucket in ['week', 'upcoming', 'completed']) {
-        if (force || _byBucket[bucket] == null) {
-          final resp = await DashboardService.getTimeline(projectUuid, bucket);
+      final bucketsToLoad = ['week', 'upcoming', 'completed']
+          .where((b) => force || _byBucket[b] == null)
+          .toList();
+      if (bucketsToLoad.isNotEmpty) {
+        final results = await Future.wait(
+          bucketsToLoad.map((b) => DashboardService.getTimeline(projectUuid, b)),
+        );
+        for (var i = 0; i < bucketsToLoad.length; i++) {
+          final resp = results[i];
           if (resp.success && resp.data != null) {
-            _byBucket[bucket] = resp.data;
+            _byBucket[bucketsToLoad[i]] = resp.data;
           }
         }
       }
