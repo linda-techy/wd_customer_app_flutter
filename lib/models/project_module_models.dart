@@ -33,8 +33,8 @@ class ProjectDocument {
   final String downloadUrl;  // Full URL for viewing/downloading
   final int? fileSize;
   final String? fileType;
-  final int uploadedById;
-  final String uploadedByName;
+  final int? uploadedById;
+  final String? uploadedByName;
   final DateTime uploadDate;
   final String? description;
   final int version;
@@ -50,8 +50,8 @@ class ProjectDocument {
     required this.downloadUrl,
     this.fileSize,
     this.fileType,
-    required this.uploadedById,
-    required this.uploadedByName,
+    this.uploadedById,
+    this.uploadedByName,
     required this.uploadDate,
     this.description,
     required this.version,
@@ -195,8 +195,8 @@ class GalleryImage {
   final String? thumbnailPath;
   final String? caption;
   final DateTime takenDate;
-  final int uploadedById;
-  final String uploadedByName;
+  final int? uploadedById;
+  final String? uploadedByName;
   final DateTime uploadedAt;
   final int? siteReportId;
   final String? locationTag;
@@ -209,8 +209,8 @@ class GalleryImage {
     this.thumbnailPath,
     this.caption,
     required this.takenDate,
-    required this.uploadedById,
-    required this.uploadedByName,
+    this.uploadedById,
+    this.uploadedByName,
     required this.uploadedAt,
     this.siteReportId,
     this.locationTag,
@@ -419,8 +419,8 @@ class View360 {
   final String? thumbnailUrl;
   final DateTime? captureDate;
   final String? location;
-  final int uploadedById;
-  final String uploadedByName;
+  final int? uploadedById;
+  final String? uploadedByName;
   final DateTime uploadedAt;
   final bool isActive;
   final int viewCount;
@@ -434,8 +434,8 @@ class View360 {
     this.thumbnailUrl,
     this.captureDate,
     this.location,
-    required this.uploadedById,
-    required this.uploadedByName,
+    this.uploadedById,
+    this.uploadedByName,
     required this.uploadedAt,
     required this.isActive,
     required this.viewCount,
@@ -848,18 +848,22 @@ class ProjectWarranty {
 class DelayLog {
   final int id;
   final String delayType;
+  final String? reasonCategory;
   final DateTime fromDate;
   final DateTime? toDate;
-  final String? reasonText;
+  final String? customerSummary;
+  final String? impactOnHandover; // NONE | MINOR | MATERIAL
   final bool isOpen;
   final int impactDays;
 
   DelayLog({
     required this.id,
     required this.delayType,
+    this.reasonCategory,
     required this.fromDate,
     this.toDate,
-    this.reasonText,
+    this.customerSummary,
+    this.impactOnHandover,
     required this.isOpen,
     required this.impactDays,
   });
@@ -868,9 +872,11 @@ class DelayLog {
     return DelayLog(
       id: json['id'],
       delayType: json['delayType'] ?? '',
+      reasonCategory: json['reasonCategory'] as String?,
       fromDate: DateTime.parse(json['fromDate']),
       toDate: json['toDate'] != null ? DateTime.tryParse(json['toDate']) : null,
-      reasonText: json['reasonText'],
+      customerSummary: json['customerSummary'] as String?,
+      impactOnHandover: json['impactOnHandover'] as String?,
       isOpen: json['isOpen'] ?? true,
       impactDays: (json['impactDays'] as num?)?.toInt() ?? 0,
     );

@@ -685,7 +685,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
             Text('Image Details', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
             _detailRow('Date Taken', DateFormat('MMMM d, y h:mm a').format(image.takenDate)),
-            _detailRow('Uploaded By', image.uploadedByName),
+            _detailRow('Uploaded By', image.uploadedByName ?? 'Company'),
             _detailRow('Uploaded On', DateFormat('MMM d, y').format(image.uploadedAt)),
             if (image.tags != null && image.tags!.isNotEmpty)
               _detailRow('Tags', image.tags!.join(', ')),
