@@ -36,6 +36,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   List<DocumentCategory> categories = [];
   ProjectModuleService? service;
   String? projectId;
+  Map<String, String> _imageHeaders = const {};
 
   @override
   void initState() {
@@ -63,6 +64,8 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           baseUrl: ApiConfig.baseUrl,
           token: token,
         );
+        // Cache headers so Image.network can fetch the gated /api/storage/...
+        _imageHeaders = {'Authorization': 'Bearer $token'};
       }
     }
     setState(() {
@@ -297,27 +300,32 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   }
 
   Widget _buildDocumentCard(ProjectDocument doc) {
-    // Determine icon and color based on file type
+    // Resolve icon + colour from MIME type. Server returns full MIME strings
+    // (application/pdf, image/jpeg, …) so we match by substring rather than
+    // exact extension.
+    final lowerType = (doc.fileType ?? '').toLowerCase();
     IconData icon;
     Color color;
-    if (doc.fileType?.toLowerCase() == 'pdf') {
+    if (lowerType.contains('pdf')) {
       icon = Icons.picture_as_pdf;
       color = Colors.red;
-    } else if (doc.fileType?.toLowerCase() == 'docx' ||
-        doc.fileType?.toLowerCase() == 'doc') {
+    } else if (lowerType.contains('image')) {
+      icon = Icons.image;
+      color = Colors.purple;
+    } else if (lowerType.contains('doc')) {
       icon = Icons.description;
       color = Colors.blue;
-    } else if (doc.fileType?.toLowerCase() == 'xlsx' ||
-        doc.fileType?.toLowerCase() == 'xls') {
+    } else if (lowerType.contains('xls') || lowerType.contains('sheet')) {
       icon = Icons.table_chart;
       color = Colors.green;
-    } else if (doc.fileType?.toLowerCase() == 'zip') {
+    } else if (lowerType.contains('zip') || lowerType.contains('rar')) {
       icon = Icons.folder_zip;
       color = Colors.orange;
     } else {
       icon = Icons.insert_drive_file;
       color = Colors.grey;
     }
+    final isImage = lowerType.contains('image');
 
     String sizeStr = '';
     if (doc.fileSize != null) {
@@ -361,13 +369,42 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           ),
           child: Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
+              // Thumbnail: real image preview for image MIME types,
+              // colored type icon for everything else (PDF/doc/xls/zip).
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: isImage
+                      ? Image.network(
+                          _resolveFileUrl(doc.downloadUrl),
+                          headers: _imageHeaders,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (_, child, progress) =>
+                              progress == null
+                                  ? child
+                                  : Container(
+                                      color: color.withOpacity(0.1),
+                                      child: const Center(
+                                        child: SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2),
+                                        ),
+                                      ),
+                                    ),
+                          errorBuilder: (_, __, ___) => Container(
+                            color: color.withOpacity(0.1),
+                            child: Icon(icon, color: color, size: 28),
+                          ),
+                        )
+                      : Container(
+                          color: color.withOpacity(0.1),
+                          child: Icon(icon, color: color, size: 28),
+                        ),
                 ),
-                child: Icon(icon, color: color, size: 28),
               ),
               const SizedBox(width: 16),
               Expanded(
