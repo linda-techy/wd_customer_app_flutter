@@ -25,7 +25,6 @@ import 'financial_summary_screen.dart';
 import 'quality_check_screen.dart';
 import 'view_360_screen.dart';
 import 'feedback_dialog.dart';
-import 'tasks_screen.dart';
 import 'warranties_screen.dart';
 import 'delay_logs_screen.dart';
 
@@ -727,9 +726,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
 
     switch (phase) {
       case ProjectPhase.planning:
-        list.add(_ActionItem('Tasks', Icons.task_alt, Colors.teal, () {
-          nav.push(MaterialPageRoute(builder: (_) => TasksScreen(projectId: projectUuid)));
-        }));
         list.add(_ActionItem('Activity Feed', Icons.timeline, Colors.indigo, () {
           nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectUuid)));
         }));
@@ -758,9 +754,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         }));
         break;
       case ProjectPhase.design:
-        list.add(_ActionItem('Tasks', Icons.task_alt, Colors.teal, () {
-          nav.push(MaterialPageRoute(builder: (_) => TasksScreen(projectId: projectUuid)));
-        }));
         list.add(_ActionItem('Activity Feed', Icons.timeline, Colors.indigo, () {
           nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectUuid)));
         }));
@@ -795,9 +788,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         }));
         break;
       case ProjectPhase.construction:
-        list.add(_ActionItem('Tasks', Icons.task_alt, Colors.teal, () {
-          nav.push(MaterialPageRoute(builder: (_) => TasksScreen(projectId: projectUuid)));
-        }));
         list.add(_ActionItem('Activity Feed', Icons.timeline, Colors.indigo, () {
           nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectUuid)));
         }));
@@ -853,9 +843,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         }));
         break;
       case ProjectPhase.completed:
-        list.add(_ActionItem('Tasks', Icons.task_alt, Colors.teal, () {
-          nav.push(MaterialPageRoute(builder: (_) => TasksScreen(projectId: projectUuid)));
-        }));
         list.add(_ActionItem('Activity Feed', Icons.timeline, Colors.indigo, () {
           nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectUuid)));
         }));
@@ -906,9 +893,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         }));
         break;
       case ProjectPhase.onHold:
-        list.add(_ActionItem('Tasks', Icons.task_alt, Colors.teal, () {
-          nav.push(MaterialPageRoute(builder: (_) => TasksScreen(projectId: projectUuid)));
-        }));
         list.add(_ActionItem('Activity Feed', Icons.timeline, Colors.indigo, () {
           nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectUuid)));
         }));

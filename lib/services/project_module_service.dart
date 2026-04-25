@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import '../models/project_module_models.dart';
-import '../models/task_models.dart';
 
 class ProjectModuleService {
   final String baseUrl;
@@ -890,15 +889,4 @@ class ProjectModuleService {
     }
   }
 
-  // ===== TASK METHODS =====
-
-  Future<List<ProjectTask>> getProjectTasks(String projectUuid, {String? status}) async {
-    String path = '/api/projects/$projectUuid/tasks';
-    if (status != null && status.isNotEmpty) {
-      path += '?status=$status';
-    }
-    final response = await _dio.get(path);
-    final List<dynamic> data = response.data is List ? response.data : [];
-    return data.map((e) => ProjectTask.fromJson(e as Map<String, dynamic>)).toList();
-  }
 }

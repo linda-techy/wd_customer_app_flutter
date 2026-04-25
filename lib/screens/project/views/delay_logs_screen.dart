@@ -183,13 +183,18 @@ class _DelayLogsScreenState extends State<DelayLogsScreen> {
               ),
             ],
           ),
-          // Reason text
-          if (delay.reasonText != null && delay.reasonText!.isNotEmpty) ...[
+          // Impact-on-handover badge (primary customer-facing signal)
+          if (delay.impactOnHandover != null) ...[
+            const SizedBox(height: 10),
+            _buildImpactBadge(delay.impactOnHandover!),
+          ],
+          // Curated customer summary
+          if (delay.customerSummary != null && delay.customerSummary!.isNotEmpty) ...[
             const SizedBox(height: 10),
             Text(
-              delay.reasonText!,
+              delay.customerSummary!,
               style: const TextStyle(fontSize: 14, height: 1.4),
-              maxLines: 3,
+              maxLines: 4,
               overflow: TextOverflow.ellipsis,
             ),
           ],
@@ -242,6 +247,47 @@ class _DelayLogsScreenState extends State<DelayLogsScreen> {
             onPressed: _loadDelayLogs,
             style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
             child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImpactBadge(String impact) {
+    final Color color;
+    final String label;
+    switch (impact) {
+      case 'MATERIAL':
+        color = Colors.red;
+        label = 'Handover impact: material (date may change)';
+        break;
+      case 'MINOR':
+        color = Colors.orange;
+        label = 'Handover impact: minor (<1 week)';
+        break;
+      case 'NONE':
+      default:
+        color = Colors.green;
+        label = 'No impact on handover date';
+        break;
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.info_outline, size: 14, color: color),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
