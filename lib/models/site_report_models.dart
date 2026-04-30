@@ -75,6 +75,71 @@ class SiteReportPhoto {
   }
 }
 
+/// One row of the customer-side per-project summary
+/// `GET /api/customer/site-reports/summary`. Drives the SiteReportsScreen
+/// empty-state hint when the current project has no reports but other
+/// projects do (common when an admin files a report against the wrong
+/// project from the portal dropdown).
+class SiteReportSummaryRow {
+  final int projectId;
+  final String? projectName;
+  final int count;
+
+  const SiteReportSummaryRow({
+    required this.projectId,
+    this.projectName,
+    required this.count,
+  });
+
+  factory SiteReportSummaryRow.fromJson(Map<String, dynamic> json) {
+    return SiteReportSummaryRow(
+      projectId: (json['projectId'] as num).toInt(),
+      projectName: json['projectName'] as String?,
+      count: (json['count'] as num).toInt(),
+    );
+  }
+}
+
+/// One activity carried by a site report — e.g. "RCC slab pour" with 8
+/// labourers, "Plastering" with 4. Lets a single report capture multiple
+/// concurrent work fronts on a project. The flat
+/// [SiteReport.manpowerDeployed] is preserved as a roll-up for legacy
+/// reports; new reports populate [SiteReport.activities] and [manpower]
+/// is summed from there.
+class SiteReportActivity {
+  final int? id;
+  final String name;
+  final int? manpower;
+  final String? equipment;
+  final String? notes;
+
+  const SiteReportActivity({
+    this.id,
+    required this.name,
+    this.manpower,
+    this.equipment,
+    this.notes,
+  });
+
+  factory SiteReportActivity.fromJson(Map<String, dynamic> json) {
+    return SiteReportActivity(
+      id: json['id'] as int?,
+      name: json['name'] as String? ?? '',
+      manpower: json['manpower'] as int?,
+      equipment: json['equipment'] as String?,
+      notes: json['notes'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        if (id != null) 'id': id,
+        'name': name,
+        if (manpower != null) 'manpower': manpower,
+        if (equipment != null && equipment!.isNotEmpty) 'equipment': equipment,
+        if (notes != null && notes!.isNotEmpty) 'notes': notes,
+      };
+}
+
 class SiteReport {
   final int? id;
   final int projectId;
@@ -87,6 +152,14 @@ class SiteReport {
   final int? siteVisitId;
   final List<SiteReportPhoto> photos;
   final String? submittedByName;
+  final String? weather;
+  final int? manpowerDeployed;
+  final String? equipmentUsed;
+  final String? workProgress;
+  final double? latitude;
+  final double? longitude;
+  final double? distanceFromProject;
+  final List<SiteReportActivity> activities;
 
   SiteReport({
     this.id,
@@ -100,6 +173,14 @@ class SiteReport {
     this.siteVisitId,
     this.photos = const [],
     this.submittedByName,
+    this.weather,
+    this.manpowerDeployed,
+    this.equipmentUsed,
+    this.workProgress,
+    this.latitude,
+    this.longitude,
+    this.distanceFromProject,
+    this.activities = const [],
   });
 
   factory SiteReport.fromJson(Map<String, dynamic> json) {
@@ -123,8 +204,25 @@ class SiteReport {
       photos: (json['photos'] as List? ?? [])
           .map((p) => SiteReportPhoto.fromJson(p))
           .toList(),
-      // submittedByName might not be in DTO, as it might be anonymized or not needed for customer
-      submittedByName: null, 
+      // Surface the submitter so the customer can see "Site report by
+      // <Engineer Name>" — the customer API DTO carries this as a flat
+      // field. Falls back to nested entity shape for legacy responses.
+      submittedByName: json['submittedByName'] as String?
+          ?? (json['submittedBy'] is Map
+              ? ('${json['submittedBy']['firstName'] ?? ''} '
+                      '${json['submittedBy']['lastName'] ?? ''}')
+                  .trim()
+              : null),
+      weather: json['weather'] as String?,
+      manpowerDeployed: json['manpowerDeployed'] as int?,
+      equipmentUsed: json['equipmentUsed'] as String?,
+      workProgress: json['workProgress'] as String?,
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      distanceFromProject: (json['distanceFromProject'] as num?)?.toDouble(),
+      activities: (json['activities'] as List? ?? const [])
+          .map((a) => SiteReportActivity.fromJson(a as Map<String, dynamic>))
+          .toList(),
     );
   }
 

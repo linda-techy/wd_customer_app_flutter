@@ -28,11 +28,88 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
   int _page = 0;
   static const int _pageSize = 20;
 
+  /// Lazily-loaded per-project summary used by the empty-state hint
+  /// when the current project has zero reports but other projects do.
+  /// Null until the first empty render fetches it.
+  List<SiteReportSummaryRow>? _otherProjectSummary;
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
     _loadReports();
+  }
+
+  Future<void> _loadOtherProjectSummary() async {
+    if (_otherProjectSummary != null) return;
+    try {
+      final all = await _siteReportService.getReportSummary();
+      // Filter out the project the user is currently viewing (if any).
+      final others = widget.projectId == null
+          ? all
+          : all.where((r) => r.projectId != widget.projectId).toList();
+      if (mounted) setState(() => _otherProjectSummary = others);
+    } catch (_) {
+      if (mounted) setState(() => _otherProjectSummary = const []);
+    }
+  }
+
+  Widget _buildEmptyState() {
+    // Trigger lazy summary fetch on first render.
+    if (_otherProjectSummary == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadOtherProjectSummary());
+    }
+    final others = _otherProjectSummary ?? const [];
+    final totalElsewhere = others.fold<int>(0, (s, r) => s + r.count);
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.report_outlined, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            const Text(
+              'No site reports for this project yet',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              "Reports appear here once the site team submits them.",
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+              textAlign: TextAlign.center,
+            ),
+            if (totalElsewhere > 0) ...[
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 12),
+              Text(
+                'You have $totalElsewhere report${totalElsewhere == 1 ? '' : 's'} on your other project${others.length == 1 ? '' : 's'}:',
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              ...others.map((r) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Text(
+                      '• ${r.projectName ?? "Project #${r.projectId}"} — ${r.count} report${r.count == 1 ? '' : 's'}',
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
+                  )),
+              const SizedBox(height: 8),
+              const Text(
+                'Open that project from the home screen to view its reports.',
+                style: TextStyle(fontSize: 11, color: Colors.grey, fontStyle: FontStyle.italic),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -133,16 +210,7 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
     }
 
     if (_reports.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.report_outlined, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text('No site reports available', style: TextStyle(fontSize: 16, color: Colors.grey)),
-          ],
-        ),
-      );
+      return _buildEmptyState();
     }
 
     return RefreshIndicator(
