@@ -1,4 +1,4 @@
-package com.example.wd_customer_app_flutter
+package com.walldot.wd_cust_mobile_app
 
 import io.flutter.embedding.android.FlutterActivity
 
