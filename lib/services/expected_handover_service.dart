@@ -35,6 +35,10 @@ class ExpectedHandoverService {
   static Future<ExpectedHandover?> fetch(String projectUuid) async {
     try {
       final dio = await _dio();
+      // Dio baseUrl is just the host (e.g. http://localhost:8081 or
+      // https://cust-api.walldotbuilders.com — no /api suffix), so the
+      // full /api/customer/... path lives here. Matches the convention
+      // used by BoqDiffService, DashboardService, etc.
       final response = await dio.get(
         '/api/customer/projects/$projectUuid/expected-handover',
       );
