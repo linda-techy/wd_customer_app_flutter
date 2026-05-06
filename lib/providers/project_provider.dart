@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import '../models/expected_handover_model.dart';
 import '../models/project_models.dart';
 import '../repositories/project_repository.dart';
+import '../services/expected_handover_service.dart';
 
 class ProjectProvider with ChangeNotifier {
   final ProjectRepository _repository;
@@ -18,6 +20,7 @@ class ProjectProvider with ChangeNotifier {
   List<GalleryPhoto> _galleryPhotos = [];
   List<SurveillanceCamera> _cameras = [];
   List<ProgressDataPoint> _progressData = [];
+  ExpectedHandover? _expectedHandover;
 
   bool _isLoading = false;
   String? _error;
@@ -36,6 +39,7 @@ class ProjectProvider with ChangeNotifier {
   List<GalleryPhoto> get galleryPhotos => _galleryPhotos;
   List<SurveillanceCamera> get cameras => _cameras;
   List<ProgressDataPoint> get progressData => _progressData;
+  ExpectedHandover? get expectedHandover => _expectedHandover;
 
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -131,9 +135,27 @@ class ProjectProvider with ChangeNotifier {
       _galleryPhotos = futures[5] as List<GalleryPhoto>;
       _cameras = futures[6] as List<SurveillanceCamera>;
       _progressData = futures[7] as List<ProgressDataPoint>;
+
+      // S2 PR4: side-fetch the expected-handover summary. Failure here
+      // must not break the rest of project-detail loading — we fall back
+      // to null so the UI degrades to "Schedule not yet approved".
+      try {
+        _expectedHandover = await ExpectedHandoverService.fetch(projectId);
+      } catch (_) {
+        _expectedHandover = null;
+      }
     } catch (e) {
       _error = e.toString();
     }
+  }
+
+  /// Standalone refresh for the expected-handover summary. Invoked by
+  /// screens that want to refresh the handover row independently of the
+  /// rest of project-detail load (e.g., after a customer pull-to-refresh
+  /// on the progress header).
+  Future<void> loadExpectedHandover(String projectUuid) async {
+    _expectedHandover = await ExpectedHandoverService.fetch(projectUuid);
+    notifyListeners();
   }
 
   // Search and filter methods
