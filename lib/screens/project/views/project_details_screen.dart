@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../models/api_models.dart';
+import '../../../models/expected_handover_model.dart';
+import '../../../models/project_models.dart' as pm;
 import '../../../route/route_constants.dart';
 import '../../../services/reports/progress_report.dart';
 import '../../../services/dashboard_service.dart';
+import '../../../services/expected_handover_service.dart';
 import '../../../services/auth_service.dart';
 import '../../../constants.dart';
 import '../../../components/animations/fade_entry.dart';
@@ -11,6 +14,7 @@ import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/scale_button.dart';
 import '../../../models/project_phase.dart';
 import '../../../widgets/milestone_timeline.dart';
+import '../../../widgets/progress_header.dart';
 import '../../../core/constants/role_constants.dart';
 import 'design_package_selection_screen.dart';
 import '../../site_reports/site_reports_screen.dart';
@@ -41,6 +45,10 @@ class ProjectDetailsScreen extends StatefulWidget {
 class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   ProjectDetails? _projectDetails;
   List<ProjectPhaseModel> _constructionPhases = [];
+  // S3: expected-handover summary surfaced via ProgressHeader. Failure-tolerant
+  // — on any non-200 / network error stays null and the header degrades to
+  // hiding the handover row (or showing "Schedule not yet approved").
+  ExpectedHandover? _expectedHandover;
   bool _isLoading = true;
   String? _errorMessage;
   bool _hasLoadedOnce = false;
@@ -102,18 +110,23 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         });
       }
 
-      // Load project details and construction phases concurrently
+      // Load project details, construction phases, and expected-handover
+      // summary concurrently. The handover fetch is wrapped in a try/catch
+      // (it returns null on any failure) so it never blocks the screen.
       final results = await Future.wait([
         DashboardService.getProjectDetails(projectId),
         DashboardService.getProjectPhases(projectId),
+        ExpectedHandoverService.fetch(projectId),
       ]);
       final response = results[0] as ApiResponse<ProjectDetails>;
       final phasesResponse = results[1] as ApiResponse<List<ProjectPhaseModel>>;
+      final handover = results[2] as ExpectedHandover?;
 
       if (response.success && response.data != null) {
         setState(() {
           _projectDetails = response.data;
           _constructionPhases = phasesResponse.data ?? [];
+          _expectedHandover = handover;
           _isLoading = false;
         });
       } else {
@@ -352,6 +365,19 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // S3: Progress header with expected-handover row at the top so the
+        // customer sees their progress + handover date without scrolling.
+        // showBreakdown is false because the wider screen already has its
+        // own phase stepper / phase card / construction timeline below.
+        FadeEntry(
+          delay: 360.ms,
+          child: ProgressHeader(
+            project: _buildAdaptedProject(p),
+            handover: _expectedHandover,
+            showBreakdown: false,
+          ),
+        ),
+        const SizedBox(height: 20),
         // Phase stepper (Planning → Design → Construction → Completed)
         FadeEntry(
           delay: 380.ms,
@@ -387,6 +413,55 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           child: _buildActionGrid(context),
         ),
       ],
+    );
+  }
+
+  /// Builds a minimal `pm.Project` from the api_models data so the shared
+  /// [ProgressHeader] widget (which lives on the lighter `pm.Project` model
+  /// from `project_models.dart`) can be reused without bringing the heavier
+  /// `ProjectProvider` plumbing into this screen.
+  ///
+  /// Only `name` and `progress` are read by the widget when
+  /// `showBreakdown: false`, so unused fields can take safe defaults.
+  pm.Project _buildAdaptedProject(ProjectCard? p) {
+    final String name =
+        _projectDetails?.name ?? p?.name ?? 'Project';
+    final double progress =
+        (_projectDetails?.progress ?? p?.progress ?? 0).toDouble();
+    final String location =
+        _projectDetails?.location ?? p?.location ?? '';
+    final String id =
+        _projectDetails?.projectUuid ?? p?.projectUuid ?? '${_projectDetails?.id ?? p?.id ?? 0}';
+
+    return pm.Project(
+      id: id,
+      name: name,
+      location: location,
+      city: '',
+      area: '',
+      status: pm.ProjectStatus.active,
+      progress: progress,
+      nextMilestone: '',
+      nextMilestoneDate: DateTime.now(),
+      thumbnailUrl: '',
+      lastUpdate: '',
+      lastUpdatedAt: DateTime.now(),
+      totalBudget: 0,
+      paidAmount: 0,
+      dueAmount: 0,
+      qcCompleted: 0,
+      qcPending: 0,
+      activeQueries: 0,
+      galleryPhotos: 0,
+      details: pm.ProjectDetails(
+        description: '',
+        startDate: DateTime.now(),
+        expectedEndDate: DateTime.now(),
+        contractor: '',
+        architect: '',
+        progressBreakdown: const {},
+        milestones: const [],
+      ),
     );
   }
 
