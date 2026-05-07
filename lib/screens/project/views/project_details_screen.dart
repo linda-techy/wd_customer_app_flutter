@@ -32,6 +32,56 @@ import 'feedback_dialog.dart';
 import 'warranties_screen.dart';
 import 'delay_logs_screen.dart';
 
+/// Builds a minimal `pm.Project` from the api_models data so the shared
+/// [ProgressHeader] widget (which expects the lighter `pm.Project` model
+/// from `project_models.dart`) can be reused without bringing the heavier
+/// `ProjectProvider` plumbing into this screen.
+///
+/// Top-level so the unit/widget test for the wiring can call it directly.
+/// Only `name` and `progress` are read by the widget when
+/// `showBreakdown: false`, so unused fields take safe defaults.
+pm.Project buildAdaptedProgressHeaderProject(
+    ProjectDetails? details, ProjectCard? card) {
+  final String name = details?.name ?? card?.name ?? 'Project';
+  final double progress =
+      (details?.progress ?? card?.progress ?? 0).toDouble();
+  final String location = details?.location ?? card?.location ?? '';
+  final String id = details?.projectUuid ??
+      card?.projectUuid ??
+      '${details?.id ?? card?.id ?? 0}';
+
+  return pm.Project(
+    id: id,
+    name: name,
+    location: location,
+    city: '',
+    area: '',
+    status: pm.ProjectStatus.active,
+    progress: progress,
+    nextMilestone: '',
+    nextMilestoneDate: DateTime.now(),
+    thumbnailUrl: '',
+    lastUpdate: '',
+    lastUpdatedAt: DateTime.now(),
+    totalBudget: 0,
+    paidAmount: 0,
+    dueAmount: 0,
+    qcCompleted: 0,
+    qcPending: 0,
+    activeQueries: 0,
+    galleryPhotos: 0,
+    details: pm.ProjectDetails(
+      description: '',
+      startDate: DateTime.now(),
+      expectedEndDate: DateTime.now(),
+      contractor: '',
+      architect: '',
+      progressBreakdown: const {},
+      milestones: const [],
+    ),
+  );
+}
+
 class ProjectDetailsScreen extends StatefulWidget {
   const ProjectDetailsScreen({super.key, this.project, this.projectId});
 
@@ -372,7 +422,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         FadeEntry(
           delay: 360.ms,
           child: ProgressHeader(
-            project: _buildAdaptedProject(p),
+            project: buildAdaptedProgressHeaderProject(_projectDetails, p),
             handover: _expectedHandover,
             showBreakdown: false,
           ),
@@ -413,55 +463,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           child: _buildActionGrid(context),
         ),
       ],
-    );
-  }
-
-  /// Builds a minimal `pm.Project` from the api_models data so the shared
-  /// [ProgressHeader] widget (which lives on the lighter `pm.Project` model
-  /// from `project_models.dart`) can be reused without bringing the heavier
-  /// `ProjectProvider` plumbing into this screen.
-  ///
-  /// Only `name` and `progress` are read by the widget when
-  /// `showBreakdown: false`, so unused fields can take safe defaults.
-  pm.Project _buildAdaptedProject(ProjectCard? p) {
-    final String name =
-        _projectDetails?.name ?? p?.name ?? 'Project';
-    final double progress =
-        (_projectDetails?.progress ?? p?.progress ?? 0).toDouble();
-    final String location =
-        _projectDetails?.location ?? p?.location ?? '';
-    final String id =
-        _projectDetails?.projectUuid ?? p?.projectUuid ?? '${_projectDetails?.id ?? p?.id ?? 0}';
-
-    return pm.Project(
-      id: id,
-      name: name,
-      location: location,
-      city: '',
-      area: '',
-      status: pm.ProjectStatus.active,
-      progress: progress,
-      nextMilestone: '',
-      nextMilestoneDate: DateTime.now(),
-      thumbnailUrl: '',
-      lastUpdate: '',
-      lastUpdatedAt: DateTime.now(),
-      totalBudget: 0,
-      paidAmount: 0,
-      dueAmount: 0,
-      qcCompleted: 0,
-      qcPending: 0,
-      activeQueries: 0,
-      galleryPhotos: 0,
-      details: pm.ProjectDetails(
-        description: '',
-        startDate: DateTime.now(),
-        expectedEndDate: DateTime.now(),
-        contractor: '',
-        architect: '',
-        progressBreakdown: const {},
-        milestones: const [],
-      ),
     );
   }
 
