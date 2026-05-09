@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../models/change_request_summary.dart';
 import '../../../services/customer_boq_service.dart';
 import '../../../design_tokens/app_colors.dart';
 
@@ -65,29 +66,19 @@ class _CoReviewScreenState extends State<CoReviewScreen>
   }
 
   Future<void> _approve(CustomerChangeOrder co) async {
-    final confirmed = await _showConfirmDialog(
-      title: 'Approve Change Order',
-      message:
-          'Are you sure you want to approve "${co.title}"?\n\n'
-          'This will ${co.isReduction ? "reduce" : "increase"} your project value by '
-          '${_currency.format(co.netAmountInclGst)} (incl. GST).',
-      confirmLabel: 'Approve',
-      confirmColor: AppColors.success,
+    // S4 PR4: customer approval now requires an emailed OTP. Hand off
+    // to the OTP entry screen instead of calling /approve directly.
+    // The OTP screen pops `true` once the server marks the CR APPROVED.
+    final approved = await Navigator.pushNamed<bool>(
+      context,
+      '/cr-approve/${co.id}',
+      arguments: ChangeRequestSummary.fromCustomerChangeOrder(co),
     );
-    if (!confirmed) return;
-
-    try {
-      await _service!.approve(widget.projectId, co.id);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Change order approved')));
-        _load();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to approve: $e')));
-      }
+    if (!mounted) return;
+    if (approved == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Change order approved')));
+      _load();
     }
   }
 
@@ -108,33 +99,6 @@ class _CoReviewScreenState extends State<CoReviewScreen>
             SnackBar(content: Text('Failed to reject: $e')));
       }
     }
-  }
-
-  Future<bool> _showConfirmDialog({
-    required String title,
-    required String message,
-    required String confirmLabel,
-    required Color confirmColor,
-  }) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text(title),
-            content: Text(message),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Cancel')),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: confirmColor),
-                onPressed: () => Navigator.pop(ctx, true),
-                child: Text(confirmLabel),
-              ),
-            ],
-          ),
-        ) ??
-        false;
   }
 
   Future<String?> _showRejectDialog(String coTitle) async {
