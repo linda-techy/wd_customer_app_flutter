@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../models/api_models.dart';
 import '../../../models/expected_handover_model.dart';
+import '../../../models/next_payment_milestone.dart';
 import '../../../models/project_models.dart' as pm;
 import '../../../route/route_constants.dart';
 import '../../../services/reports/progress_report.dart';
 import '../../../services/dashboard_service.dart';
 import '../../../services/expected_handover_service.dart';
+import '../../../services/next_payment_service.dart';
 import '../../../services/auth_service.dart';
 import '../../../constants.dart';
 import '../../../components/animations/fade_entry.dart';
@@ -14,6 +16,7 @@ import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/scale_button.dart';
 import '../../../models/project_phase.dart';
 import '../../../widgets/milestone_timeline.dart';
+import '../../../widgets/next_payment_milestone_card.dart';
 import '../../../widgets/progress_header.dart';
 import '../../../core/constants/role_constants.dart';
 import 'design_package_selection_screen.dart';
@@ -99,6 +102,10 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   // — on any non-200 / network error stays null and the header degrades to
   // hiding the handover row (or showing "Schedule not yet approved").
   ExpectedHandover? _expectedHandover;
+  // S6 PR1: next-payment milestone surfaced via NextPaymentMilestoneCard.
+  // Failure-tolerant — on any non-200 / network error stays null and the
+  // card hides (one failed sub-fetch must not break the screen).
+  NextPaymentMilestone? _nextPayment;
   bool _isLoading = true;
   String? _errorMessage;
   bool _hasLoadedOnce = false;
@@ -167,16 +174,19 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         DashboardService.getProjectDetails(projectId),
         DashboardService.getProjectPhases(projectId),
         ExpectedHandoverService.fetch(projectId),
+        NextPaymentService.fetch(projectId),
       ]);
       final response = results[0] as ApiResponse<ProjectDetails>;
       final phasesResponse = results[1] as ApiResponse<List<ProjectPhaseModel>>;
       final handover = results[2] as ExpectedHandover?;
+      final nextPayment = results[3] as NextPaymentMilestone?;
 
       if (response.success && response.data != null) {
         setState(() {
           _projectDetails = response.data;
           _constructionPhases = phasesResponse.data ?? [];
           _expectedHandover = handover;
+          _nextPayment = nextPayment;
           _isLoading = false;
         });
       } else {
@@ -426,6 +436,15 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
             handover: _expectedHandover,
             showBreakdown: false,
           ),
+        ),
+        const SizedBox(height: 20),
+        // S6 PR1: Next payment milestone — sits between the ProgressHeader
+        // and the phase stepper so the customer sees their next obligation
+        // without scrolling. Hides itself when null (all paid / fetch
+        // failed).
+        FadeEntry(
+          delay: 370.ms,
+          child: NextPaymentMilestoneCard(milestone: _nextPayment),
         ),
         const SizedBox(height: 20),
         // Phase stepper (Planning → Design → Construction → Completed)
