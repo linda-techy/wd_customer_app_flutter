@@ -98,8 +98,8 @@ void main() {
     testWidgets('null daysUntilDue + null dueDate → "Due date pending"',
         (tester) async {
       _widenView(tester);
-      final m = NextPaymentMilestone(
-        stage: const NextPaymentStage(
+      const m = NextPaymentMilestone(
+        stage: NextPaymentStage(
           stageNumber: 2,
           stageName: 'Foundation',
           dueDate: null,
@@ -110,7 +110,7 @@ void main() {
           percentOfContract: 10,
           totalStages: 7,
         ),
-        summary: const NextPaymentSummary(
+        summary: NextPaymentSummary(
           totalContractValue: 2500000,
           totalPaid: 0,
           totalOutstanding: 2500000,
@@ -118,7 +118,7 @@ void main() {
         ),
       );
 
-      await tester.pumpWidget(_wrap(NextPaymentMilestoneCard(milestone: m)));
+      await tester.pumpWidget(_wrap(const NextPaymentMilestoneCard(milestone: m)));
       await tester.pump();
 
       expect(find.text('Due date pending'), findsOneWidget);
@@ -144,9 +144,9 @@ void main() {
 
     testWidgets('milestone.stage == null → SizedBox.shrink', (tester) async {
       _widenView(tester);
-      final m = NextPaymentMilestone(
+      const m = NextPaymentMilestone(
         stage: null,
-        summary: const NextPaymentSummary(
+        summary: NextPaymentSummary(
           totalContractValue: 3500000,
           totalPaid: 3500000,
           totalOutstanding: 0,
@@ -154,7 +154,7 @@ void main() {
         ),
       );
 
-      await tester.pumpWidget(_wrap(NextPaymentMilestoneCard(milestone: m)));
+      await tester.pumpWidget(_wrap(const NextPaymentMilestoneCard(milestone: m)));
       await tester.pump();
 
       expect(find.byType(Card), findsNothing);
