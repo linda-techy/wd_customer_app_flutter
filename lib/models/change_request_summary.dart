@@ -1,3 +1,5 @@
+import '../services/customer_boq_service.dart' show CustomerChangeOrder;
+
 /// Lightweight DTO for the CR detail rendered on `CrOtpApprovalScreen`.
 ///
 /// Distinct from [CustomerChangeOrder] (legacy BOQ-style change order) —
@@ -36,4 +38,23 @@ class ChangeRequestSummary {
         timeImpactWorkingDays:
             ((j['timeImpactWorkingDays'] as num?) ?? 0).toInt(),
       );
+
+  /// Adapter from the legacy `CustomerChangeOrder` (used by
+  /// `co_review_screen`) into the lightweight summary the OTP screen
+  /// needs. The legacy model carries a signed `netAmountInclGst` plus an
+  /// `isReduction` flag — collapse those into a signed rupee amount.
+  /// `timeImpactWorkingDays` is not modelled on `CustomerChangeOrder`,
+  /// so it falls through as `0` (the OTP screen will simply render
+  /// "+0 working days").
+  factory ChangeRequestSummary.fromCustomerChangeOrder(CustomerChangeOrder co) {
+    final num signedCost =
+        co.isReduction ? -co.netAmountInclGst : co.netAmountInclGst;
+    return ChangeRequestSummary(
+      crId: co.id,
+      title: co.title,
+      description: co.description,
+      costImpactRupees: signedCost,
+      timeImpactWorkingDays: 0,
+    );
+  }
 }

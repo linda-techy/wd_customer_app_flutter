@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../entry_point.dart';
 import '../screens/dashboard/views/customer_dashboard_screen.dart';
 import '../models/api_models.dart';
+import '../models/change_request_summary.dart';
+import '../providers/cr_otp_provider.dart';
 import 'package:wd_cust_mobile_app/screens/blog/views/blog_detail_screen.dart';
 import 'package:wd_cust_mobile_app/screens/portfolio/views/portfolio_detail_screen.dart';
 
@@ -17,6 +20,7 @@ import 'package:wd_cust_mobile_app/screens/project/views/quality_check_screen.da
 import 'package:wd_cust_mobile_app/screens/project/views/view_360_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/warranties_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/delay_logs_screen.dart';
+import 'package:wd_cust_mobile_app/screens/project/views/cr_otp_approval_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/workspace/project_workspace_screen.dart';
 import 'fade_slide_page_route.dart';
 import 'screen_export.dart';
@@ -243,6 +247,23 @@ Route<dynamic> generateRoute(RouteSettings settings) {
             return MaterialPageRoute(
               settings: settings,
               builder: (context) => ProjectWorkspaceScreen(projectUuid: projectIdStr),
+            );
+          }
+          break;
+        case 'cr-approve':
+          // Customer OTP approval entry — wraps the screen in a
+          // route-scoped CrOtpProvider seeded from the route arguments.
+          // Args MUST be a ChangeRequestSummary (the screen needs the
+          // CR title + cost/time impacts to render the header card);
+          // if they're missing, fall through to the default screen.
+          final summary = settings.arguments as ChangeRequestSummary?;
+          if (projectIdStr.isNotEmpty && summary != null) {
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => ChangeNotifierProvider<CrOtpProvider>(
+                create: (_) => CrOtpProvider(summary),
+                child: const CrOtpApprovalScreen(),
+              ),
             );
           }
           break;
