@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // re-exports @visibleForTesting from foundation
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../firebase_options.dart';
 import '../route/route_constants.dart';
@@ -137,6 +137,12 @@ class NotificationService {
         break;
       case 'PAYMENT_RECORDED':
       case 'INVOICE_ISSUED':
+      case 'PAYMENT_MILESTONE_DUE':
+        // S6 PR2 — daily reminder taps land on the Payment Schedule.
+        // The payload also carries data['deepLink'] = 'payments' from
+        // customer-API; we honour the same destination here regardless,
+        // since paymentsScreenRoute is the only deep-link target for
+        // payment-related notifications today.
         if (projectId != null) {
           Navigator.of(context).pushNamed(
             paymentsScreenRoute,
@@ -158,4 +164,12 @@ class NotificationService {
         Navigator.of(context).pushNamed(notificationsScreenRoute);
     }
   }
+
+  /// Visible-for-testing entry point. Forwards to the private [_handleTap]
+  /// so widget tests can drive the tap-handling logic without going through
+  /// the FirebaseMessaging stream pipeline.
+  ///
+  /// Do not call from production code.
+  @visibleForTesting
+  static void handleTapForTest(RemoteMessage message) => _handleTap(message);
 }
