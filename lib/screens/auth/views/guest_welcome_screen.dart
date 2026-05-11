@@ -217,7 +217,7 @@ class _GuestWelcomeScreenState extends State<GuestWelcomeScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildStat('5', 'Signature\nProjects', valueSize, labelSize),
+          _buildStat('2Cr+', 'Executed\nValue', valueSize, labelSize),
           Container(
             width: 1,
             height: 28,

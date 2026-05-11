@@ -423,7 +423,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Expanded(
             child: _buildStatCard(
-                context, "5", "Signature\nProjects", Colors.blue)),
+                context, "2Cr+", "Executed\nValue", Colors.blue)),
         SizedBox(width: gridSpacing),
         Expanded(
             child: _buildStatCard(
