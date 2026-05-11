@@ -193,11 +193,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Container(
                         padding: EdgeInsets.all(isDesktop ? 24 : padding + 4),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(colors: [logoRed, logoPink]),
+                          gradient: const LinearGradient(colors: [Color(0xFF0D1B2A), Color(0xFF1E2F42)]),
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                                color: logoRed.withOpacity(0.3),
+                                color: const Color(0xFF0D1B2A).withOpacity(0.3),
                                 blurRadius: 20,
                                 offset: const Offset(0, 10))
                           ],
@@ -209,9 +209,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Refer & Earn ₹50,000",
+                                    "Walldot Ambassador Club",
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: const Color(0xFFC9A84C),
                                       fontWeight: FontWeight.bold,
                                       fontSize:
                                           ResponsiveFontSize.getTitle(context),
@@ -219,9 +219,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   SizedBox(height: padding * 0.5),
                                   Text(
-                                    "Join Kerala's biggest referral program today.",
+                                    "Invite your network and unlock complimentary interior upgrades and exclusive privileges.",
                                     style: TextStyle(
-                                      color: Colors.white.withOpacity(0.9),
+                                      color: Colors.white.withOpacity(0.85),
                                       fontSize:
                                           ResponsiveFontSize.getBody(context),
                                     ),
@@ -232,10 +232,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: const Color(0xFFC9A84C).withOpacity(0.15),
                                   shape: BoxShape.circle),
-                              child: const Icon(Icons.arrow_forward,
-                                  color: Colors.white),
+                              child: const Icon(Icons.workspace_premium_rounded,
+                                  color: Color(0xFFC9A84C)),
                             )
                           ],
                         ),
