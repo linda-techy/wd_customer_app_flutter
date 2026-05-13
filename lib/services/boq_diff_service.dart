@@ -1,19 +1,26 @@
 import 'package:dio/dio.dart';
 import '../config/api_config.dart';
 import '../models/boq_diff_models.dart';
-import 'auth_service.dart';
+import 'auth_interceptor.dart';
 
 class BoqDiffService {
   BoqDiffService._();
 
   static Future<Dio> _dio() async {
-    final token = await AuthService.getAccessToken() ?? '';
-    return Dio(BaseOptions(
+    final dio = Dio(BaseOptions(
       baseUrl: ApiConfig.baseUrl,
-      headers: ApiConfig.getAuthHeaders(token),
+      headers: const {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
       connectTimeout: ApiConfig.connectionTimeout,
       receiveTimeout: ApiConfig.receiveTimeout,
     ));
+    // AuthInterceptor injects the current token from secure storage on every
+    // request and refreshes on 401, so this service survives token expiry
+    // without baking a stale token into the headers at construction time.
+    dio.interceptors.add(AuthInterceptor(dio));
+    return dio;
   }
 
   /// Returns all BOQ document revisions for [projectId], oldest first.

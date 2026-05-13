@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/site_report_models.dart';
 import '../../services/reports/site_report_pdf.dart';
+import '../../widgets/authenticated_image.dart';
 import 'site_report_photo_viewer.dart';
 
 class SiteReportDetailScreen extends StatefulWidget {
@@ -202,16 +203,15 @@ class _SiteReportDetailScreenState extends State<SiteReportDetailScreen> {
                               child: Stack(
                                 fit: StackFit.expand,
                                 children: [
-                                  Image.network(
-                                    widget.report.photos[index].fullUrl,
+                                  AuthenticatedImage(
+                                    imageUrl:
+                                        widget.report.photos[index].fullUrl,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
-                                        color: Colors.grey[300],
-                                        child: const Icon(Icons.broken_image,
-                                            color: Colors.grey),
-                                      );
-                                    },
+                                    errorWidget: Container(
+                                      color: Colors.grey[300],
+                                      child: const Icon(Icons.broken_image,
+                                          color: Colors.grey),
+                                    ),
                                   ),
                                   // Tap indicator overlay
                                   Container(

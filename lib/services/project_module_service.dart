@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import '../models/project_module_models.dart';
+import 'auth_interceptor.dart';
 
 class ProjectModuleService {
   final String baseUrl;
@@ -13,10 +14,12 @@ class ProjectModuleService {
     this.token,
   }) {
     _dio = Dio(BaseOptions(baseUrl: baseUrl));
-    if (token != null) {
-      _dio.options.headers['Authorization'] = 'Bearer $token';
-    }
     _dio.options.headers['Content-Type'] = 'application/json';
+    // AuthInterceptor reads the current access token from secure storage on
+    // every request and refreshes on 401 — so a token that expires while the
+    // service instance is alive (e.g. user leaves the BOQ screen open for
+    // an hour) keeps working instead of returning stale auth on every call.
+    _dio.interceptors.add(AuthInterceptor(_dio));
   }
 
   // ===== DOCUMENT METHODS =====
@@ -821,12 +824,15 @@ class ProjectModuleService {
     }
   }
 
-  /// Returns aggregated BOQ financial summary from the backend.
+  /// Returns aggregated BOQ financial summary from the backend, or `null`
+  /// if no summary exists yet for this project (the BOQ may not be drafted).
   /// Only available for CUSTOMER / CUSTOMER_ADMIN / ADMIN roles (others get 403).
-  Future<BoqSummary> getBoqSummary(String projectId) async {
+  Future<BoqSummary?> getBoqSummary(String projectId) async {
     final response = await _dio.get('/api/projects/$projectId/boq/summary');
     if (response.statusCode == 200 && response.data['success'] == true) {
-      return BoqSummary.fromJson(response.data['data'] as Map<String, dynamic>);
+      final data = response.data['data'];
+      if (data == null) return null;
+      return BoqSummary.fromJson(data as Map<String, dynamic>);
     }
     throw Exception('Failed to load BOQ summary');
   }

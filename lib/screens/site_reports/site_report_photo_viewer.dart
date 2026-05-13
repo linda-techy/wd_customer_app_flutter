@@ -1,7 +1,8 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 import '../../models/site_report_models.dart';
+import '../../widgets/authenticated_image.dart';
 
 class SiteReportPhotoViewer extends StatefulWidget {
   final List<SiteReportPhoto> photos;
@@ -44,45 +45,47 @@ class _SiteReportPhotoViewerState extends State<SiteReportPhotoViewer> {
         title: Text('${_currentIndex + 1} / ${widget.photos.length}'),
         elevation: 0,
       ),
-      body: PhotoViewGallery.builder(
-        scrollPhysics: const BouncingScrollPhysics(),
-        builder: (BuildContext context, int index) {
-          return PhotoViewGalleryPageOptions(
-            imageProvider: NetworkImage(widget.photos[index].fullUrl),
-            initialScale: PhotoViewComputedScale.contained,
-            minScale: PhotoViewComputedScale.contained,
-            maxScale: PhotoViewComputedScale.covered * 3,
-            heroAttributes: PhotoViewHeroAttributes(tag: 'photo_${widget.photos.hashCode}_$index'),
-            errorBuilder: (context, error, stackTrace) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.broken_image, size: 64, color: Colors.white54),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Failed to load image',
-                      style: TextStyle(color: Colors.white.withOpacity(0.7)),
-                    ),
-                  ],
-                ),
+      body: PageView.builder(
+        controller: _pageController,
+        itemCount: widget.photos.length,
+        onPageChanged: (index) => setState(() => _currentIndex = index),
+        itemBuilder: (context, index) {
+          final photo = widget.photos[index];
+          return FutureBuilder<Uint8List>(
+            future: AuthenticatedImage.fetchBytes(photo.fullUrl),
+            builder: (context, snap) {
+              if (snap.connectionState != ConnectionState.done) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                );
+              }
+              if (snap.hasError || snap.data == null) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.broken_image,
+                          size: 64, color: Colors.white54),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Failed to load image',
+                        style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return PhotoView(
+                imageProvider: MemoryImage(snap.data!),
+                initialScale: PhotoViewComputedScale.contained,
+                minScale: PhotoViewComputedScale.contained,
+                maxScale: PhotoViewComputedScale.covered * 3,
+                heroAttributes: PhotoViewHeroAttributes(
+                    tag: 'photo_${widget.photos.hashCode}_$index'),
+                backgroundDecoration: const BoxDecoration(color: Colors.black),
               );
             },
           );
-        },
-        itemCount: widget.photos.length,
-        loadingBuilder: (context, event) => Center(
-          child: CircularProgressIndicator(
-            value: event == null ? 0 : event.cumulativeBytesLoaded / (event.expectedTotalBytes ?? 1),
-            color: Colors.white,
-          ),
-        ),
-        backgroundDecoration: const BoxDecoration(color: Colors.black),
-        pageController: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
         },
       ),
     );

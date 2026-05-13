@@ -135,7 +135,7 @@ class _GuestWelcomeScreenState extends State<GuestWelcomeScreen>
         ),
         SizedBox(height: isSmallHeight ? 4 : 8),
         Text(
-          'A boutique collective for the top 0.1% of homeowners.',
+          'Only a handful of homes each year — built like they\'re our own.',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: subtitleSize,
@@ -229,7 +229,7 @@ class _GuestWelcomeScreenState extends State<GuestWelcomeScreen>
             height: 28,
             color: Colors.white.withOpacity(0.3),
           ),
-          _buildStat('Top 0.1%', 'Elite\nFocus', valueSize, labelSize),
+          _buildStat('12 / year', 'Homes We\nTake On', valueSize, labelSize),
         ],
       ),
     );

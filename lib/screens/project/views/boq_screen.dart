@@ -79,7 +79,7 @@ class _BoqScreenState extends State<BoqScreen> {
       final items = results[0] as List<BoqItem>;
       BoqSummary? summary;
       if (_canSubmitApproval && results.length > 2) {
-        summary = results[1] as BoqSummary;
+        summary = results[1] as BoqSummary?;
         final approvalData = results[2] as Map<String, String>;
         _approvalStatus = approvalData['status'] ?? 'PENDING';
       }

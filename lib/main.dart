@@ -73,6 +73,12 @@ class MyApp extends StatefulWidget {
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
 
+  /// Global ScaffoldMessenger key — lets AuthInterceptor surface a SnackBar
+  /// (e.g. "session expired") after a forced logout, when no in-tree
+  /// BuildContext is available.
+  static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
+
   @override
   State<MyApp> createState() => _MyAppState();
 }
@@ -255,6 +261,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       key: ValueKey<String>(_initialRoute),
       navigatorKey: _navigatorKey,
+      scaffoldMessengerKey: MyApp.scaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
       title: 'Walldot Builders',
       theme: AppTheme.lightTheme(context),

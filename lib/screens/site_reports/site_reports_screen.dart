@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:intl/intl.dart';
 import '../../models/site_report_models.dart';
 import '../../services/site_report_service.dart';
+import '../../widgets/authenticated_image.dart';
 import 'site_report_detail_screen.dart';
 import 'site_report_photo_viewer.dart';
 
@@ -511,21 +512,17 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
                           onTap: () => _openPhotoGallery(report, photoIndex),
                           child: Hero(
                             tag: 'photo_${report.id}_$photoIndex',
-                            child: ClipRRect(
+                            child: AuthenticatedImage(
+                              imageUrl: photo.fullUrl,
+                              width: 60,
+                              height: 60,
                               borderRadius: BorderRadius.circular(6),
-                              child: Image.network(
-                                photo.fullUrl,
+                              errorWidget: Container(
                                 width: 60,
                                 height: 60,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: 60,
-                                    height: 60,
-                                    color: Colors.grey[300],
-                                    child: const Icon(Icons.broken_image, size: 20, color: Colors.grey),
-                                  );
-                                },
+                                color: Colors.grey[300],
+                                child: const Icon(Icons.broken_image,
+                                    size: 20, color: Colors.grey),
                               ),
                             ),
                           ),
@@ -655,21 +652,17 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
                           onTap: () => _openPhotoGallery(report, photoIndex),
                           child: Hero(
                             tag: 'photo_${report.id}_$photoIndex',
-                            child: ClipRRect(
+                            child: AuthenticatedImage(
+                              imageUrl: photo.fullUrl,
+                              width: 80,
+                              height: 80,
                               borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                photo.fullUrl,
+                              errorWidget: Container(
                                 width: 80,
                                 height: 80,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: 80,
-                                    height: 80,
-                                    color: Colors.grey[300],
-                                    child: const Icon(Icons.broken_image, color: Colors.grey),
-                                  );
-                                },
+                                color: Colors.grey[300],
+                                child: const Icon(Icons.broken_image,
+                                    color: Colors.grey),
                               ),
                             ),
                           ),
