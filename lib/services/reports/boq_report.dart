@@ -4,7 +4,12 @@ import '../report_service.dart';
 import '../../utils/currency_formatter.dart';
 import '../../models/project_module_models.dart';
 
-/// Generates a landscape BOQ Summary PDF grouped by work type.
+/// Generates a landscape BOQ scope PDF grouped by work type.
+///
+/// Customer view: lists scope (item code + description + status) only.
+/// Quantity, unit, rate, and line-item amount are intentionally omitted —
+/// contractor BoQ pricing is commercially sensitive and the customer approves
+/// on the document-level total (passed in via [totalAmount] from BoqSummary).
 class BoqReport {
   BoqReport._();
 
@@ -12,6 +17,7 @@ class BoqReport {
     required String projectName,
     required String revisionInfo,
     required List<BoqItem> boqItems,
+    double? totalAmount,
   }) async {
     final doc = ReportService.createDocument();
 
@@ -25,13 +31,7 @@ class BoqReport {
 
     final List<pw.Widget> content = [];
 
-    double grandTotal = 0.0;
-
     for (final entry in grouped.entries) {
-      final groupTotal =
-          entry.value.fold<double>(0, (s, i) => s + i.amount);
-      grandTotal += groupTotal;
-
       // Group header row
       content.add(
         pw.Container(
@@ -50,7 +50,7 @@ class BoqReport {
                 ),
               ),
               pw.Text(
-                'Subtotal: ${CurrencyFormatter.format(groupTotal)}',
+                '${entry.value.length} item${entry.value.length == 1 ? '' : 's'}',
                 style: pw.TextStyle(
                   fontSize: 9,
                   fontWeight: pw.FontWeight.bold,
@@ -62,52 +62,47 @@ class BoqReport {
       );
       content.add(pw.SizedBox(height: 2));
 
-      // Items table for this group
+      // Items table for this group — scope only, no pricing breakdown
       content.add(
         ReportService.buildTable(
-          headers: ['Item Code', 'Description', 'Unit', 'Qty', 'Rate', 'Amount'],
+          headers: ['Item Code', 'Description', 'Status'],
           rows: entry.value.map((item) {
             return [
               item.itemCode ?? '',
               item.description,
-              item.unit,
-              item.quantity == item.quantity.truncateToDouble()
-                  ? item.quantity.toInt().toString()
-                  : item.quantity.toStringAsFixed(2),
-              CurrencyFormatter.format(item.rate),
-              CurrencyFormatter.format(item.amount),
+              item.status ?? '',
             ];
           }).toList(),
           columnAlignments: [
             pw.Alignment.centerLeft,
             pw.Alignment.centerLeft,
             pw.Alignment.center,
-            pw.Alignment.centerRight,
-            pw.Alignment.centerRight,
-            pw.Alignment.centerRight,
           ],
         ),
       );
       content.add(pw.SizedBox(height: 8));
     }
 
-    // Grand total row
-    content.add(pw.Divider(thickness: 1));
-    content.add(
-      pw.Row(
-        mainAxisAlignment: pw.MainAxisAlignment.end,
-        children: [
-          pw.Text(
-            'Grand Total: ${CurrencyFormatter.format(grandTotal)}',
-            style: pw.TextStyle(
-              fontSize: 11,
-              fontWeight: pw.FontWeight.bold,
-              color: PdfColor.fromHex('#D84940'),
+    // Document-level total (customer-approved value) — sourced from BoqSummary,
+    // not summed client-side from redacted per-item amounts.
+    if (totalAmount != null) {
+      content.add(pw.Divider(thickness: 1));
+      content.add(
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.end,
+          children: [
+            pw.Text(
+              'Total Project Cost: ${CurrencyFormatter.format(totalAmount)}',
+              style: pw.TextStyle(
+                fontSize: 11,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColor.fromHex('#D84940'),
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    }
 
     doc.addPage(
       pw.MultiPage(

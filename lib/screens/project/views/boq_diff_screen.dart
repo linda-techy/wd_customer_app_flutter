@@ -451,8 +451,6 @@ class _BoqDiffScreenState extends State<BoqDiffScreen> {
                         style: TextStyle(
                             fontSize: 11, color: Colors.grey.shade600)),
                   ],
-                  const SizedBox(height: 6),
-                  _itemMetaRow(item),
                 ],
               ),
             ),
@@ -508,8 +506,6 @@ class _BoqDiffScreenState extends State<BoqDiffScreen> {
                         style: TextStyle(
                             fontSize: 11, color: Colors.grey.shade600)),
                   ],
-                  const SizedBox(height: 6),
-                  _itemMetaRow(item),
                 ],
               ),
             ),
@@ -564,17 +560,32 @@ class _BoqDiffScreenState extends State<BoqDiffScreen> {
                   style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
             ],
             const SizedBox(height: 8),
-            ...item.changes.entries.map((e) => _buildChangeRow(e.key, e.value)),
+            // Only scope-level changes (description) are surfaced.
+            // Quantity / rate / amount deltas are filtered server-side because
+            // contractor pricing is commercially sensitive; defense in depth: skip them here too.
+            ...item.changes.entries
+                .where((e) => _isCustomerVisibleField(e.key))
+                .map((e) => _buildChangeRow(e.key, e.value)),
           ],
         ),
       ),
     );
   }
 
+  bool _isCustomerVisibleField(String field) {
+    // Whitelist: only fields safe to expose to a customer.
+    switch (field) {
+      case 'description':
+        return true;
+      default:
+        return false;
+    }
+  }
+
   Widget _buildChangeRow(String field, BoqDiffChange change) {
     final fieldLabel = _fieldLabel(field);
-    final oldStr = _formatValue(field, change.oldValue);
-    final newStr = _formatValue(field, change.newValue);
+    final oldStr = _formatValue(change.oldValue);
+    final newStr = _formatValue(change.newValue);
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
@@ -587,20 +598,28 @@ class _BoqDiffScreenState extends State<BoqDiffScreen> {
                     color: Colors.grey.shade600,
                     fontWeight: FontWeight.w500)),
           ),
-          Text(oldStr,
-              style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.red.shade700,
-                  decoration: TextDecoration.lineThrough)),
+          Expanded(
+            child: Text(oldStr,
+                style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.red.shade700,
+                    decoration: TextDecoration.lineThrough),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis),
+          ),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 6),
             child: Icon(Icons.arrow_forward, size: 13, color: Colors.grey),
           ),
-          Text(newStr,
-              style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.green.shade700,
-                  fontWeight: FontWeight.w600)),
+          Expanded(
+            child: Text(newStr,
+                style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.green.shade700,
+                    fontWeight: FontWeight.w600),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis),
+          ),
         ],
       ),
     );
@@ -608,39 +627,8 @@ class _BoqDiffScreenState extends State<BoqDiffScreen> {
 
   // ── Shared helpers ───────────────────────────────────────────────────────
 
-  Widget _itemMetaRow(BoqDiffItem item) {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 4,
-      children: [
-        if (item.quantity != null)
-          _metaChip('Qty: ${_formatQty(item.quantity!, item.unit)}'),
-        if (item.rate != null)
-          _metaChip('Rate: ${CurrencyFormatter.format(item.rate!)}'),
-        if (item.amount != null)
-          _metaChip('Total: ${CurrencyFormatter.format(item.amount!)}'),
-      ],
-    );
-  }
-
-  Widget _metaChip(String label) {
-    return Text(label,
-        style: TextStyle(fontSize: 11, color: Colors.grey.shade700));
-  }
-
-  String _formatQty(double qty, String? unit) {
-    final q = qty == qty.truncateToDouble()
-        ? qty.toInt().toString()
-        : qty.toStringAsFixed(2);
-    return unit != null && unit.isNotEmpty ? '$q $unit' : q;
-  }
-
   String _fieldLabel(String field) {
     switch (field) {
-      case 'quantity':
-        return 'Quantity';
-      case 'rate':
-        return 'Rate';
       case 'description':
         return 'Description';
       default:
@@ -648,19 +636,8 @@ class _BoqDiffScreenState extends State<BoqDiffScreen> {
     }
   }
 
-  String _formatValue(String field, dynamic value) {
+  String _formatValue(dynamic value) {
     if (value == null) return '—';
-    if (field == 'rate' || field == 'amount') {
-      final d = double.tryParse(value.toString()) ?? 0.0;
-      return CurrencyFormatter.format(d);
-    }
-    if (field == 'quantity') {
-      final d = double.tryParse(value.toString());
-      if (d == null) return value.toString();
-      return d == d.truncateToDouble()
-          ? d.toInt().toString()
-          : d.toStringAsFixed(2);
-    }
     return value.toString();
   }
 }

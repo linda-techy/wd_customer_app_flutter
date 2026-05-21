@@ -621,16 +621,21 @@ class BoqItem {
   final String? categoryName;
   final String? itemCode;
   final String description;
-  final double quantity;
-  final String unit;
-  final double rate;
-  final double amount;
+  // Quantity, unit, rate, and line-item amount are intentionally nullable.
+  // The customer API redacts these fields (along with executed/billed amounts)
+  // because BoQ takeoff and unit pricing are commercially sensitive contractor IP.
+  // Customers see scope (description) and progress %; they approve on the
+  // document-level total (BoqSummary / payment stages), not the per-item breakdown.
+  final double? quantity;
+  final String? unit;
+  final double? rate;
+  final double? amount;
   final String? status;
-  final double executedQuantity;
-  final double billedQuantity;
-  final double remainingQuantity;
-  final double totalExecutedAmount;
-  final double totalBilledAmount;
+  final double? executedQuantity;
+  final double? billedQuantity;
+  final double? remainingQuantity;
+  final double? totalExecutedAmount;
+  final double? totalBilledAmount;
   final double executionPercentage;
   final double billingPercentage;
   final String? specifications;
@@ -652,16 +657,16 @@ class BoqItem {
     this.categoryName,
     this.itemCode,
     required this.description,
-    required this.quantity,
-    required this.unit,
-    required this.rate,
-    required this.amount,
+    this.quantity,
+    this.unit,
+    this.rate,
+    this.amount,
     this.status,
-    required this.executedQuantity,
-    required this.billedQuantity,
-    required this.remainingQuantity,
-    required this.totalExecutedAmount,
-    required this.totalBilledAmount,
+    this.executedQuantity,
+    this.billedQuantity,
+    this.remainingQuantity,
+    this.totalExecutedAmount,
+    this.totalBilledAmount,
     required this.executionPercentage,
     required this.billingPercentage,
     this.specifications,
@@ -676,9 +681,11 @@ class BoqItem {
 
   bool get isAddon => itemKind == 'ADDON' || itemKind == 'OPTIONAL';
   bool get isExclusion => itemKind == 'EXCLUSION';
+  bool get hasProgress => executionPercentage > 0 || billingPercentage > 0;
 
   factory BoqItem.fromJson(Map<String, dynamic> json) {
     double toDouble(dynamic v) => v == null ? 0.0 : (v as num).toDouble();
+    double? toNullableDouble(dynamic v) => v == null ? null : (v as num).toDouble();
     return BoqItem(
       id: json['id'],
       projectId: json['projectId'],
@@ -688,23 +695,23 @@ class BoqItem {
       categoryName: json['categoryName'],
       itemCode: json['itemCode'],
       description: json['description'] ?? '',
-      quantity: toDouble(json['quantity']),
-      unit: json['unit'] ?? '',
-      rate: toDouble(json['rate']),
-      amount: toDouble(json['amount'] ?? json['totalAmount']),
+      quantity: toNullableDouble(json['quantity']),
+      unit: json['unit'] as String?,
+      rate: toNullableDouble(json['rate']),
+      amount: toNullableDouble(json['amount'] ?? json['totalAmount']),
       status: json['status'],
-      executedQuantity: toDouble(json['executedQuantity']),
-      billedQuantity: toDouble(json['billedQuantity']),
-      remainingQuantity: toDouble(json['remainingQuantity']),
-      totalExecutedAmount: toDouble(json['totalExecutedAmount']),
-      totalBilledAmount: toDouble(json['totalBilledAmount']),
+      executedQuantity: toNullableDouble(json['executedQuantity']),
+      billedQuantity: toNullableDouble(json['billedQuantity']),
+      remainingQuantity: toNullableDouble(json['remainingQuantity']),
+      totalExecutedAmount: toNullableDouble(json['totalExecutedAmount']),
+      totalBilledAmount: toNullableDouble(json['totalBilledAmount']),
       executionPercentage: toDouble(json['executionPercentage']),
       billingPercentage: toDouble(json['billingPercentage']),
       specifications: json['specifications'],
       notes: json['notes'],
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
-      createdById: json['createdById'],
+      createdById: json['createdById'] ?? 0,
       createdByName: json['createdByName'] ?? '',
       isActive: json['isActive'] ?? true,
       itemKind: json['itemKind'] ?? 'BASE',

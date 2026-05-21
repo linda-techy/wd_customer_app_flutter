@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../models/project_module_models.dart';
 import '../../../services/project_module_service.dart';
@@ -125,21 +124,14 @@ class _BoqScreenState extends State<BoqScreen> {
       _filteredItems.where((i) => i.isAddon).toList();
 
 
-  // Total project cost across all items (not filtered) — for sticky bar + distribution.
-  // Uses backend-provided summary when available (avoids double-precision accumulation).
-  double get _totalAllItems =>
-      _summary?.totalPlannedAmount ?? _items.fold<double>(0, (s, i) => s + i.amount);
+  // Total project cost across all items — sourced from the backend summary
+  // (`BoqSummary.totalPlannedAmount`), which is computed server-side and is the
+  // approved document-level value the customer signs off on.
+  // Per-item amounts are redacted from the customer payload, so a client-side
+  // fold over `_items` would always be zero; fall back to 0.0 if summary missing.
+  double get _totalAllItems => _summary?.totalPlannedAmount ?? 0.0;
 
   String _formatCurrency(double amount) => CurrencyFormatter.formatShort(amount);
-
-  String _formatQuantity(double qty, String unit) {
-    final qtyStr = qty == qty.truncateToDouble()
-        ? qty.toInt().toString()
-        : qty.toStringAsFixed(2);
-    return unit.isEmpty || RegExp(r'^\d+$').hasMatch(unit)
-        ? qtyStr
-        : '$qtyStr $unit';
-  }
 
   // ── Approval actions ──────────────────────────────────────────────────────
 
@@ -269,6 +261,8 @@ class _BoqScreenState extends State<BoqScreen> {
         projectName: 'Project ${widget.projectId}',
         revisionInfo: _revisionCount > 0 ? 'Revision $_revisionCount' : '',
         boqItems: _items,
+        // Document-level total from backend summary — the value the customer has approved.
+        totalAmount: _summary?.totalPlannedAmount,
       );
     } catch (e) {
       if (mounted) {
@@ -283,13 +277,12 @@ class _BoqScreenState extends State<BoqScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Use backend-provided summary for financial roles; fall back to fold for others.
-    final totalPlanned = _summary?.totalPlannedAmount ??
-        _filteredItems.fold<double>(0, (s, i) => s + i.amount);
-    final totalExecuted = _summary?.totalExecutedAmount ??
-        _filteredItems.fold<double>(0, (s, i) => s + i.totalExecutedAmount);
-    final totalBilled = _summary?.totalBilledAmount ??
-        _filteredItems.fold<double>(0, (s, i) => s + i.totalBilledAmount);
+    // Per-item amounts are redacted from the customer payload, so any client-side
+    // fold over `_filteredItems` would be zero. Always source totals from the
+    // backend `BoqSummary` (computed server-side); fall back to 0.0 if missing.
+    final totalPlanned = _summary?.totalPlannedAmount ?? 0.0;
+    final totalExecuted = _summary?.totalExecutedAmount ?? 0.0;
+    final totalBilled = _summary?.totalBilledAmount ?? 0.0;
     final overallExecPct = _summary?.executionPercentage ??
         (totalPlanned > 0 ? (totalExecuted / totalPlanned * 100) : 0.0);
     final overallBillPct = _summary?.billingPercentage ??
@@ -527,25 +520,14 @@ class _BoqScreenState extends State<BoqScreen> {
   Widget _buildGroupedList() {
     final grouped = _groupedBaseItems;
     final addons = _addonItems;
-    final totalCost = _totalAllItems;
-
-    // Find subtotal of most expensive base group for highlighting
-    final maxSubtotal = grouped.values
-        .map((g) => g.fold<double>(0, (s, i) => s + i.amount))
-        .fold(0.0, max);
 
     final List<Widget> rows = [];
 
     // ── Base scope groups ──────────────────────────────────────────────────
+    // Per-group monetary subtotals are deliberately hidden — they reveal pricing
+    // distribution across scope (contractor IP). Customer sees scope + item counts.
     for (final entry in grouped.entries) {
-      final subtotal = entry.value.fold<double>(0, (s, i) => s + i.amount);
-      rows.add(_buildGroupHeader(
-        entry.key,
-        entry.value,
-        subtotal: subtotal,
-        totalCost: totalCost,
-        isTopSection: subtotal > 0 && subtotal == maxSubtotal,
-      ));
+      rows.add(_buildGroupHeader(entry.key, entry.value));
       if (_expandedGroups.contains(entry.key)) {
         for (final item in entry.value) {
           rows.add(_buildItemCard(item));
@@ -556,9 +538,8 @@ class _BoqScreenState extends State<BoqScreen> {
     // ── Add-ons / optional upgrades section ───────────────────────────────
     if (addons.isNotEmpty) {
       const addonKey = '__addons__';
-      final addonSubtotal = addons.fold<double>(0, (s, i) => s + i.amount);
       rows.add(const SizedBox(height: 8));
-      rows.add(_buildAddonSectionHeader(addonSubtotal, addonKey));
+      rows.add(_buildAddonSectionHeader(addonKey, addons.length));
       if (_expandedGroups.contains(addonKey)) {
         for (final item in addons) {
           rows.add(_buildItemCard(item));
@@ -572,7 +553,7 @@ class _BoqScreenState extends State<BoqScreen> {
     );
   }
 
-  Widget _buildAddonSectionHeader(double subtotal, String key) {
+  Widget _buildAddonSectionHeader(String key, int count) {
     final isExpanded = _expandedGroups.contains(key);
     return GestureDetector(
       onTap: () => setState(() {
@@ -619,7 +600,7 @@ class _BoqScreenState extends State<BoqScreen> {
                   border: Border.all(color: Colors.purple.shade300),
                 ),
                 child: Text(
-                  '+${_formatCurrency(subtotal)}',
+                  '$count ${count == 1 ? 'item' : 'items'}',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -634,14 +615,12 @@ class _BoqScreenState extends State<BoqScreen> {
     );
   }
 
-  Widget _buildGroupHeader(String groupName, List<BoqItem> items,
-      {required double subtotal,
-      required double totalCost,
-      required bool isTopSection}) {
+  Widget _buildGroupHeader(String groupName, List<BoqItem> items) {
+    // Per-group monetary subtotals are intentionally not displayed.
+    // The header surfaces group name + item count only.
     final isExpanded = _expandedGroups.contains(groupName);
     final count = items.length;
-    final sectionPct = totalCost > 0 ? subtotal / totalCost : 0.0;
-    final barColor = isTopSection ? Colors.amber.shade600 : _primaryColor;
+    const barColor = _primaryColor;
 
     return GestureDetector(
       onTap: () => setState(() {
@@ -654,100 +633,35 @@ class _BoqScreenState extends State<BoqScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 6, top: 4),
         decoration: BoxDecoration(
-          color: isTopSection
-              ? Colors.amber.shade50
-              : _primaryColor.withOpacity(0.06),
+          color: _primaryColor.withOpacity(0.06),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-              color: isTopSection
-                  ? Colors.amber.shade300
-                  : _primaryColor.withOpacity(0.2)),
+          border: Border.all(color: _primaryColor.withOpacity(0.2)),
         ),
-        child: Column(
-          children: [
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Row(
-                children: [
-                  Icon(
-                    isExpanded
-                        ? Icons.keyboard_arrow_down
-                        : Icons.keyboard_arrow_right,
-                    color: barColor,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(groupName,
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                  color: barColor)),
-                        ),
-                        if (isTopSection)
-                          Container(
-                            margin: const EdgeInsets.only(left: 6),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 5, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.amber.shade100,
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: Colors.amber.shade400),
-                            ),
-                            child: Text('Largest',
-                                style: TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.amber.shade800)),
-                          ),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(_formatCurrency(subtotal),
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                              color: barColor)),
-                      Text('$count ${count == 1 ? 'item' : 'items'}',
-                          style: TextStyle(
-                              fontSize: 10, color: Colors.grey.shade600)),
-                    ],
-                  ),
-                ],
+        child: Padding(
+          padding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              Icon(
+                isExpanded
+                    ? Icons.keyboard_arrow_down
+                    : Icons.keyboard_arrow_right,
+                color: barColor,
+                size: 20,
               ),
-            ),
-            // Cost distribution bar + %
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(3),
-                      child: LinearProgressIndicator(
-                        value: sectionPct.clamp(0.0, 1.0),
-                        backgroundColor: Colors.grey.shade200,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            barColor.withOpacity(0.6)),
-                        minHeight: 4,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text('${(sectionPct * 100).toStringAsFixed(0)}% of total',
-                      style: TextStyle(
-                          fontSize: 9, color: Colors.grey.shade500)),
-                ],
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(groupName,
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: barColor)),
               ),
-            ),
-          ],
+              Text('$count ${count == 1 ? 'item' : 'items'}',
+                  style: TextStyle(
+                      fontSize: 11, color: Colors.grey.shade600)),
+            ],
+          ),
         ),
       ),
     );
@@ -757,8 +671,7 @@ class _BoqScreenState extends State<BoqScreen> {
 
   Widget _buildItemCard(BoqItem item) {
     final s = item.status?.toUpperCase() ?? '';
-    final showProgress = item.executedQuantity > 0 ||
-        item.billedQuantity > 0 ||
+    final showProgress = item.hasProgress ||
         s == 'LOCKED' ||
         s == 'COMPLETED';
     final hasSpecs =
@@ -830,17 +743,11 @@ class _BoqScreenState extends State<BoqScreen> {
                         fontStyle: FontStyle.italic)),
               ],
             ],
-            const Divider(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildInfoChip(
-                    'Quantity', _formatQuantity(item.quantity, item.unit)),
-                _buildInfoChip('Total Cost', _formatCurrency(item.amount)),
-              ],
-            ),
+            // Quantity, unit, and per-item cost are intentionally not displayed.
+            // BoQ takeoff and unit rates are commercially sensitive contractor IP.
+            // Customers see scope + progress; they approve on the document-level total in the sticky bar.
             if (showProgress) ...[
-              const SizedBox(height: 12),
+              const Divider(height: 14),
               _buildProgressBar('Executed', item.executionPercentage, Colors.orange),
               const SizedBox(height: 8),
               _buildProgressBar('Billed', item.billingPercentage, Colors.green),
@@ -1051,15 +958,4 @@ class _BoqScreenState extends State<BoqScreen> {
     );
   }
 
-  Widget _buildInfoChip(String label, String value) {
-    return Column(
-      children: [
-        Text(label,
-            style: TextStyle(color: Colors.grey.shade500, fontSize: 11)),
-        const SizedBox(height: 2),
-        Text(value,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-      ],
-    );
-  }
 }

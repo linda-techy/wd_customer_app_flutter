@@ -6,7 +6,6 @@ import '../../../services/project_module_service.dart';
 import '../../../services/dashboard_service.dart';
 import '../../../models/project_module_models.dart' hide ApiResponse;
 import '../../../models/api_models.dart';
-import '../../../utils/currency_formatter.dart';
 
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key, this.projectId});
@@ -466,8 +465,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
     final wt = _workTypes[_selectedWorkTypeIndex];
     final items = _boqByWorkType[wt.id] ?? [];
-    final totalAmount =
-        items.fold<double>(0, (sum, item) => sum + item.amount);
 
     return Container(
       padding: const EdgeInsets.all(defaultPadding * 1.5),
@@ -524,26 +521,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           ],
           const SizedBox(height: defaultPadding),
 
-          // Summary Row
-          Row(
-            children: [
-              Expanded(
-                child: _buildSummaryItem(
-                  'Total Items',
-                  '${items.length}',
-                  Icons.list_alt,
-                  Colors.blue,
-                ),
-              ),
-              Expanded(
-                child: _buildSummaryItem(
-                  'Total Amount',
-                  _formatCurrency(totalAmount),
-                  Icons.account_balance_wallet,
-                  Colors.green,
-                ),
-              ),
-            ],
+          // Summary Row — item count only. Per-work-type subtotal is hidden
+          // because it reveals pricing distribution across scope (contractor IP).
+          // Customers approve on the document-level total in the BOQ screen.
+          _buildSummaryItem(
+            'Total Items',
+            '${items.length}',
+            Icons.list_alt,
+            Colors.blue,
           ),
 
           if (items.isNotEmpty) ...[
@@ -607,38 +592,37 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   }
 
   Widget _buildBoqItemRow(BoqItem item) {
+    // Scope-only row — quantity, unit, and amount are intentionally not displayed.
+    final hasStatus = item.status != null && item.status!.isNotEmpty;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
           Expanded(
-            flex: 3,
             child: Text(
               item.description,
               style: const TextStyle(fontSize: 13),
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          Expanded(
-            flex: 1,
-            child: Text(
-              '${item.quantity} ${item.unit}',
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
-              textAlign: TextAlign.right,
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Text(
-              _formatCurrency(item.amount),
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
+          if (hasStatus)
+            Container(
+              margin: const EdgeInsets.only(left: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(10),
               ),
-              textAlign: TextAlign.right,
+              child: Text(
+                item.status!,
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -761,7 +745,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     if (items.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Text(
-                        'Total: ${_formatCurrency(items.fold<double>(0, (s, i) => s + i.amount))}',
+                        '${items.length} item${items.length == 1 ? '' : 's'}',
                         style: TextStyle(
                           color: color,
                           fontSize: 13,
@@ -988,6 +972,4 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     }
     return Icons.build;
   }
-
-  String _formatCurrency(double amount) => CurrencyFormatter.formatShort(amount);
 }

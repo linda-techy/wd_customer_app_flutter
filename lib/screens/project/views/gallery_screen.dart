@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import '../../../constants.dart';
@@ -7,6 +6,7 @@ import '../../../services/auth_service.dart';
 import '../../../services/project_module_service.dart';
 import '../../../models/project_module_models.dart';
 import '../../../config/api_config.dart';
+import '../../../widgets/authenticated_image.dart';
 import 'universal_file_viewer_screen.dart';
 
 class GalleryScreen extends StatefulWidget {
@@ -350,11 +350,10 @@ class _GalleryScreenState extends State<GalleryScreen> {
           children: [
             Hero(
               tag: 'gallery_image_${image.id}',
-              child: CachedNetworkImage(
+              child: AuthenticatedImage(
                 imageUrl: imageUrl,
-                httpHeaders: _authToken != null ? {'Authorization': 'Bearer $_authToken'} : null,
                 fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
+                placeholder: Container(
                   color: Colors.grey[200],
                   child: const Center(
                     child: SizedBox(
@@ -364,7 +363,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                     ),
                   ),
                 ),
-                errorWidget: (context, url, error) => Container(
+                errorWidget: Container(
                   color: Colors.grey[200],
                   child: const Center(child: Icon(Icons.broken_image, color: Colors.grey, size: 24)),
                 ),
@@ -462,15 +461,14 @@ class _GalleryScreenState extends State<GalleryScreen> {
           children: [
             Hero(
               tag: 'gallery_image_${image.id}',
-              child: CachedNetworkImage(
+              child: AuthenticatedImage(
                 imageUrl: imageUrl,
-                httpHeaders: _authToken != null ? {'Authorization': 'Bearer $_authToken'} : null,
                 fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
+                placeholder: Container(
                   color: Colors.grey[200],
                   child: const Center(child: Icon(Icons.image, color: Colors.grey)),
                 ),
-                errorWidget: (context, url, error) => Container(
+                errorWidget: Container(
                   color: Colors.grey[200],
                   child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
                 ),
@@ -525,11 +523,14 @@ class _GalleryScreenState extends State<GalleryScreen> {
   String _resolveUrl(String url) {
     if (url.startsWith('http')) return url;
     final baseUrl = ApiConfig.baseUrl;
-    // Remove trailing slash from base if present
     final cleanBase = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
-    // Ensure leading slash on url
-    final cleanUrl = url.startsWith('/') ? url : '/$url';
-    return '$cleanBase$cleanUrl';
+    // Gallery DTO returns raw storage paths (e.g. "site-reports/12/abc.png");
+    // FileDownloadController serves them under /api/storage/**, so anything
+    // that isn't already an /api/ path needs that prefix.
+    final pathPart = url.startsWith('/api/')
+        ? url
+        : (url.startsWith('/') ? '/api/storage$url' : '/api/storage/$url');
+    return '$cleanBase$pathPart';
   }
 
   void _openImageViewer(int initialIndex) {
@@ -617,14 +618,13 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
             child: Center(
               child: Hero(
                 tag: 'gallery_image_${image.id}',
-                child: CachedNetworkImage(
+                child: AuthenticatedImage(
                   imageUrl: imageUrl,
-                  httpHeaders: widget.authToken != null 
-                    ? {'Authorization': 'Bearer ${widget.authToken}'} 
-                    : null,
-                  placeholder: (context, url) => const CircularProgressIndicator(color: Colors.white),
-                  errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.white, size: 64),
                   fit: BoxFit.contain,
+                  placeholder: const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  ),
+                  errorWidget: const Icon(Icons.broken_image, color: Colors.white, size: 64),
                 ),
               ),
             ),
@@ -739,7 +739,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     if (url.startsWith('http')) return url;
     final baseUrl = ApiConfig.baseUrl;
     final cleanBase = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
-    final cleanUrl = url.startsWith('/') ? url : '/$url';
-    return '$cleanBase$cleanUrl';
+    final pathPart = url.startsWith('/api/')
+        ? url
+        : (url.startsWith('/') ? '/api/storage$url' : '/api/storage/$url');
+    return '$cleanBase$pathPart';
   }
 }
