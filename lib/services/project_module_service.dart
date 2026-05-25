@@ -120,57 +120,6 @@ class ProjectModuleService {
     }
   }
 
-  Future<QualityCheck> createQualityCheck(
-    String projectId,
-    String title,
-    String description,
-    String priority, {
-    String? sopReference,
-    int? assignedToId,
-  }) async {
-    final response = await _dio.post(
-      '/api/projects/$projectId/quality-check',
-      data: {
-        'title': title,
-        'description': description,
-        'priority': priority,
-        'sopReference': sopReference,
-        'assignedToId': assignedToId,
-      },
-    );
-
-    if (response.statusCode == 201) {
-      final apiResponse = ApiResponse.fromJson(
-        response.data,
-        (data) => QualityCheck.fromJson(data),
-      );
-      return apiResponse.data!;
-    } else {
-      throw Exception('Failed to create quality check');
-    }
-  }
-
-  Future<QualityCheck> resolveQualityCheck(
-    String projectId,
-    int qcId,
-    String resolutionNotes,
-  ) async {
-    final response = await _dio.put(
-      '/api/projects/$projectId/quality-check/$qcId',
-      data: {'resolutionNotes': resolutionNotes},
-    );
-
-    if (response.statusCode == 200) {
-      final apiResponse = ApiResponse.fromJson(
-        response.data,
-        (data) => QualityCheck.fromJson(data),
-      );
-      return apiResponse.data!;
-    } else {
-      throw Exception('Failed to resolve quality check');
-    }
-  }
-
   // ===== ACTIVITY FEED METHODS =====
 
   Future<List<ActivityFeed>> getActivities(String projectId) async {
