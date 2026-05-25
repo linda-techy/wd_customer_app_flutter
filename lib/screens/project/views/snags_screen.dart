@@ -7,6 +7,7 @@ import '../../../services/auth_service.dart';
 import '../../../services/project_module_service.dart';
 import '../../../models/project_module_models.dart';
 import '../../../config/api_config.dart';
+
 class SnagsScreen extends StatefulWidget {
   final String projectId;
 
@@ -478,7 +479,6 @@ class _SnagsScreenState extends State<SnagsScreen>
         snag: snag,
         authToken: _authToken,
         resolveUrl: _resolveUrl,
-        onResolve: null, // customer app is read-only for Snags (audit Card 4.2)
       ),
     );
   }
@@ -539,13 +539,11 @@ class _SnagDetailsSheet extends StatelessWidget {
   final Observation snag;
   final String? authToken;
   final String Function(String) resolveUrl;
-  final VoidCallback? onResolve;
 
   const _SnagDetailsSheet({
     required this.snag,
     this.authToken,
     required this.resolveUrl,
-    this.onResolve,
   });
 
   @override
@@ -706,29 +704,6 @@ class _SnagDetailsSheet extends StatelessWidget {
                                 snag.resolutionNotes!.isNotEmpty)
                               _buildMiniDetailRow('Notes', snag.resolutionNotes!),
                           ],
-                        ),
-                      ),
-                    ],
-                    // Resolve action button
-                    if (onResolve != null) ...[
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: onResolve,
-                          icon: const Icon(Icons.check_circle, color: Colors.white),
-                          label: const Text('Resolve this Snag',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
                         ),
                       ),
                     ],

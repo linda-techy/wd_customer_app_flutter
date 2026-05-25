@@ -1,10 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:wd_cust_mobile_app/screens/project/views/snags_screen.dart';
 
@@ -19,29 +16,12 @@ void main() {
     // its hardcoded fallback (http://localhost:8081) instead of throwing.
     dotenv.loadFromString(isOptional: true);
 
-    // Token present -> _initialize() proceeds to resolve the user role.
+    // Token present -> _initialize() builds the service and loads snags.
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(secureStorageChannel, (call) async {
       if (call.method == 'read') return 'test-token';
       if (call.method == 'readAll') return <String, String>{};
       return null;
-    });
-    // getUserInfo() reads 'user_info' from SharedPreferences; resolve role = CUSTOMER.
-    // UserInfo.fromJson reads key 'role' (confirmed in lib/models/api_models.dart).
-    SharedPreferences.setMockInitialValues({
-      'user_info': jsonEncode({
-        'id': 1,
-        'email': 'customer@test.com',
-        'firstName': 'Test',
-        'lastName': 'Customer',
-        'role': 'CUSTOMER',
-        'phone': '',
-        'whatsappNumber': '',
-        'address': '',
-        'companyName': '',
-        'gstNumber': '',
-        'customerType': 'individual',
-      }),
     });
   });
 
@@ -50,7 +30,7 @@ void main() {
         .setMockMethodCallHandler(secureStorageChannel, null);
   });
 
-  testWidgets('SnagsScreen shows no Add (create) FAB even for CUSTOMER role',
+  testWidgets('SnagsScreen has no Add FAB (read-only for customers)',
       (tester) async {
     tester.view.physicalSize = const Size(1200, 2000);
     tester.view.devicePixelRatio = 1.0;
@@ -63,8 +43,10 @@ void main() {
       home: SnagsScreen(projectId: 'proj-50-uuid'),
     ));
     await tester.pump(); // let initState futures schedule
-    await tester.pump(const Duration(milliseconds: 50)); // role setState applied
+    await tester.pump(const Duration(milliseconds: 50)); // setState applied
 
+    // FAB suppression is unconditional per audit Card 4.2 (snags are
+    // Portal/PM-authored; the customer app never offers a create affordance).
     expect(find.byType(FloatingActionButton), findsNothing);
   });
 }
