@@ -448,7 +448,6 @@ class _QualityCheckScreenState extends State<QualityCheckScreen>
       backgroundColor: Colors.transparent,
       builder: (context) => _QualityCheckDetailsSheet(
         check: check,
-        onResolve: null, // customer app is read-only for Quality Checks (audit Card 4.3)
       ),
     );
   }
@@ -456,9 +455,8 @@ class _QualityCheckScreenState extends State<QualityCheckScreen>
 
 class _QualityCheckDetailsSheet extends StatelessWidget {
   final QualityCheck check;
-  final VoidCallback? onResolve;
 
-  const _QualityCheckDetailsSheet({required this.check, this.onResolve});
+  const _QualityCheckDetailsSheet({required this.check});
 
   @override
   Widget build(BuildContext context) {
@@ -631,29 +629,6 @@ class _QualityCheckDetailsSheet extends StatelessWidget {
                               ),
                             ],
                           ],
-                        ),
-                      ),
-                    ],
-                    // Resolve action button
-                    if (onResolve != null) ...[
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: onResolve,
-                          icon: const Icon(Icons.check_circle, color: Colors.white),
-                          label: const Text('Resolve this Issue',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
                         ),
                       ),
                     ],
