@@ -4,7 +4,6 @@ import '../../../widgets/auth_guard.dart';
 import '../../../services/dashboard_service.dart';
 import '../../../services/next_payment_service.dart';
 import '../../../models/api_models.dart';
-import '../../../models/next_payment_milestone.dart';
 import '../../../route/route_constants.dart';
 import '../../../components/molecules/responsive_project_card.dart';
 import '../../../constants.dart';
@@ -16,6 +15,7 @@ import '../../../components/molecules/financial_summary_card.dart';
 import '../../../widgets/next_payment_milestone_card.dart';
 import '../../../utils/debouncer.dart';
 import '../../../core/constants/role_constants.dart';
+import '../raised_payment_selection.dart';
 
 class CustomerDashboardScreen extends StatefulWidget {
   const CustomerDashboardScreen({super.key});
@@ -33,7 +33,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
   // Raised payments (INVOICED / DUE / OVERDUE) fetched for dashboard projects.
   // Each entry pairs the project card with its next-payment milestone so the
   // section can navigate to that project's payment schedule on tap.
-  List<_ProjectPayment> _raisedPayments = [];
+  List<ProjectPayment> _raisedPayments = [];
   bool _paymentsLoading = false;
 
   // Server-side project search
@@ -126,8 +126,8 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
   }
 
   /// Fetches next-payment milestones for all visible dashboard projects
-  /// concurrently and keeps only those whose stage status is INVOICED, DUE,
-  /// or OVERDUE — i.e. a payment that has been raised with a due date.
+  /// concurrently, then delegates selection and sorting to
+  /// [selectRaisedPayments] (pure, tested function in raised_payment_selection.dart).
   Future<void> _loadRaisedPayments(List<ProjectCard> projects) async {
     if (projects.isEmpty) return;
     setState(() => _paymentsLoading = true);
@@ -137,32 +137,16 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
     final futures = eligible.map((p) => NextPaymentService.fetch(p.projectUuid!));
     final results = await Future.wait(futures);
 
-    const raisedStatuses = {'INVOICED', 'DUE', 'OVERDUE'};
-    final raised = <_ProjectPayment>[];
+    final all = <ProjectPayment>[];
     for (var i = 0; i < eligible.length; i++) {
       final milestone = results[i];
       if (milestone == null) continue;
-      final stage = milestone.stage;
-      if (stage == null) continue;
-      if (!raisedStatuses.contains(stage.status)) continue;
-      raised.add(_ProjectPayment(project: eligible[i], milestone: milestone));
+      all.add(ProjectPayment(project: eligible[i], milestone: milestone));
     }
-
-    // Sort: OVERDUE first, then DUE, then INVOICED; within each group by
-    // daysUntilDue ascending so the most urgent appears at the top.
-    const statusOrder = {'OVERDUE': 0, 'DUE': 1, 'INVOICED': 2};
-    raised.sort((a, b) {
-      final sa = statusOrder[a.milestone.stage!.status] ?? 3;
-      final sb = statusOrder[b.milestone.stage!.status] ?? 3;
-      if (sa != sb) return sa.compareTo(sb);
-      final da = a.milestone.stage!.daysUntilDue ?? 0;
-      final db = b.milestone.stage!.daysUntilDue ?? 0;
-      return da.compareTo(db);
-    });
 
     if (mounted) {
       setState(() {
-        _raisedPayments = raised;
+        _raisedPayments = selectRaisedPayments(all);
         _paymentsLoading = false;
       });
     }
@@ -894,11 +878,3 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
   }
 }
 
-/// Pairs a dashboard project card with its fetched next-payment milestone so
-/// the "Payments Due" section can render the card and navigate on tap.
-class _ProjectPayment {
-  final ProjectCard project;
-  final NextPaymentMilestone milestone;
-
-  const _ProjectPayment({required this.project, required this.milestone});
-}
