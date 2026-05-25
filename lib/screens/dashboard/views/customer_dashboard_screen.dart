@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/auth_guard.dart';
 import '../../../services/dashboard_service.dart';
+import '../../../services/next_payment_service.dart';
 import '../../../models/api_models.dart';
+import '../../../models/next_payment_milestone.dart';
 import '../../../route/route_constants.dart';
 import '../../../components/molecules/responsive_project_card.dart';
 import '../../../constants.dart';
@@ -11,6 +13,7 @@ import '../../../components/animations/fade_entry.dart';
 import '../../../components/animations/scale_button.dart';
 import '../../../models/project_phase.dart';
 import '../../../components/molecules/financial_summary_card.dart';
+import '../../../widgets/next_payment_milestone_card.dart';
 import '../../../utils/debouncer.dart';
 import '../../../core/constants/role_constants.dart';
 
@@ -26,6 +29,12 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
   DashboardDto? _dashboardData;
   bool _isLoading = true;
   String? _errorMessage;
+
+  // Raised payments (INVOICED / DUE / OVERDUE) fetched for dashboard projects.
+  // Each entry pairs the project card with its next-payment milestone so the
+  // section can navigate to that project's payment schedule on tap.
+  List<_ProjectPayment> _raisedPayments = [];
+  bool _paymentsLoading = false;
 
   // Server-side project search
   final TextEditingController _searchController = TextEditingController();
@@ -99,6 +108,8 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
           _dashboardData = response.data;
           _isLoading = false;
         });
+        // Kick off payment-due fetch without blocking the main render.
+        _loadRaisedPayments(response.data!.projects.recentProjects);
       } else {
         setState(() {
           _errorMessage =
@@ -110,6 +121,49 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
       setState(() {
         _errorMessage = 'An unexpected error occurred: $e';
         _isLoading = false;
+      });
+    }
+  }
+
+  /// Fetches next-payment milestones for all visible dashboard projects
+  /// concurrently and keeps only those whose stage status is INVOICED, DUE,
+  /// or OVERDUE — i.e. a payment that has been raised with a due date.
+  Future<void> _loadRaisedPayments(List<ProjectCard> projects) async {
+    if (projects.isEmpty) return;
+    setState(() => _paymentsLoading = true);
+
+    // Only fetch for projects that have a UUID; skip any without.
+    final eligible = projects.where((p) => p.projectUuid != null).toList();
+    final futures = eligible.map((p) => NextPaymentService.fetch(p.projectUuid!));
+    final results = await Future.wait(futures);
+
+    const raisedStatuses = {'INVOICED', 'DUE', 'OVERDUE'};
+    final raised = <_ProjectPayment>[];
+    for (var i = 0; i < eligible.length; i++) {
+      final milestone = results[i];
+      if (milestone == null) continue;
+      final stage = milestone.stage;
+      if (stage == null) continue;
+      if (!raisedStatuses.contains(stage.status)) continue;
+      raised.add(_ProjectPayment(project: eligible[i], milestone: milestone));
+    }
+
+    // Sort: OVERDUE first, then DUE, then INVOICED; within each group by
+    // daysUntilDue ascending so the most urgent appears at the top.
+    const statusOrder = {'OVERDUE': 0, 'DUE': 1, 'INVOICED': 2};
+    raised.sort((a, b) {
+      final sa = statusOrder[a.milestone.stage!.status] ?? 3;
+      final sb = statusOrder[b.milestone.stage!.status] ?? 3;
+      if (sa != sb) return sa.compareTo(sb);
+      final da = a.milestone.stage!.daysUntilDue ?? 0;
+      final db = b.milestone.stage!.daysUntilDue ?? 0;
+      return da.compareTo(db);
+    });
+
+    if (mounted) {
+      setState(() {
+        _raisedPayments = raised;
+        _paymentsLoading = false;
       });
     }
   }
@@ -299,6 +353,11 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
           ),
         ),
 
+        // Payments Due section — raised stage payments (INVOICED/DUE/OVERDUE)
+        SliverToBoxAdapter(
+          child: _buildPaymentsDueSection(),
+        ),
+
         // Key Metrics Grid
         SliverToBoxAdapter(
           child: Padding(
@@ -396,6 +455,122 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
     ),
     );
   }
+
+  // ---------------------------------------------------------------------------
+  // Payments Due section
+  // ---------------------------------------------------------------------------
+
+  Widget _buildPaymentsDueSection() {
+    // While loading, show nothing — the section fades in once results arrive.
+    if (_paymentsLoading && _raisedPayments.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    if (_raisedPayments.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      child: FadeEntry(
+        delay: 280.ms,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Section header
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFEBEE),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.receipt_long_rounded,
+                    color: Color(0xFFC62828),
+                    size: 16,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  'Payments Due',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFEBEE),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${_raisedPayments.length}',
+                    style: const TextStyle(
+                      color: Color(0xFFC62828),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // One NextPaymentMilestoneCard per raised payment, tapping navigates
+            // to that project's payment schedule via paymentsScreenRoute.
+            ..._raisedPayments.asMap().entries.map((entry) {
+              final idx = entry.key;
+              final pp = entry.value;
+              return Padding(
+                padding: EdgeInsets.only(bottom: idx < _raisedPayments.length - 1 ? 12 : 0),
+                child: FadeEntry(
+                  delay: (280 + idx * 60).ms,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Project name label above the card
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Text(
+                          pp.project.name,
+                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                color: blackColor60,
+                                fontWeight: FontWeight.w600,
+                              ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      // Wrap NextPaymentMilestoneCard in GestureDetector to
+                      // override its built-in paymentsScreenRoute tap with one
+                      // that passes the project int id so the payments screen
+                      // scopes to the right project.
+                      GestureDetector(
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          paymentsScreenRoute,
+                          arguments: pp.project.id,
+                        ),
+                        // AbsorbPointer prevents the card's own InkWell from
+                        // competing — our GestureDetector is the sole tap target.
+                        child: AbsorbPointer(
+                          child: NextPaymentMilestoneCard(milestone: pp.milestone),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+            const SizedBox(height: 4),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
 
   Widget _buildMetricCard({
     required String label,
@@ -717,6 +892,13 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
       }).toList(),
     );
   }
+}
 
+/// Pairs a dashboard project card with its fetched next-payment milestone so
+/// the "Payments Due" section can render the card and navigate on tap.
+class _ProjectPayment {
+  final ProjectCard project;
+  final NextPaymentMilestone milestone;
 
+  const _ProjectPayment({required this.project, required this.milestone});
 }
