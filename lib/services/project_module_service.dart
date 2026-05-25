@@ -366,66 +366,6 @@ class ProjectModuleService {
     }
   }
 
-  Future<Observation> createObservation(
-    String projectId,
-    String title,
-    String description,
-    String priority, {
-    File? image,
-    int? reportedByRoleId,
-    String? location,
-  }) async {
-    final fields = <String, dynamic>{
-      'title': title,
-      'description': description,
-      'priority': priority,
-      if (reportedByRoleId != null)
-        'reportedByRoleId': reportedByRoleId.toString(),
-      if (location != null) 'location': location,
-      if (image != null)
-        'image': await MultipartFile.fromFile(image.path,
-            filename: image.path.split('/').last),
-    };
-
-    final formData = FormData.fromMap(fields);
-
-    final response = await _dio.post(
-      '/api/projects/$projectId/observations',
-      data: formData,
-    );
-
-    if (response.statusCode == 201) {
-      final apiResponse = ApiResponse.fromJson(
-        response.data,
-        (data) => Observation.fromJson(data),
-      );
-      return apiResponse.data!;
-    } else {
-      throw Exception('Failed to create observation');
-    }
-  }
-
-  Future<Observation> resolveObservation(
-    String projectId,
-    int obsId,
-    String resolutionNotes,
-  ) async {
-    final response = await _dio.put(
-      '/api/projects/$projectId/observations/$obsId',
-      data: {'resolutionNotes': resolutionNotes},
-    );
-
-    if (response.statusCode == 200) {
-      final apiResponse = ApiResponse.fromJson(
-        response.data,
-        (data) => Observation.fromJson(data),
-      );
-      return apiResponse.data!;
-    } else {
-      throw Exception('Failed to resolve observation');
-    }
-  }
-
   // ===== QUERY METHODS =====
 
   Future<List<ProjectQuery>> getQueries(String projectId,
