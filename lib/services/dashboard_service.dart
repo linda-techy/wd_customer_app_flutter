@@ -4,9 +4,22 @@ import '../models/team_contact.dart';
 import '../models/timeline_item.dart';
 import 'api_service.dart';
 import 'auth_service.dart';
+import 'session_manager.dart';
 
 class DashboardService {
   static final ApiService _apiService = ApiService();
+
+  /// No usable session before a request could even be sent (token absent, or
+  /// a refresh failed). Trigger the global redirect to login — otherwise the
+  /// calling screen renders this error with a "Retry" button that can never
+  /// succeed, stranding the customer. Also returns a jargon-free error (no
+  /// "token") for any UI that paints it in the frame before the redirect lands.
+  static ApiResponse<T> _sessionExpired<T>() {
+    SessionManager.expireSession(reason: 'DashboardService: no valid session');
+    return ApiResponse.error(
+      ApiError(message: SessionManager.sessionExpiredMessage, statusCode: 401),
+    );
+  }
 
   // Get dashboard data
   static Future<ApiResponse<DashboardDto>> getDashboard() async {
@@ -14,12 +27,7 @@ class DashboardService {
       // Get access token
       final accessToken = await AuthService.getAccessToken();
       if (accessToken == null) {
-        return ApiResponse.error(
-          ApiError(
-            message: 'No access token found. Please login again.',
-            statusCode: 401,
-          ),
-        );
+        return _sessionExpired();
       }
 
       // Check if token is expired and refresh if needed
@@ -27,22 +35,12 @@ class DashboardService {
       if (isExpired) {
         final refreshSuccess = await AuthService.refreshAccessToken();
         if (!refreshSuccess) {
-          return ApiResponse.error(
-            ApiError(
-              message: 'Session expired. Please login again.',
-              statusCode: 401,
-            ),
-          );
+          return _sessionExpired();
         }
         // Get the new token
         final newToken = await AuthService.getAccessToken();
         if (newToken == null) {
-          return ApiResponse.error(
-            ApiError(
-              message: 'Failed to get new access token.',
-              statusCode: 401,
-            ),
-          );
+          return _sessionExpired();
         }
         return await _apiService.getDashboard(newToken);
       }
@@ -63,31 +61,16 @@ class DashboardService {
     try {
       final accessToken = await AuthService.getAccessToken();
       if (accessToken == null) {
-        return ApiResponse.error(
-          ApiError(
-            message: 'No access token found. Please login again.',
-            statusCode: 401,
-          ),
-        );
+        return _sessionExpired();
       }
       if (await AuthService.isTokenExpired()) {
         final refreshed = await AuthService.refreshAccessToken();
         if (!refreshed) {
-          return ApiResponse.error(
-            ApiError(
-              message: 'Session expired. Please login again.',
-              statusCode: 401,
-            ),
-          );
+          return _sessionExpired();
         }
         final newToken = await AuthService.getAccessToken();
         if (newToken == null) {
-          return ApiResponse.error(
-            ApiError(
-              message: 'Failed to get new access token.',
-              statusCode: 401,
-            ),
-          );
+          return _sessionExpired();
         }
         return await _apiService.searchProjects(newToken, query);
       }
@@ -127,12 +110,7 @@ class DashboardService {
       // Get access token
       final accessToken = await AuthService.getAccessToken();
       if (accessToken == null) {
-        return ApiResponse.error(
-          ApiError(
-            message: 'No access token found. Please login again.',
-            statusCode: 401,
-          ),
-        );
+        return _sessionExpired();
       }
 
       // Check if token is expired and refresh if needed
@@ -140,22 +118,12 @@ class DashboardService {
       if (isExpired) {
         final refreshSuccess = await AuthService.refreshAccessToken();
         if (!refreshSuccess) {
-          return ApiResponse.error(
-            ApiError(
-              message: 'Session expired. Please login again.',
-              statusCode: 401,
-            ),
-          );
+          return _sessionExpired();
         }
         // Get the new token
         final newToken = await AuthService.getAccessToken();
         if (newToken == null) {
-          return ApiResponse.error(
-            ApiError(
-              message: 'Failed to get new access token.',
-              statusCode: 401,
-            ),
-          );
+          return _sessionExpired();
         }
         return await _apiService.getProjectDetails(projectUuid, newToken);
       }
@@ -178,19 +146,16 @@ class DashboardService {
     try {
       final accessToken = await AuthService.getAccessToken();
       if (accessToken == null) {
-        return ApiResponse.error(
-            ApiError(message: 'No access token found. Please login again.', statusCode: 401));
+        return _sessionExpired();
       }
       if (await AuthService.isTokenExpired()) {
         final refreshed = await AuthService.refreshAccessToken();
         if (!refreshed) {
-          return ApiResponse.error(
-              ApiError(message: 'Session expired. Please login again.', statusCode: 401));
+          return _sessionExpired();
         }
         final newToken = await AuthService.getAccessToken();
         if (newToken == null) {
-          return ApiResponse.error(
-              ApiError(message: 'Failed to get new access token.', statusCode: 401));
+          return _sessionExpired();
         }
         return await _apiService.getProjectPhases(projectUuid, newToken);
       }
@@ -207,19 +172,16 @@ class DashboardService {
     try {
       final accessToken = await AuthService.getAccessToken();
       if (accessToken == null) {
-        return ApiResponse.error(
-            ApiError(message: 'No access token found. Please login again.', statusCode: 401));
+        return _sessionExpired();
       }
       if (await AuthService.isTokenExpired()) {
         final refreshed = await AuthService.refreshAccessToken();
         if (!refreshed) {
-          return ApiResponse.error(
-              ApiError(message: 'Session expired. Please login again.', statusCode: 401));
+          return _sessionExpired();
         }
         final newToken = await AuthService.getAccessToken();
         if (newToken == null) {
-          return ApiResponse.error(
-              ApiError(message: 'Failed to get new access token.', statusCode: 401));
+          return _sessionExpired();
         }
         return await _apiService.getProjectTeam(projectUuid, newToken);
       }
@@ -237,19 +199,16 @@ class DashboardService {
     try {
       final accessToken = await AuthService.getAccessToken();
       if (accessToken == null) {
-        return ApiResponse.error(
-            ApiError(message: 'No access token found. Please login again.', statusCode: 401));
+        return _sessionExpired();
       }
       if (await AuthService.isTokenExpired()) {
         final refreshed = await AuthService.refreshAccessToken();
         if (!refreshed) {
-          return ApiResponse.error(
-              ApiError(message: 'Session expired. Please login again.', statusCode: 401));
+          return _sessionExpired();
         }
         final newToken = await AuthService.getAccessToken();
         if (newToken == null) {
-          return ApiResponse.error(
-              ApiError(message: 'Failed to get new access token.', statusCode: 401));
+          return _sessionExpired();
         }
         return await _apiService.getTimeline(projectUuid, bucket, newToken,
             page: page, size: size);
@@ -268,19 +227,16 @@ class DashboardService {
     try {
       final accessToken = await AuthService.getAccessToken();
       if (accessToken == null) {
-        return ApiResponse.error(
-            ApiError(message: 'No access token found. Please login again.', statusCode: 401));
+        return _sessionExpired();
       }
       if (await AuthService.isTokenExpired()) {
         final refreshed = await AuthService.refreshAccessToken();
         if (!refreshed) {
-          return ApiResponse.error(
-              ApiError(message: 'Session expired. Please login again.', statusCode: 401));
+          return _sessionExpired();
         }
         final newToken = await AuthService.getAccessToken();
         if (newToken == null) {
-          return ApiResponse.error(
-              ApiError(message: 'Failed to get new access token.', statusCode: 401));
+          return _sessionExpired();
         }
         return await _apiService.getTimelineSummary(projectUuid, newToken);
       }
@@ -300,12 +256,7 @@ class DashboardService {
       // Get access token
       final accessToken = await AuthService.getAccessToken();
       if (accessToken == null) {
-        return ApiResponse.error(
-          ApiError(
-            message: 'No access token found. Please login again.',
-            statusCode: 401,
-          ),
-        );
+        return _sessionExpired();
       }
 
       // Check if token is expired and refresh if needed
@@ -313,21 +264,11 @@ class DashboardService {
       if (isExpired) {
         final refreshSuccess = await AuthService.refreshAccessToken();
         if (!refreshSuccess) {
-          return ApiResponse.error(
-            ApiError(
-              message: 'Session expired. Please login again.',
-              statusCode: 401,
-            ),
-          );
+          return _sessionExpired();
         }
         final newToken = await AuthService.getAccessToken();
         if (newToken == null) {
-          return ApiResponse.error(
-            ApiError(
-              message: 'Failed to get new access token.',
-              statusCode: 401,
-            ),
-          );
+          return _sessionExpired();
         }
         return await _apiService.updateDesignPackage(newToken, projectUuid, designPackage);
       }

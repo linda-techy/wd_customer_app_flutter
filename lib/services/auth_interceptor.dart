@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import '../main.dart' show MyApp;
-import '../route/route_constants.dart';
 import 'auth_service.dart';
+import 'session_manager.dart';
 
 /// Dio interceptor that handles JWT token lifecycle transparently.
 ///
@@ -23,10 +21,6 @@ class AuthInterceptor extends Interceptor {
   final Dio _dio;
 
   Completer<bool>? _refreshCompleter;
-
-  /// Set to true once we've kicked off a logout-redirect. Prevents repeated
-  /// pushReplacementNamed calls when many in-flight requests all fail at once.
-  static bool _loggingOut = false;
 
   AuthInterceptor(this._dio);
 
@@ -105,37 +99,12 @@ class AuthInterceptor extends Interceptor {
     }
   }
 
+  /// Clears auth and bounces the user to login. Delegates to [SessionManager]
+  /// so this (server 401/403) path and the service-layer pre-flight checks
+  /// behave identically. SessionManager owns the redirect-storm guard and the
+  /// user-facing "session expired" copy.
   Future<void> _forceLogout(String reason) async {
-    if (_loggingOut) return;
-    _loggingOut = true;
-    if (kDebugMode) {
-      debugPrint('AuthInterceptor: forcing logout — $reason');
-    }
-    try {
-      await AuthService.clearAllAuthData();
-    } catch (_) {
-      // best-effort cleanup
-    }
-    // Navigate to login on the next frame so we don't push during a build
-    // or while a Dio handler is mid-callback. Surface a friendly SnackBar
-    // so the customer understands why they landed back on the login page
-    // (otherwise the redirect looks like a random app glitch).
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final nav = MyApp.navigatorKey.currentState;
-      if (nav != null) {
-        nav.pushNamedAndRemoveUntil(logInScreenRoute, (route) => false);
-      }
-      final messenger = MyApp.scaffoldMessengerKey.currentState;
-      if (messenger != null) {
-        messenger.hideCurrentSnackBar();
-        messenger.showSnackBar(const SnackBar(
-          content: Text('Your session has expired. Please log in again.'),
-          duration: Duration(seconds: 4),
-          behavior: SnackBarBehavior.floating,
-        ));
-      }
-      _loggingOut = false;
-    });
+    await SessionManager.expireSession(reason: 'interceptor: $reason');
   }
 
   /// Coalesces concurrent refresh attempts. If a refresh is already in progress,
