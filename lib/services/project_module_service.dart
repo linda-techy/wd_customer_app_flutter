@@ -671,6 +671,30 @@ class ProjectModuleService {
     }
   }
 
+  /// Fetches the calling customer's own submitted responses for [formId]
+  /// within [projectId].  Maps to:
+  ///   GET /api/projects/{projectId}/feedback/{formId}/responses
+  Future<List<FeedbackResponse>> getFeedbackResponses(
+    String projectId,
+    int formId,
+  ) async {
+    final response = await _dio.get(
+      '/api/projects/$projectId/feedback/$formId/responses',
+    );
+
+    if (response.statusCode == 200) {
+      final apiResponse = ApiResponse.fromJson(
+        response.data,
+        (data) => (data as List)
+            .map((e) => FeedbackResponse.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+      return apiResponse.data ?? [];
+    } else {
+      throw Exception('Failed to load feedback responses');
+    }
+  }
+
   // ===== BOQ METHODS =====
 
   Future<List<BoqItem>> getBoqItems(String projectId,

@@ -7,6 +7,7 @@ import '../../../services/auth_service.dart';
 import '../../../services/project_module_service.dart';
 import '../../../models/project_module_models.dart';
 import '../../../config/api_config.dart';
+import '../../../widgets/admin_reply_block.dart';
 
 /// Shows a feedback dialog for the project.
 /// Returns true if feedback was successfully submitted.
@@ -38,7 +39,11 @@ class _FeedbackSheetState extends State<_FeedbackSheet> {
   List<FeedbackForm> forms = [];
   FeedbackForm? selectedForm;
   ProjectModuleService? service;
-  
+
+  // Completed forms whose responses (with optional admin reply) we display.
+  // Map from formId → the customer's submitted FeedbackResponse for that form.
+  final Map<int, FeedbackResponse> _completedResponses = {};
+
   // Feedback data
   double rating = 0;
   final TextEditingController commentsController = TextEditingController();
@@ -80,9 +85,34 @@ class _FeedbackSheetState extends State<_FeedbackSheet> {
 
       final loadedForms = await service!.getFeedbackForms(widget.projectId);
 
+      // Pending forms: active and not yet completed by this customer.
+      final pendingForms =
+          loadedForms.where((f) => f.isActive && f.isCompleted != true).toList();
+
+      // Completed forms: fetch the customer's own response (which carries
+      // the adminResponse / adminRespondedAt fields) for each one.
+      final completedForms =
+          loadedForms.where((f) => f.isCompleted == true).toList();
+
+      final Map<int, FeedbackResponse> responses = {};
+      for (final form in completedForms) {
+        try {
+          final list =
+              await service!.getFeedbackResponses(widget.projectId, form.id);
+          if (list.isNotEmpty) {
+            // The API returns the caller's own responses — take the latest.
+            responses[form.id] = list.last;
+          }
+        } catch (_) {
+          // Non-fatal: if we cannot load a response, skip the reply block.
+        }
+      }
+
       setState(() {
-        // Filter to only active and not completed forms
-        forms = loadedForms.where((f) => f.isActive && f.isCompleted != true).toList();
+        forms = pendingForms;
+        _completedResponses
+          ..clear()
+          ..addAll(responses);
         isLoading = false;
       });
     } catch (e) {
@@ -223,7 +253,7 @@ class _FeedbackSheetState extends State<_FeedbackSheet> {
                     ? const Center(child: CircularProgressIndicator(color: primaryColor))
                     : error != null
                         ? _buildErrorState()
-                        : forms.isEmpty
+                        : (forms.isEmpty && _completedResponses.isEmpty)
                             ? _buildEmptyState()
                             : _buildContent(scrollController),
               ),
@@ -286,30 +316,123 @@ class _FeedbackSheetState extends State<_FeedbackSheet> {
       controller: scrollController,
       padding: const EdgeInsets.all(16),
       children: [
-        // Form selection
-        const Text(
-          'Select Feedback Form',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF374151),
+        // ── Pending forms (submit section) ──────────────────────────────────
+        if (forms.isNotEmpty) ...[
+          const Text(
+            'Select Feedback Form',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF374151),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        ...forms.asMap().entries.map((entry) => _buildFormTile(entry.value, entry.key)),
-        
-        if (selectedForm != null) ...[
-          const SizedBox(height: 24),
-          // Rating section
-          _buildRatingSection().animate().fadeIn(duration: 200.ms),
-          const SizedBox(height: 24),
-          // Comments section
-          _buildCommentsSection().animate().fadeIn(duration: 200.ms, delay: 100.ms),
-          const SizedBox(height: 24),
-          // Submit button
-          _buildSubmitButton().animate().fadeIn(duration: 200.ms, delay: 200.ms),
+          const SizedBox(height: 8),
+          ...forms.asMap().entries
+              .map((entry) => _buildFormTile(entry.value, entry.key)),
+
+          if (selectedForm != null) ...[
+            const SizedBox(height: 24),
+            // Rating section
+            _buildRatingSection().animate().fadeIn(duration: 200.ms),
+            const SizedBox(height: 24),
+            // Comments section
+            _buildCommentsSection()
+                .animate()
+                .fadeIn(duration: 200.ms, delay: 100.ms),
+            const SizedBox(height: 24),
+            // Submit button
+            _buildSubmitButton()
+                .animate()
+                .fadeIn(duration: 200.ms, delay: 200.ms),
+          ],
+        ],
+
+        // ── Completed forms: submitted response + admin reply ────────────────
+        if (_completedResponses.isNotEmpty) ...[
+          if (forms.isNotEmpty) const SizedBox(height: 32),
+          const Text(
+            'Your Submitted Feedback',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF374151),
+            ),
+          ),
+          const SizedBox(height: 8),
+          ..._completedResponses.entries.map(
+            (e) => _buildSubmittedResponseTile(e.value),
+          ),
         ],
       ],
+    );
+  }
+
+  Widget _buildSubmittedResponseTile(FeedbackResponse response) {
+    final dateFormat = DateFormat('MMM d, y');
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Form title + submission date
+          Row(
+            children: [
+              const Icon(Icons.feedback_outlined,
+                  size: 16, color: Colors.pink),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  response.formTitle,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+              Text(
+                dateFormat.format(response.submittedAt),
+                style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+              ),
+            ],
+          ),
+          // Star rating if available
+          if (response.rating != null) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: List.generate(
+                5,
+                (i) => Icon(
+                  i < response.rating! ? Icons.star_rounded : Icons.star_outline_rounded,
+                  size: 16,
+                  color: Colors.amber,
+                ),
+              ),
+            ),
+          ],
+          // Customer's comment if any
+          if (response.comments != null && response.comments!.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              response.comments!,
+              style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+            ),
+          ],
+          // Admin reply block — shows nothing when adminResponse is null
+          if (response.adminResponse != null) ...[
+            const SizedBox(height: 12),
+            AdminReplyBlock(
+              adminResponse: response.adminResponse,
+              adminRespondedAt: response.adminRespondedAt,
+            ),
+          ],
+        ],
+      ),
     );
   }
 

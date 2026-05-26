@@ -589,6 +589,52 @@ class FeedbackForm {
   }
 }
 
+/// Mirrors com.wd.custapi.dto.ProjectModuleDtos.FeedbackResponseDto.
+///
+/// The customer-API endpoint GET /api/projects/{uuid}/feedback/{formId}/responses
+/// returns the caller's own submitted responses (one per form in practice).
+/// [adminResponse] and [adminRespondedAt] are populated when Walldot staff
+/// have replied; both are null until then.
+class FeedbackResponse {
+  final int id;
+  final int formId;
+  final String formTitle;
+  final int? rating;
+  final String? comments;
+  final DateTime submittedAt;
+  final bool? isCompleted;
+  final String? adminResponse;
+  final DateTime? adminRespondedAt;
+
+  const FeedbackResponse({
+    required this.id,
+    required this.formId,
+    required this.formTitle,
+    this.rating,
+    this.comments,
+    required this.submittedAt,
+    this.isCompleted,
+    this.adminResponse,
+    this.adminRespondedAt,
+  });
+
+  factory FeedbackResponse.fromJson(Map<String, dynamic> json) {
+    return FeedbackResponse(
+      id: json['id'] as int,
+      formId: json['formId'] as int,
+      formTitle: json['formTitle'] as String? ?? '',
+      rating: json['rating'] as int?,
+      comments: json['comments'] as String?,
+      submittedAt: DateTime.parse(json['submittedAt'] as String),
+      isCompleted: json['isCompleted'] as bool?,
+      adminResponse: json['adminResponse'] as String?,
+      adminRespondedAt: json['adminRespondedAt'] == null
+          ? null
+          : DateTime.parse(json['adminRespondedAt'] as String),
+    );
+  }
+}
+
 class BoqWorkType {
   final int id;
   final String name;
