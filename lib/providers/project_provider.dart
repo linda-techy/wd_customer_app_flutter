@@ -14,7 +14,6 @@ class ProjectProvider with ChangeNotifier {
   Project? _selectedProject;
   List<Document> _documents = [];
   List<QCItem> _qcItems = [];
-  List<Query> _queries = [];
   List<ProjectActivity> _activities = [];
   List<Payment> _payments = [];
   List<GalleryPhoto> _galleryPhotos = [];
@@ -33,7 +32,6 @@ class ProjectProvider with ChangeNotifier {
   Project? get selectedProject => _selectedProject;
   List<Document> get documents => _documents;
   List<QCItem> get qcItems => _qcItems;
-  List<Query> get queries => _queries;
   List<ProjectActivity> get activities => _activities;
   List<Payment> get payments => _payments;
   List<GalleryPhoto> get galleryPhotos => _galleryPhotos;
@@ -119,7 +117,6 @@ class ProjectProvider with ChangeNotifier {
       final futures = await Future.wait([
         _repository.getDocuments(projectId),
         _repository.getQCItems(projectId),
-        _repository.getQueries(projectId),
         _repository.getProjectActivities(projectId),
         _repository.getPayments(projectId),
         _repository.getGalleryPhotos(projectId),
@@ -129,12 +126,11 @@ class ProjectProvider with ChangeNotifier {
 
       _documents = futures[0] as List<Document>;
       _qcItems = futures[1] as List<QCItem>;
-      _queries = futures[2] as List<Query>;
-      _activities = futures[3] as List<ProjectActivity>;
-      _payments = futures[4] as List<Payment>;
-      _galleryPhotos = futures[5] as List<GalleryPhoto>;
-      _cameras = futures[6] as List<SurveillanceCamera>;
-      _progressData = futures[7] as List<ProgressDataPoint>;
+      _activities = futures[2] as List<ProjectActivity>;
+      _payments = futures[3] as List<Payment>;
+      _galleryPhotos = futures[4] as List<GalleryPhoto>;
+      _cameras = futures[5] as List<SurveillanceCamera>;
+      _progressData = futures[6] as List<ProgressDataPoint>;
 
       // S2 PR4: side-fetch the expected-handover summary. Failure here
       // must not break the rest of project-detail loading — we fall back
@@ -205,53 +201,6 @@ class ProjectProvider with ChangeNotifier {
           );
           notifyListeners();
         }
-      }
-      return success;
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
-      return false;
-    }
-  }
-
-  // Query methods
-  Future<String?> createQuery(String projectId, Query query) async {
-    try {
-      final queryId = await _repository.createQuery(projectId, query);
-      // Refresh queries list
-      _queries = await _repository.getQueries(projectId);
-      notifyListeners();
-      return queryId;
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
-      return null;
-    }
-  }
-
-  Future<bool> addQueryMessage(String queryId, QueryMessage message) async {
-    try {
-      final success = await _repository.addQueryMessage(queryId, message);
-      if (success && _selectedProject != null) {
-        // Refresh queries list
-        _queries = await _repository.getQueries(_selectedProject!.id);
-        notifyListeners();
-      }
-      return success;
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
-      return false;
-    }
-  }
-
-  Future<bool> updateQueryStatus(String queryId, QueryStatus status) async {
-    try {
-      final success = await _repository.updateQueryStatus(queryId, status);
-      if (success && _selectedProject != null) {
-        // Refresh queries list
-        _queries = await _repository.getQueries(_selectedProject!.id);
-        notifyListeners();
       }
       return success;
     } catch (e) {

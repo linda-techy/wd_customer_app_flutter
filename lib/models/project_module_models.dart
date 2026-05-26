@@ -297,71 +297,6 @@ class Observation {
   }
 }
 
-class ProjectQuery {
-  final int id;
-  final int projectId;
-  final String title;
-  final String description;
-  final int raisedById;
-  final String raisedByName;
-  final int? raisedByRoleId;
-  final String? raisedByRoleName;
-  final DateTime raisedDate;
-  final String status;
-  final String priority;
-  final String? category;
-  final int? assignedToId;
-  final String? assignedToName;
-  final DateTime? resolvedDate;
-  final int? resolvedById;
-  final String? resolvedByName;
-  final String? resolution;
-
-  ProjectQuery({
-    required this.id,
-    required this.projectId,
-    required this.title,
-    required this.description,
-    required this.raisedById,
-    required this.raisedByName,
-    this.raisedByRoleId,
-    this.raisedByRoleName,
-    required this.raisedDate,
-    required this.status,
-    required this.priority,
-    this.category,
-    this.assignedToId,
-    this.assignedToName,
-    this.resolvedDate,
-    this.resolvedById,
-    this.resolvedByName,
-    this.resolution,
-  });
-
-  factory ProjectQuery.fromJson(Map<String, dynamic> json) {
-    return ProjectQuery(
-      id: json['id'],
-      projectId: json['projectId'],
-      title: json['title'],
-      description: json['description'],
-      raisedById: json['raisedById'],
-      raisedByName: json['raisedByName'],
-      raisedByRoleId: json['raisedByRoleId'],
-      raisedByRoleName: json['raisedByRoleName'],
-      raisedDate: DateTime.parse(json['raisedDate']),
-      status: json['status'],
-      priority: json['priority'],
-      category: json['category'],
-      assignedToId: json['assignedToId'],
-      assignedToName: json['assignedToName'],
-      resolvedDate: json['resolvedDate'] != null ? DateTime.parse(json['resolvedDate']) : null,
-      resolvedById: json['resolvedById'],
-      resolvedByName: json['resolvedByName'],
-      resolution: json['resolution'],
-    );
-  }
-}
-
 class CctvCamera {
   final int id;
   final int? projectId;
@@ -997,10 +932,10 @@ class BoqInvoice {
   }
 }
 
-/// Combined activity item for timeline display (site reports + queries)
+/// Combined activity item for timeline display (site reports, observations, etc.)
 class CombinedActivityItem {
   final int id;
-  final String type; // "SITE_REPORT" or "QUERY"
+  final String type; // e.g. "SITE_REPORT", "OBSERVATION", "GALLERY"
   final String title;
   final String? description;
   final DateTime timestamp;
@@ -1036,6 +971,5 @@ class CombinedActivityItem {
   }
 
   bool get isSiteReport => type == 'SITE_REPORT';
-  bool get isQuery => type == 'QUERY';
 }
 

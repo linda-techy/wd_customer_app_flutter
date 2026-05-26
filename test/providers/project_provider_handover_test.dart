@@ -47,18 +47,6 @@ class _FakeProjectRepository implements ProjectRepository {
           String qcId, QCStatus status, String comments) async =>
       true;
   @override
-  Future<List<Query>> getQueries(String projectId) async => <Query>[];
-  @override
-  Future<Query?> getQueryById(String queryId) async => null;
-  @override
-  Future<String> createQuery(String projectId, Query query) async => '';
-  @override
-  Future<bool> addQueryMessage(String queryId, QueryMessage message) async =>
-      true;
-  @override
-  Future<bool> updateQueryStatus(String queryId, QueryStatus status) async =>
-      true;
-  @override
   Future<List<ProjectActivity>> getProjectActivities(String projectId) async =>
       <ProjectActivity>[];
   @override

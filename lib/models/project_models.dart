@@ -4,12 +4,6 @@ enum ProjectStatus { active, completed, suspended, cancelled, onHold }
 // QC Status Enum
 enum QCStatus { pending, completed, failed, inProgress }
 
-// Query Status Enum
-enum QueryStatus { open, closed, resolved, inProgress }
-
-// Query Priority Enum
-enum QueryPriority { low, medium, high, urgent }
-
 // Document Type Enum
 enum DocumentType { floorPlan, structural, electrical, plumbing, other }
 
@@ -289,114 +283,6 @@ class QCItem {
       'correctiveActions': correctiveActions,
       'createdAt': createdAt.toIso8601String(),
       'completedAt': completedAt?.toIso8601String(),
-    };
-  }
-}
-
-// Query Model
-class Query {
-  final String id;
-  final String title;
-  final String description;
-  final QueryStatus status;
-  final QueryPriority priority;
-  final String category;
-  final DateTime createdAt;
-  final DateTime? resolvedAt;
-  final String createdBy;
-  final List<QueryMessage> messages;
-  final List<String> attachments;
-
-  Query({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.status,
-    required this.priority,
-    required this.category,
-    required this.createdAt,
-    this.resolvedAt,
-    required this.createdBy,
-    required this.messages,
-    required this.attachments,
-  });
-
-  factory Query.fromJson(Map<String, dynamic> json) {
-    return Query(
-      id: json['id'],
-      title: json['title'],
-      description: json['description'],
-      status: QueryStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-        orElse: () => QueryStatus.open,
-      ),
-      priority: QueryPriority.values.firstWhere(
-        (e) => e.name == json['priority'],
-        orElse: () => QueryPriority.medium,
-      ),
-      category: json['category'],
-      createdAt: DateTime.parse(json['createdAt']),
-      resolvedAt: json['resolvedAt'] != null
-          ? DateTime.parse(json['resolvedAt'])
-          : null,
-      createdBy: json['createdBy'],
-      messages: (json['messages'] as List)
-          .map((m) => QueryMessage.fromJson(m))
-          .toList(),
-      attachments: List<String>.from(json['attachments']),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'description': description,
-      'status': status.name,
-      'priority': priority.name,
-      'category': category,
-      'createdAt': createdAt.toIso8601String(),
-      'resolvedAt': resolvedAt?.toIso8601String(),
-      'createdBy': createdBy,
-      'messages': messages.map((m) => m.toJson()).toList(),
-      'attachments': attachments,
-    };
-  }
-}
-
-// Query Message Model
-class QueryMessage {
-  final String id;
-  final String content;
-  final String sender;
-  final DateTime timestamp;
-  final List<String> attachments;
-
-  QueryMessage({
-    required this.id,
-    required this.content,
-    required this.sender,
-    required this.timestamp,
-    required this.attachments,
-  });
-
-  factory QueryMessage.fromJson(Map<String, dynamic> json) {
-    return QueryMessage(
-      id: json['id'],
-      content: json['content'],
-      sender: json['sender'],
-      timestamp: DateTime.parse(json['timestamp']),
-      attachments: List<String>.from(json['attachments']),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'content': content,
-      'sender': sender,
-      'timestamp': timestamp.toIso8601String(),
-      'attachments': attachments,
     };
   }
 }

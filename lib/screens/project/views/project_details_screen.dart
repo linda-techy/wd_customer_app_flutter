@@ -210,7 +210,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   bool _canSeeObservations()  => [...RoleConstants.financialAllowedRoles, 'ARCHITECT', 'SITE_ENGINEER', 'CONTRACTOR', 'BUILDER'].contains(_userRole);
   bool _canSeeSnags()         => [...RoleConstants.financialAllowedRoles, 'ARCHITECT', 'INTERIOR_DESIGNER', 'SITE_ENGINEER', 'CONTRACTOR', 'BUILDER'].contains(_userRole);
   bool _canSeeCCTV()          => [...RoleConstants.financialAllowedRoles, 'ARCHITECT'].contains(_userRole);
-  bool _canSeeQueries()       => [...RoleConstants.financialAllowedRoles, 'ARCHITECT', 'INTERIOR_DESIGNER', 'SITE_ENGINEER', 'CONTRACTOR', 'BUILDER'].contains(_userRole);
   // ─────────────────────────────────────────────────────────────────────────────
 
   @override

@@ -27,7 +27,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   bool _hasMore = true;
   int _page = 0;
 
-  static const _activityTypes = ['all', 'site_report', 'query', 'observation', 'gallery', 'quality_check', 'site_visit'];
+  static const _activityTypes = ['all', 'site_report', 'observation', 'gallery', 'quality_check', 'site_visit'];
 
   @override
   void initState() {
@@ -596,8 +596,6 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
     switch (type.toLowerCase()) {
       case 'site_report':
         return const _ActivityTypeConfig('Site Report', Icons.assignment, Color(0xFF2563EB));
-      case 'query':
-        return const _ActivityTypeConfig('Query', Icons.help_outline, Color(0xFF7C3AED));
       case 'observation':
         return const _ActivityTypeConfig('Observation', Icons.visibility, Color(0xFFEA580C));
       case 'gallery':

@@ -22,13 +22,6 @@ abstract class ProjectRepository {
   Future<QCItem?> getQCItemById(String qcId);
   Future<bool> updateQCStatus(String qcId, QCStatus status, String comments);
 
-  // Queries
-  Future<List<Query>> getQueries(String projectId);
-  Future<Query?> getQueryById(String queryId);
-  Future<String> createQuery(String projectId, Query query);
-  Future<bool> addQueryMessage(String queryId, QueryMessage message);
-  Future<bool> updateQueryStatus(String queryId, QueryStatus status);
-
   // Project Activities
   Future<List<ProjectActivity>> getProjectActivities(String projectId);
   Future<List<ProjectActivity>> getRecentActivities(
