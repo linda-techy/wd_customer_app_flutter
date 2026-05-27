@@ -447,7 +447,7 @@ class _PaymentsScreenState extends State<PaymentsScreen>
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '₹${_formatAmount(invoice.netAmountDue)}',
+                      _formatAmount(invoice.netAmountDue),
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16),
                     ),
@@ -542,7 +542,7 @@ class _PaymentsScreenState extends State<PaymentsScreen>
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text('₹${_formatAmount(invoice.totalAmount)}',
+                    Text(_formatAmount(invoice.totalAmount),
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 4),
                     Container(
@@ -625,11 +625,11 @@ class _PaymentsScreenState extends State<PaymentsScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSummaryRow("Total Contract", "₹${_formatAmount(summary.totalAmount)}", Colors.white60),
+                  _buildSummaryRow("Total Contract", _formatAmount(summary.totalAmount), Colors.white60),
                   const SizedBox(height: 12),
-                  _buildSummaryRow("Paid So Far", "₹${_formatAmount(summary.paidAmount)}", successColor),
+                  _buildSummaryRow("Paid So Far", _formatAmount(summary.paidAmount), successColor),
                   const SizedBox(height: 12),
-                  _buildSummaryRow("Due Amount", "₹${_formatAmount(summary.dueAmount)}", errorColor),
+                  _buildSummaryRow("Due Amount", _formatAmount(summary.dueAmount), errorColor),
                 ],
               ),
             ),
@@ -714,7 +714,7 @@ class _PaymentsScreenState extends State<PaymentsScreen>
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text("₹${_formatAmount(schedule.amount)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(_formatAmount(schedule.amount), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 4),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
