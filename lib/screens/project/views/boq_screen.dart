@@ -288,7 +288,10 @@ class _BoqScreenState extends State<BoqScreen> {
     final overallBillPct = _summary?.billingPercentage ??
         (totalExecuted > 0 ? (totalBilled / totalExecuted * 100) : 0.0);
     final costToComplete = _summary?.costToComplete ?? (totalPlanned - totalExecuted);
-    final itemCount = _summary?.totalItems ?? _filteredItems.length;
+    // The customer /boq/summary payload omits totalItems (defaults to 0), so
+    // fall back to the actual number of rendered line items rather than show "0".
+    final summaryItems = _summary?.totalItems ?? 0;
+    final itemCount = summaryItems > 0 ? summaryItems : _filteredItems.length;
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
@@ -464,53 +467,57 @@ class _BoqScreenState extends State<BoqScreen> {
   // ── Filter Row ────────────────────────────────────────────────────────────
 
   Widget _buildFilterRow() {
+    // Use a Wrap (not a horizontal SingleChildScrollView+Row): in a scroll view
+    // the Row gets unbounded width, which forces infinite width on the Material
+    // tap-target of a chip/button ("BoxConstraints forces an infinite width"),
+    // breaking the whole body Column's layout so the item list never paints.
+    // Wrap lays every child out within the bounded body width and flows to a
+    // second line on narrow screens instead of hiding chips off-screen.
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _buildFilterChip('All', _selectedStatus == null,
-                () => setState(() => _selectedStatus = null)),
-            _buildFilterChip('Confirmed', _selectedStatus == 'APPROVED',
-                () => setState(() => _selectedStatus = 'APPROVED')),
-            _buildFilterChip('In Progress', _selectedStatus == 'LOCKED',
-                () => setState(() => _selectedStatus = 'LOCKED')),
-            _buildFilterChip('Completed', _selectedStatus == 'COMPLETED',
-                () => setState(() => _selectedStatus = 'COMPLETED')),
-            const SizedBox(width: 8),
-            OutlinedButton.icon(
-              icon: Icon(
-                  _detailMode ? Icons.visibility_off_outlined : Icons.list_alt_outlined,
-                  size: 14),
-              label: Text(_detailMode ? 'Standard' : 'Detailed',
-                  style: const TextStyle(fontSize: 11)),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                side: BorderSide(color: Colors.grey.shade400),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              onPressed: () => setState(() => _detailMode = !_detailMode),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          _buildFilterChip('All', _selectedStatus == null,
+              () => setState(() => _selectedStatus = null)),
+          _buildFilterChip('Confirmed', _selectedStatus == 'APPROVED',
+              () => setState(() => _selectedStatus = 'APPROVED')),
+          _buildFilterChip('In Progress', _selectedStatus == 'LOCKED',
+              () => setState(() => _selectedStatus = 'LOCKED')),
+          _buildFilterChip('Completed', _selectedStatus == 'COMPLETED',
+              () => setState(() => _selectedStatus = 'COMPLETED')),
+          OutlinedButton.icon(
+            icon: Icon(
+                _detailMode ? Icons.visibility_off_outlined : Icons.list_alt_outlined,
+                size: 14),
+            label: Text(_detailMode ? 'Standard' : 'Detailed',
+                style: const TextStyle(fontSize: 11)),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              side: BorderSide(color: Colors.grey.shade400),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-          ],
-        ),
+            onPressed: () => setState(() => _detailMode = !_detailMode),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildFilterChip(String label, bool isSelected, VoidCallback onTap) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 6),
-      child: FilterChip(
-        label: Text(label),
-        selected: isSelected,
-        onSelected: (_) => onTap(),
-        selectedColor: _primaryColor,
-        labelStyle: TextStyle(
-          color: isSelected ? Colors.white : Colors.black87,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          fontSize: 12,
-        ),
+    // Spacing is handled by the parent Wrap; no per-chip padding needed.
+    return FilterChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (_) => onTap(),
+      selectedColor: _primaryColor,
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.white : Colors.black87,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        fontSize: 12,
       ),
     );
   }
