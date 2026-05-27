@@ -65,11 +65,14 @@ class _QualityCheckScreenState extends State<QualityCheckScreen>
       // Load all quality checks
       final allChecks = await service!.getQualityChecks(widget.projectId);
       
-      // Separate active and resolved
-      final active = allChecks.where((c) => 
-        c.status == 'PENDING' || c.status == 'IN_PROGRESS'
-      ).toList();
-      final resolved = allChecks.where((c) => c.status == 'RESOLVED').toList();
+      // Separate active and resolved. The customer API's QC status vocabulary is
+      // ACTIVE / RESOLVED (the ITP model); older/legacy rows may use PENDING or
+      // IN_PROGRESS. Treat anything not RESOLVED as active so ACTIVE checks are
+      // not dropped from BOTH tabs (was filtering on PENDING|IN_PROGRESS only).
+      final resolved =
+          allChecks.where((c) => c.status.toUpperCase() == 'RESOLVED').toList();
+      final active =
+          allChecks.where((c) => c.status.toUpperCase() != 'RESOLVED').toList();
 
       setState(() {
         activeChecks = active;

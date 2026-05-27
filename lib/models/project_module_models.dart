@@ -117,18 +117,25 @@ class QualityCheck {
   });
 
   factory QualityCheck.fromJson(Map<String, dynamic> json) {
+    // A QC row can be unattributed (no creator user) or carry a site-engineer
+    // account with blank names; the customer API then returns createdById /
+    // createdByName as null/empty. Tolerate both and surface the construction
+    // role rather than crashing the screen or showing an empty author.
+    final rawCreatedBy = (json['createdByName'] as String?)?.trim();
     return QualityCheck(
-      id: json['id'],
-      projectId: json['projectId'],
-      title: json['title'],
+      id: json['id'] ?? 0,
+      projectId: json['projectId'] ?? 0,
+      title: json['title'] ?? '',
       description: json['description'],
       sopReference: json['sopReference'],
-      status: json['status'],
-      priority: json['priority'],
+      status: json['status'] ?? 'ACTIVE',
+      priority: json['priority'] ?? 'MEDIUM',
       assignedToId: json['assignedToId'],
       assignedToName: json['assignedToName'],
-      createdById: json['createdById'],
-      createdByName: json['createdByName'],
+      createdById: json['createdById'] ?? 0,
+      createdByName: (rawCreatedBy == null || rawCreatedBy.isEmpty)
+          ? 'Site Engineer'
+          : rawCreatedBy,
       createdAt: DateTime.parse(json['createdAt']),
       resolvedAt: json['resolvedAt'] != null ? DateTime.parse(json['resolvedAt']) : null,
       resolvedById: json['resolvedById'],
@@ -509,14 +516,18 @@ class FeedbackForm {
   });
 
   factory FeedbackForm.fromJson(Map<String, dynamic> json) {
+    // A feedback form can be unattributed (no creator user on the row); the
+    // customer API then returns createdById/createdByName as null. The customer
+    // only fills the form — the author isn't surfaced — so tolerate nulls
+    // rather than crashing the screen.
     return FeedbackForm(
-      id: json['id'],
-      projectId: json['projectId'],
-      title: json['title'],
+      id: json['id'] ?? 0,
+      projectId: json['projectId'] ?? 0,
+      title: json['title'] ?? '',
       description: json['description'],
       formType: json['formType'],
-      createdById: json['createdById'],
-      createdByName: json['createdByName'],
+      createdById: json['createdById'] ?? 0,
+      createdByName: json['createdByName'] ?? '',
       createdAt: DateTime.parse(json['createdAt']),
       isActive: json['isActive'] ?? true,
       isCompleted: json['isCompleted'],
@@ -670,7 +681,10 @@ class BoqItem {
     return BoqItem(
       id: json['id'],
       projectId: json['projectId'],
-      workTypeId: json['workTypeId'],
+      // Work type is optional (portal V161 dropped the NOT NULL on
+      // boq_items.work_type_id); the customer API can return null. Collapse to
+      // the 0 sentinel rather than crash the screen on a non-nullable int.
+      workTypeId: json['workTypeId'] ?? 0,
       workTypeName: json['workTypeName'] ?? '',
       categoryId: json['categoryId'],
       categoryName: json['categoryName'],
@@ -735,6 +749,9 @@ class BoqSummary {
   final List<BoqWorkTypeSummary> workTypeSummaries;
   final double baseScopeAmount;
   final double addonAmount;
+  // Approved document-level contract totals (customer /boq/summary payload).
+  final double totalValueExGst;
+  final double totalValueInclGst;
 
   BoqSummary({
     required this.projectId,
@@ -747,6 +764,8 @@ class BoqSummary {
     required this.workTypeSummaries,
     this.baseScopeAmount = 0.0,
     this.addonAmount = 0.0,
+    this.totalValueExGst = 0.0,
+    this.totalValueInclGst = 0.0,
   });
 
   double get costToComplete => totalPlannedAmount - totalExecutedAmount;
@@ -754,9 +773,16 @@ class BoqSummary {
 
   factory BoqSummary.fromJson(Map<String, dynamic> json) {
     double toDouble(dynamic v) => v == null ? 0.0 : (v as num).toDouble();
+    // The customer /boq/summary payload carries the approved contract value as
+    // totalValueExGst / totalValueInclGst (not totalPlannedAmount). Fall back to
+    // the all-in incl-GST total so the "Planned Budget" / "Total Project Cost"
+    // headline shows the real contract value instead of ₹0.
+    final inclGst = toDouble(json['totalValueInclGst']);
     return BoqSummary(
       projectId: json['projectId'] ?? 0,
-      totalPlannedAmount: toDouble(json['totalPlannedAmount']),
+      totalPlannedAmount: json['totalPlannedAmount'] != null
+          ? toDouble(json['totalPlannedAmount'])
+          : inclGst,
       totalExecutedAmount: toDouble(json['totalExecutedAmount']),
       totalBilledAmount: toDouble(json['totalBilledAmount']),
       executionPercentage: toDouble(json['executionPercentage']),
@@ -767,6 +793,8 @@ class BoqSummary {
           .toList(),
       baseScopeAmount: toDouble(json['baseScopeAmount']),
       addonAmount: toDouble(json['addonAmount']),
+      totalValueExGst: toDouble(json['totalValueExGst']),
+      totalValueInclGst: inclGst,
     );
   }
 }
