@@ -15,7 +15,8 @@ class CoReviewScreen extends StatefulWidget {
 
 class _CoReviewScreenState extends State<CoReviewScreen>
     with SingleTickerProviderStateMixin {
-  final _currency = NumberFormat.currency(symbol: '₹', decimalDigits: 2);
+  // Indian locale → lakh/crore digit grouping (₹1,85,000.00, not ₹185,000.00).
+  final _currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 2);
 
   CustomerBoqService? _service;
   late TabController _tabController;

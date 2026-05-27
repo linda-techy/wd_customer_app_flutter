@@ -13,7 +13,8 @@ class PaymentScheduleScreen extends StatefulWidget {
 }
 
 class _PaymentScheduleScreenState extends State<PaymentScheduleScreen> {
-  final _currency = NumberFormat.currency(symbol: '₹', decimalDigits: 2);
+  // Indian locale → lakh/crore digit grouping (₹58,91,150.00, not ₹5,891,150.00).
+  final _currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 2);
   final _pct = NumberFormat.percentPattern()..maximumFractionDigits = 1;
 
   CustomerBoqService? _service;

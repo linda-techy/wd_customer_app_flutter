@@ -48,7 +48,7 @@ class _CrOtpApprovalScreenState extends State<CrOtpApprovalScreen> {
   Widget build(BuildContext context) {
     final p = context.watch<CrOtpProvider>();
     final summary = p.summary;
-    final currency = NumberFormat.currency(symbol: '₹', decimalDigits: 0);
+    final currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
 
     // VERIFIED → pop true so co_review_screen can refresh + toast.
     if (p.state == CrOtpState.approved) {

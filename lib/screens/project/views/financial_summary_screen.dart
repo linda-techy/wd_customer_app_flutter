@@ -17,7 +17,8 @@ class FinancialSummaryScreen extends StatefulWidget {
 
 class _FinancialSummaryScreenState extends State<FinancialSummaryScreen>
     with SingleTickerProviderStateMixin {
-  final _currency = NumberFormat.currency(symbol: '₹', decimalDigits: 0);
+  // Indian locale → lakh/crore digit grouping (₹8,83,673, not ₹883,673).
+  final _currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
   CustomerBoqService? _service;
   late TabController _tabs;
 
