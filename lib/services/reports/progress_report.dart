@@ -168,9 +168,9 @@ class ProgressReport {
                 flex: (100 - clamped).round(),
                 child: pw.Container(
                   height: 10,
-                  decoration: pw.BoxDecoration(
+                  decoration: const pw.BoxDecoration(
                     color: PdfColors.grey300,
-                    borderRadius: const pw.BorderRadius.only(
+                    borderRadius: pw.BorderRadius.only(
                       topRight: pw.Radius.circular(5),
                       bottomRight: pw.Radius.circular(5),
                     ),
@@ -195,7 +195,7 @@ class ProgressReport {
   }
 
   static pw.Widget _buildPhaseTable(List<ProjectPhaseModel> phases) {
-    String _fmtDate(DateTime? d) =>
+    String fmtDate(DateTime? d) =>
         d != null ? _dateFmt.format(d) : '-';
 
     return ReportService.buildTable(
@@ -204,10 +204,10 @@ class ProgressReport {
         return [
           p.phaseName,
           p.status,
-          _fmtDate(p.plannedStart),
-          _fmtDate(p.plannedEnd),
-          _fmtDate(p.actualStart),
-          _fmtDate(p.actualEnd),
+          fmtDate(p.plannedStart),
+          fmtDate(p.plannedEnd),
+          fmtDate(p.actualStart),
+          fmtDate(p.actualEnd),
         ];
       }).toList(),
       columnAlignments: [
@@ -222,7 +222,7 @@ class ProgressReport {
   }
 
   static pw.Widget _buildMilestonesTable(List<ProgressMilestone> milestones) {
-    String _fmtDate(DateTime? d) =>
+    String fmtDate(DateTime? d) =>
         d != null ? _dateFmt.format(d) : '-';
 
     return ReportService.buildTable(
@@ -231,8 +231,8 @@ class ProgressReport {
         return [
           m.name,
           '${m.progressPercentage.toStringAsFixed(0)}%',
-          _fmtDate(m.targetDate),
-          _fmtDate(m.completedDate),
+          fmtDate(m.targetDate),
+          fmtDate(m.completedDate),
           m.status,
         ];
       }).toList(),

@@ -885,7 +885,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             ),
                             if (m.completedDate != null) ...[
                               const SizedBox(width: 12),
-                              Icon(Icons.check_circle_outline, size: 12, color: Colors.green),
+                              const Icon(Icons.check_circle_outline, size: 12, color: Colors.green),
                               const SizedBox(width: 4),
                               Text(
                                 'Done: ${_formatDate(m.completedDate!)}',

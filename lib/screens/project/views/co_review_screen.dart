@@ -54,8 +54,8 @@ class _CoReviewScreenState extends State<CoReviewScreen>
       ]);
       if (mounted) {
         setState(() {
-          _pending = results[0] as List<CustomerChangeOrder>;
-          _all = results[1] as List<CustomerChangeOrder>;
+          _pending = results[0];
+          _all = results[1];
           _isLoading = false;
         });
       }
@@ -352,7 +352,7 @@ class _CoCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(co.referenceNumber,
-                  style: TextStyle(
+                  style: const TextStyle(
                       color: AppColors.grey600, fontSize: 12)),
               const SizedBox(height: 6),
               Row(

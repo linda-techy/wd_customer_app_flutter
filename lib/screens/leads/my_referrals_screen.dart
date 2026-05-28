@@ -97,7 +97,7 @@ class _MyReferralsScreenState extends State<MyReferralsScreen> {
                     referral.friendName.isNotEmpty
                         ? referral.friendName[0].toUpperCase()
                         : '?',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: _brand,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,

@@ -59,10 +59,10 @@ class _FinancialSummaryScreenState extends State<FinancialSummaryScreen>
       ]);
       if (!mounted) return;
       setState(() {
-        _stages        = results[0] as Map<String, dynamic>?;
-        _variationOrders = results[1] as Map<String, dynamic>?;
-        _deductions    = results[2] as Map<String, dynamic>?;
-        _finalAccount  = results[3] as Map<String, dynamic>?;
+        _stages        = results[0];
+        _variationOrders = results[1];
+        _deductions    = results[2];
+        _finalAccount  = results[3];
         _isLoading     = false;
       });
     } catch (e) {
@@ -223,13 +223,13 @@ class _FinancialSummaryScreenState extends State<FinancialSummaryScreen>
                 padding: const EdgeInsets.only(top: 6),
                 child: Row(
                   children: [
-                    Icon(Icons.verified_outlined,
+                    const Icon(Icons.verified_outlined,
                         size: 14, color: AppColors.success),
                     const SizedBox(width: 4),
                     Text(
                         'Certified by ${s['certifiedBy'] ?? '—'} on '
                         '${(s['certifiedAt'] as String?)?.substring(0, 10) ?? '—'}',
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.success)),
                   ],

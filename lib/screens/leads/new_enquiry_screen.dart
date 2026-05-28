@@ -113,11 +113,11 @@ class _NewEnquiryScreenState extends State<NewEnquiryScreen> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: _brand.withOpacity(0.2)),
                 ),
-                child: Row(
+                child: const Row(
                   children: [
                     Icon(Icons.info_outline, color: _brand, size: 20),
-                    const SizedBox(width: 10),
-                    const Expanded(
+                    SizedBox(width: 10),
+                    Expanded(
                       child: Text(
                         'Tell us about your project and we\'ll get in touch with a proposal.',
                         style: TextStyle(fontSize: 13, height: 1.4),

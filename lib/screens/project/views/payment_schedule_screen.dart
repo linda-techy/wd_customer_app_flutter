@@ -148,7 +148,7 @@ class _SummaryCard extends StatelessWidget {
             Text(
               '${(progress * 100).toStringAsFixed(0)}% paid '
               '(${result.stageCount} stages)',
-              style: TextStyle(
+              style: const TextStyle(
                   color: AppColors.grey600, fontSize: 12),
             ),
           ],
@@ -175,7 +175,7 @@ class _SummaryRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: TextStyle(
+              style: const TextStyle(
                   color: AppColors.grey600, fontSize: 13)),
           Text(value,
               style: TextStyle(
@@ -320,7 +320,7 @@ class _DetailRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: TextStyle(
+              style: const TextStyle(
                   color: AppColors.grey600, fontSize: 13)),
           Text(value,
               style: TextStyle(

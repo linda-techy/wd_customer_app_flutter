@@ -39,7 +39,7 @@ class LeadProvider with ChangeNotifier {
     try {
       final referralsData = await LeadService.getMyReferrals();
       _referrals = referralsData
-          .map((e) => ReferralLead.fromJson(e as Map<String, dynamic>))
+          .map((e) => ReferralLead.fromJson(e))
           .toList();
       _error = null;
     } catch (e) {

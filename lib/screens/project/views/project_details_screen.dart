@@ -830,10 +830,11 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         list.add(_ActionItem('Site Visits', Icons.person_pin_circle_outlined, Colors.purple, () {
           nav.push(MaterialPageRoute(builder: (_) => SiteVisitsScreen(projectId: projectUuid)));
         }));
-        if (_canSeeBOQ())
+        if (_canSeeBOQ()) {
           list.add(_ActionItem('BOQ', Icons.receipt_long_outlined, Colors.green, () {
             nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectUuid)));
           }));
+        }
         list.add(_ActionItem('360° Views', Icons.view_in_ar, Colors.cyan, () {
           nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectUuid)));
         }));
@@ -864,10 +865,11 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         list.add(_ActionItem('Site Visits', Icons.person_pin_circle_outlined, Colors.teal, () {
           nav.push(MaterialPageRoute(builder: (_) => SiteVisitsScreen(projectId: projectUuid)));
         }));
-        if (_canSeeBOQ())
+        if (_canSeeBOQ()) {
           list.add(_ActionItem('BOQ', Icons.receipt_long_outlined, Colors.green, () {
             nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectUuid)));
           }));
+        }
         list.add(_ActionItem('360° Views', Icons.view_in_ar, Colors.cyan, () {
           nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectUuid)));
         }));
@@ -889,18 +891,21 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         list.add(_ActionItem('Site Visits', Icons.person_pin_circle_outlined, Colors.purple, () {
           nav.push(MaterialPageRoute(builder: (_) => SiteVisitsScreen(projectId: projectUuid)));
         }));
-        if (_canSeeSnags())
+        if (_canSeeSnags()) {
           list.add(_ActionItem('Snags', Icons.warning_amber_rounded, Colors.red, () {
             nav.push(MaterialPageRoute(builder: (_) => SnagsScreen(projectId: projectUuid)));
           }));
-        if (_canSeeQualityChecks())
+        }
+        if (_canSeeQualityChecks()) {
           list.add(_ActionItem('Quality Check', Icons.checklist, Colors.deepPurple, () {
             nav.push(MaterialPageRoute(builder: (_) => QualityCheckScreen(projectId: projectUuid)));
           }));
-        if (_canSeeBOQ())
+        }
+        if (_canSeeBOQ()) {
           list.add(_ActionItem('BOQ', Icons.receipt_long_outlined, Colors.green, () {
             nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectUuid)));
           }));
+        }
         list.add(_ActionItem('360° Views', Icons.view_in_ar, Colors.cyan, () {
           nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectUuid)));
         }));
@@ -908,24 +913,29 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: dbId)));
         }));
         list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectUuid.isNotEmpty ? projectDocumentsRoute(projectUuid) : documentsScreenRoute)));
-        if (_canSeePayments())
+        if (_canSeePayments()) {
           list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
             nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId, projectUuid: projectUuid.isNotEmpty ? projectUuid : null)));
           }));
-        if (_canSeePayments())
+        }
+        if (_canSeePayments()) {
           list.add(_ActionItem('Payment Schedule', Icons.calendar_month_outlined, Colors.teal, () {
             nav.push(MaterialPageRoute(builder: (_) => PaymentScheduleScreen(projectId: projectUuid)));
           }));
-        if (_canSeeBOQ())
+        }
+        if (_canSeeBOQ()) {
           list.add(_ActionItem('Change Orders', Icons.edit_note_outlined, Colors.deepOrange, () {
             nav.push(MaterialPageRoute(builder: (_) => CoReviewScreen(projectId: projectUuid)));
           }));
-        if (_canSeePayments())
+        }
+        if (_canSeePayments()) {
           list.add(_ActionItem('Financials', Icons.account_balance_outlined, Colors.indigo, () {
             nav.push(MaterialPageRoute(builder: (_) => FinancialSummaryScreen(projectId: projectUuid)));
           }));
-        if (_canSeeCCTV())
+        }
+        if (_canSeeCCTV()) {
           list.add(_ActionItem('CCTV', Icons.videocam_outlined, Colors.grey, () => nav.pushNamed(projectUuid.isNotEmpty ? projectCctvRoute(projectUuid) : cctvSurveillanceScreenRoute)));
+        }
         list.add(_ActionItem('Warranties', Icons.verified_user, Colors.teal, () {
           nav.push(MaterialPageRoute(builder: (_) => WarrantiesScreen(projectId: projectUuid)));
         }));
@@ -941,18 +951,21 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           nav.push(MaterialPageRoute(builder: (_) => ActivityFeedScreen(projectId: projectUuid)));
         }));
         list.add(_ActionItem('Gallery', Icons.photo_library_outlined, Colors.teal, () => nav.pushNamed(projectUuid.isNotEmpty ? projectGalleryRoute(projectUuid) : projectGalleryScreenRoute)));
-        if (_canSeeSnags())
+        if (_canSeeSnags()) {
           list.add(_ActionItem('Snags', Icons.warning_amber_rounded, Colors.red, () {
             nav.push(MaterialPageRoute(builder: (_) => SnagsScreen(projectId: projectUuid)));
           }));
-        if (_canSeeQualityChecks())
+        }
+        if (_canSeeQualityChecks()) {
           list.add(_ActionItem('Quality Check', Icons.checklist, Colors.deepPurple, () {
             nav.push(MaterialPageRoute(builder: (_) => QualityCheckScreen(projectId: projectUuid)));
           }));
-        if (_canSeeBOQ())
+        }
+        if (_canSeeBOQ()) {
           list.add(_ActionItem('BOQ', Icons.receipt_long_outlined, Colors.green, () {
             nav.push(MaterialPageRoute(builder: (_) => BoqScreen(projectId: projectUuid)));
           }));
+        }
         list.add(_ActionItem('360° Views', Icons.view_in_ar, Colors.cyan, () {
           nav.push(MaterialPageRoute(builder: (_) => View360Screen(projectId: projectUuid)));
         }));
@@ -960,22 +973,26 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: dbId)));
         }));
         list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectUuid.isNotEmpty ? projectDocumentsRoute(projectUuid) : documentsScreenRoute)));
-        if (_canSeePayments())
+        if (_canSeePayments()) {
           list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
             nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId, projectUuid: projectUuid.isNotEmpty ? projectUuid : null)));
           }));
-        if (_canSeePayments())
+        }
+        if (_canSeePayments()) {
           list.add(_ActionItem('Payment Schedule', Icons.calendar_month_outlined, Colors.teal, () {
             nav.push(MaterialPageRoute(builder: (_) => PaymentScheduleScreen(projectId: projectUuid)));
           }));
-        if (_canSeeBOQ())
+        }
+        if (_canSeeBOQ()) {
           list.add(_ActionItem('Change Orders', Icons.edit_note_outlined, Colors.deepOrange, () {
             nav.push(MaterialPageRoute(builder: (_) => CoReviewScreen(projectId: projectUuid)));
           }));
-        if (_canSeePayments())
+        }
+        if (_canSeePayments()) {
           list.add(_ActionItem('Financials', Icons.account_balance_outlined, Colors.indigo, () {
             nav.push(MaterialPageRoute(builder: (_) => FinancialSummaryScreen(projectId: projectUuid)));
           }));
+        }
         list.add(_ActionItem('Warranties', Icons.verified_user, Colors.teal, () {
           nav.push(MaterialPageRoute(builder: (_) => WarrantiesScreen(projectId: projectUuid)));
         }));
@@ -994,18 +1011,21 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           nav.push(MaterialPageRoute(builder: (_) => SiteReportsScreen(projectId: dbId)));
         }));
         list.add(_ActionItem('Documents', Icons.folder_outlined, Colors.blue, () => nav.pushNamed(projectUuid.isNotEmpty ? projectDocumentsRoute(projectUuid) : documentsScreenRoute)));
-        if (_canSeePayments())
+        if (_canSeePayments()) {
           list.add(_ActionItem('Payments', Icons.account_balance_wallet_outlined, Colors.amber, () {
             nav.push(MaterialPageRoute(builder: (_) => PaymentsScreen(projectId: dbId, projectUuid: projectUuid.isNotEmpty ? projectUuid : null)));
           }));
-        if (_canSeePayments())
+        }
+        if (_canSeePayments()) {
           list.add(_ActionItem('Payment Schedule', Icons.calendar_month_outlined, Colors.teal, () {
             nav.push(MaterialPageRoute(builder: (_) => PaymentScheduleScreen(projectId: projectUuid)));
           }));
-        if (_canSeePayments())
+        }
+        if (_canSeePayments()) {
           list.add(_ActionItem('Financials', Icons.account_balance_outlined, Colors.indigo, () {
             nav.push(MaterialPageRoute(builder: (_) => FinancialSummaryScreen(projectId: projectUuid)));
           }));
+        }
         list.add(_ActionItem('Warranties', Icons.verified_user, Colors.teal, () {
           nav.push(MaterialPageRoute(builder: (_) => WarrantiesScreen(projectId: projectUuid)));
         }));

@@ -59,7 +59,7 @@ class _EnquiryDetailScreenState extends State<EnquiryDetailScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.error_outline, color: _brand, size: 48),
+                  const Icon(Icons.error_outline, color: _brand, size: 48),
                   const SizedBox(height: 12),
                   const Text('Could not load enquiry details.'),
                   const SizedBox(height: 12),

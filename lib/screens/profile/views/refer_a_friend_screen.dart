@@ -455,12 +455,12 @@ class _ReferAFriendScreenState extends State<ReferAFriendScreen>
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: _brand.withOpacity(0.2)),
               ),
-              child: Row(
+              child: const Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.info_outline, color: _brand, size: 18),
-                  const SizedBox(width: 8),
-                  const Expanded(
+                  SizedBox(width: 8),
+                  Expanded(
                     child: Text(
                       'Cash reward of ₹10,000–₹50,000 is credited 30–45 days after project foundation completion. Minimum project value: ₹15 Lakhs.',
                       style: TextStyle(fontSize: 12, height: 1.5),

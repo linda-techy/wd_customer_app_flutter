@@ -659,7 +659,7 @@ class _BoqScreenState extends State<BoqScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(groupName,
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                         color: barColor)),

@@ -300,18 +300,18 @@ class _LeadCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 4),
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
                     'View details',
                     style: TextStyle(
                       fontSize: 12,
-                      color: const Color(0xFFD84940),
+                      color: Color(0xFFD84940),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const Icon(Icons.arrow_forward_ios, size: 12, color: Color(0xFFD84940)),
+                  Icon(Icons.arrow_forward_ios, size: 12, color: Color(0xFFD84940)),
                 ],
               ),
             ],

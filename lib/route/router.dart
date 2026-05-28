@@ -5,8 +5,6 @@ import '../screens/dashboard/views/customer_dashboard_screen.dart';
 import '../models/api_models.dart';
 import '../models/change_request_summary.dart';
 import '../providers/cr_otp_provider.dart';
-import 'package:wd_cust_mobile_app/screens/blog/views/blog_detail_screen.dart';
-import 'package:wd_cust_mobile_app/screens/portfolio/views/portfolio_detail_screen.dart';
 
 import 'package:wd_cust_mobile_app/screens/payments/views/payments_screen.dart';
 import 'package:wd_cust_mobile_app/screens/project/views/site_updates_screen.dart';
