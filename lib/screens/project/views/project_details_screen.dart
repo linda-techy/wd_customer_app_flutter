@@ -12,7 +12,6 @@ import '../../../services/next_payment_service.dart';
 import '../../../services/auth_service.dart';
 import '../../../constants.dart';
 import '../../../components/animations/fade_entry.dart';
-import '../../../components/animations/hover_card.dart';
 import '../../../components/animations/scale_button.dart';
 import '../../../models/project_phase.dart';
 import '../../../widgets/milestone_timeline.dart';
@@ -451,12 +450,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           delay: 380.ms,
           child: _buildPhaseStepper(p),
         ),
-        const SizedBox(height: 20),
-        // Progress Section
-        FadeEntry(
-          delay: 400.ms,
-          child: _buildPhaseCard(context, p),
-        ),
         const SizedBox(height: 24),
 
         // Quick Stats / Overview
@@ -605,103 +598,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
               ),
           ],
         ],
-      ),
-    );
-  }
-
-  Widget _buildPhaseCard(BuildContext context, ProjectCard? p) {
-    final progress = _projectDetails?.progress ?? p?.progress ?? 0;
-    final phaseValue = _projectDetails?.phase ?? p?.projectPhase;
-    final phase = ProjectPhase.fromString(phaseValue);
-
-    return HoverCard(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: primaryColor.withOpacity(0.05),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Current phase row
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _getPhaseColor(phaseValue).withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: _getPhaseColor(phaseValue).withOpacity(0.4)),
-                  ),
-                  child: Text(
-                    phase.displayName,
-                    style: TextStyle(
-                      color: _getPhaseColor(phaseValue),
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    phase.shortDescription,
-                    style: const TextStyle(color: blackColor60, fontSize: 12),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Total Progress", style: TextStyle(color: blackColor60, fontSize: 12)),
-                    SizedBox(height: 4),
-                    Text("On Track", style: TextStyle(color: successColor, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    "${progress.toStringAsFixed(0)}%",
-                    style: const TextStyle(
-                      color: primaryColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: LinearProgressIndicator(
-                value: (progress / 100.0).clamp(0.0, 1.0),
-                minHeight: 8,
-                backgroundColor: blackColor5,
-                valueColor: const AlwaysStoppedAnimation<Color>(primaryColor),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -423,7 +423,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Expanded(
             child: _buildStatCard(
-                context, "2Cr+", "Executed\nValue", Colors.blue)),
+                context, "10Cr+", "Executed\nValue", Colors.blue)),
         SizedBox(width: gridSpacing),
         Expanded(
             child: _buildStatCard(
