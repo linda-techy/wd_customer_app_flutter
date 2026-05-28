@@ -281,7 +281,7 @@ class _CctvSurveillanceScreenState extends State<CctvSurveillanceScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => CctvPlayerScreen(camera: camera),
+                            builder: (_) => CctvPlayerScreen(camera: camera, projectUuid: projectId!),
                           ),
                         );
                       },

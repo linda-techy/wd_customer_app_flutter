@@ -2,11 +2,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import '../../../config/api_config.dart';
 import '../../../models/project_module_models.dart';
+import '../../../services/auth_service.dart';
 
 class CctvPlayerScreen extends StatefulWidget {
   final CctvCamera camera;
-  const CctvPlayerScreen({super.key, required this.camera});
+  final String projectUuid;
+  const CctvPlayerScreen({super.key, required this.camera, required this.projectUuid});
 
   @override
   State<CctvPlayerScreen> createState() => _CctvPlayerScreenState();
@@ -36,7 +39,16 @@ class _CctvPlayerScreenState extends State<CctvPlayerScreen> {
         if (playing && mounted) setState(() => _isLoading = false);
       });
 
-      await _player.open(Media(widget.camera.streamUrl!));
+      // Play through the customer-API HLS proxy: the customer never sees the
+      // camera host or credentials, and protected cameras work via server-side
+      // Basic-auth injection (see CctvStreamProxyService).
+      final token = await AuthService.getAccessToken();
+      final proxyUrl = '${ApiConfig.baseUrl}/api/customer/projects/${widget.projectUuid}'
+          '/cctv-cameras/${widget.camera.id}/stream.m3u8';
+      await _player.open(Media(
+        proxyUrl,
+        httpHeaders: token != null ? {'Authorization': 'Bearer $token'} : null,
+      ));
 
       // Timeout fallback — if still loading after 10s, show error
       Future.delayed(const Duration(seconds: 10), () {
