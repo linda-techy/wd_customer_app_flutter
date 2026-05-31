@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/lead_models.dart';
@@ -20,7 +22,7 @@ class _MyReferralsScreenState extends State<MyReferralsScreen> {
     super.initState();
     Future.microtask(() {
       if (!mounted) return;
-      context.read<LeadProvider>().fetchMyReferrals();
+      unawaited(context.read<LeadProvider>().fetchMyReferrals());
     });
   }
 
