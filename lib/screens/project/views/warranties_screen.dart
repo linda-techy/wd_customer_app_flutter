@@ -35,7 +35,7 @@ class _WarrantiesScreenState extends State<WarrantiesScreen> {
         baseUrl: ApiConfig.baseUrl,
         token: token,
       );
-      _loadWarranties();
+      await _loadWarranties();
     } else {
       setState(() {
         _error = 'Not authenticated';

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
@@ -75,11 +76,11 @@ class AuthService {
       await _saveLoginData(response.data!);
 
       // Initialize push notifications (fire-and-forget — must not block login)
-      NotificationService.initialize(
+      unawaited(NotificationService.initialize(
         onTokenReceived: _registerFcmToken,
       ).catchError((e) {
         debugPrint('FCM init error: $e');
-      });
+      }));
     }
 
     return response;
@@ -218,7 +219,7 @@ class AuthService {
 
     if (accessToken != null && refreshToken != null) {
       // Call logout API (don't wait for response, clear local data anyway)
-      _apiService.logout(refreshToken, accessToken);
+      unawaited(_apiService.logout(refreshToken, accessToken));
     }
 
     await _clearAuthData();

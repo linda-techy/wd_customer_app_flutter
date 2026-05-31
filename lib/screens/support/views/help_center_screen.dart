@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../../constants.dart';
 import '../../../models/support_models.dart';
@@ -115,7 +117,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
         });
 
         // Navigate to ticket detail
-        Navigator.pushNamed(context, 'ticket_detail/${ticket.id}');
+        unawaited(Navigator.pushNamed(context, 'ticket_detail/${ticket.id}'));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

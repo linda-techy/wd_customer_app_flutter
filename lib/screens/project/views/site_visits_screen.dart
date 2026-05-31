@@ -45,7 +45,7 @@ class _SiteVisitsScreenState extends State<SiteVisitsScreen>
         baseUrl: ApiConfig.baseUrl,
         token: token,
       );
-      _loadVisits();
+      await _loadVisits();
     } else {
       setState(() {
         error = 'Not authenticated';

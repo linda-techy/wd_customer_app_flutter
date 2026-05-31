@@ -46,7 +46,7 @@ class _QualityCheckScreenState extends State<QualityCheckScreen>
         baseUrl: ApiConfig.baseUrl,
         token: token,
       );
-      _loadQualityChecks();
+      await _loadQualityChecks();
     } else {
       setState(() {
         error = 'Not authenticated';

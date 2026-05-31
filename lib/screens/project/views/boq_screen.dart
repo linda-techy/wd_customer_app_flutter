@@ -59,7 +59,7 @@ class _BoqScreenState extends State<BoqScreen> {
         role == 'CUSTOMER' || role == 'CUSTOMER_ADMIN';
     final token = await AuthService.getAccessToken();
     _service = ProjectModuleService(baseUrl: ApiConfig.baseUrl, token: token);
-    _loadData();
+    await _loadData();
   }
 
   Future<void> _loadData() async {

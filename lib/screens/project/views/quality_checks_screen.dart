@@ -24,7 +24,7 @@ class _QualityChecksScreenState extends State<QualityChecksScreen> {
   Future<void> _initService() async {
     final token = await AuthService.getAccessToken();
     _service = ProjectModuleService(baseUrl: ApiConfig.baseUrl, token: token);
-    _loadData();
+    await _loadData();
   }
 
   Future<void> _loadData() async {

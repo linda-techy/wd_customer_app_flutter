@@ -35,7 +35,7 @@ class _DelayLogsScreenState extends State<DelayLogsScreen> {
         baseUrl: ApiConfig.baseUrl,
         token: token,
       );
-      _loadDelayLogs();
+      await _loadDelayLogs();
     } else {
       setState(() {
         _error = 'Not authenticated';

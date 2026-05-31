@@ -49,7 +49,7 @@ class _CctvSurveillanceScreenState extends State<CctvSurveillanceScreen> {
         baseUrl: ApiConfig.baseUrl,
         token: token,
       );
-      _loadCameras();
+      await _loadCameras();
     } else {
       if (mounted) {
         setState(() {

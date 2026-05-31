@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/auth_guard.dart';
@@ -109,7 +111,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
           _isLoading = false;
         });
         // Kick off payment-due fetch without blocking the main render.
-        _loadRaisedPayments(response.data!.projects.recentProjects);
+        unawaited(_loadRaisedPayments(response.data!.projects.recentProjects));
       } else {
         setState(() {
           _errorMessage =

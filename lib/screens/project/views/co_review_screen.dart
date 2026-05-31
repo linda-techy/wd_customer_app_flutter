@@ -79,7 +79,7 @@ class _CoReviewScreenState extends State<CoReviewScreen>
     if (approved == true) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Change order approved')));
-      _load();
+      await _load();
     }
   }
 
@@ -92,7 +92,7 @@ class _CoReviewScreenState extends State<CoReviewScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Change order rejected')));
-        _load();
+        await _load();
       }
     } catch (e) {
       if (mounted) {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
@@ -74,11 +76,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await AuthService.logoutWithApi();
       if (mounted) {
         // Navigate to entry point to maintain menu visibility
-        Navigator.pushNamedAndRemoveUntil(
+        unawaited(Navigator.pushNamedAndRemoveUntil(
           context,
           entryPointScreenRoute,
           (route) => false,
-        );
+        ));
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Signed out successfully'),

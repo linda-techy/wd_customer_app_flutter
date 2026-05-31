@@ -21,7 +21,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   Future<void> _initService() async {
     final token = await AuthService.getAccessToken();
     _service = ProjectModuleService(baseUrl: ApiConfig.baseUrl, token: token);
-    _loadData();
+    await _loadData();
   }
 
   Future<void> _loadData() async {
@@ -71,7 +71,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               try {
                 await _service!.submitFeedback(widget.projectId, form['id'] as int, rating: ratingNotifier.value, comments: commentController.text);
                 if (ctx.mounted) Navigator.pop(ctx);
-                _loadData();
+                await _loadData();
                 if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Feedback submitted successfully')));
               } catch (e) {
                 if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));

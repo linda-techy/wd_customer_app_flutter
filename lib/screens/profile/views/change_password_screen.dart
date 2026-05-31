@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import '../../../config/api_config.dart';
@@ -71,11 +73,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       await AuthService.logoutWithApi();
 
       if (!mounted) return;
-      Navigator.pushNamedAndRemoveUntil(
+      unawaited(Navigator.pushNamedAndRemoveUntil(
         context,
         entryPointScreenRoute,
         (route) => false,
-      );
+      ));
     } on DioException catch (e) {
       if (!mounted) return;
 

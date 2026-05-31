@@ -53,7 +53,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         baseUrl: ApiConfig.baseUrl,
         token: token,
       );
-      _loadData();
+      await _loadData();
     } else {
       if (mounted) {
         setState(() {

@@ -41,7 +41,7 @@ class _View360ScreenState extends State<View360Screen> {
       setState(() {
         _authToken = token;
       });
-      _loadViews();
+      await _loadViews();
     } else {
       setState(() {
         error = 'Not authenticated';

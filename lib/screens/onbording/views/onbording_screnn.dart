@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../../constants.dart';
 import '../../../route/screen_export.dart';
@@ -210,11 +212,11 @@ class _OnbordingScrennState extends State<OnbordingScrenn>
                     await AuthService.setWelcomeSeen();
                     if (!context.mounted) return;
                     // Navigate to entry shell and force Home tab (preserve login state)
-                    Navigator.pushReplacementNamed(
+                    unawaited(Navigator.pushReplacementNamed(
                       context,
                       entryPointScreenRoute,
                       arguments: {'forceHome': true},
-                    );
+                    ));
                   },
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
@@ -351,11 +353,11 @@ class _OnbordingScrennState extends State<OnbordingScrenn>
                     await AuthService.setWelcomeSeen();
                     if (!context.mounted) return;
                     // Navigate to entry shell and force Home tab (preserve login state)
-                    Navigator.pushReplacementNamed(
+                    unawaited(Navigator.pushReplacementNamed(
                       context,
                       entryPointScreenRoute,
                       arguments: {'forceHome': true},
-                    );
+                    ));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: logoRed,
@@ -554,11 +556,11 @@ class _OnbordingScrennState extends State<OnbordingScrenn>
               onPressed: () async {
                 await AuthService.setWelcomeSeen();
                 if (!context.mounted) return;
-                Navigator.pushReplacementNamed(
+                unawaited(Navigator.pushReplacementNamed(
                   context,
                   entryPointScreenRoute,
                   arguments: {'forceHome': true},
-                );
+                ));
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: logoRed,

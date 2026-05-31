@@ -69,7 +69,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
       setState(() {
         _authToken = token;
       });
-      _loadImages();
+      await _loadImages();
     } else {
       setState(() {
         error = 'Not authenticated';

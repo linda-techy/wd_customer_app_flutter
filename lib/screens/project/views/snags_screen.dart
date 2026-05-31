@@ -76,7 +76,7 @@ class _SnagsScreenState extends State<SnagsScreen>
           _authToken = token;
         });
       }
-      _loadSnags();
+      await _loadSnags();
     } else {
       setState(() {
         error = 'Not authenticated';

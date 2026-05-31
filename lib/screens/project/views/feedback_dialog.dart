@@ -67,7 +67,7 @@ class _FeedbackSheetState extends State<_FeedbackSheet> {
         baseUrl: ApiConfig.baseUrl,
         token: token,
       );
-      _loadForms();
+      await _loadForms();
     } else {
       setState(() {
         error = 'Not authenticated';

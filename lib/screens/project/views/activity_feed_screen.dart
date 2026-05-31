@@ -60,7 +60,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
     final token = await AuthService.getAccessToken();
     if (token != null) {
       _service = ProjectModuleService(baseUrl: ApiConfig.baseUrl, token: token);
-      _loadData();
+      await _loadData();
     } else {
       setState(() {
         _error = 'Not authenticated';

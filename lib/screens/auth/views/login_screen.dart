@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../../constants.dart';
 import '../../../route/route_constants.dart';
@@ -93,18 +95,18 @@ class _LoginScreenState extends State<LoginScreen> {
         // Navigate based on redirect URL
         if (redirectUrl == '/dashboard') {
           // Navigate directly to customer dashboard
-          Navigator.pushNamedAndRemoveUntil(
+          unawaited(Navigator.pushNamedAndRemoveUntil(
             context,
             customerDashboardScreenRoute,
             ModalRoute.withName(logInScreenRoute),
-          );
+          ));
         } else {
           // Default navigation to main app with bottom navigation
-          Navigator.pushNamedAndRemoveUntil(
+          unawaited(Navigator.pushNamedAndRemoveUntil(
             context,
             entryPointScreenRoute,
             ModalRoute.withName(logInScreenRoute),
-          );
+          ));
         }
       } else {
         String errorMessage =
