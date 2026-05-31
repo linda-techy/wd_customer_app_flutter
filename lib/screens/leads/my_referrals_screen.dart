@@ -18,9 +18,10 @@ class _MyReferralsScreenState extends State<MyReferralsScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => context.read<LeadProvider>().fetchMyReferrals(),
-    );
+    Future.microtask(() {
+      if (!mounted) return;
+      context.read<LeadProvider>().fetchMyReferrals();
+    });
   }
 
   @override
