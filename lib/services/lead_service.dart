@@ -4,7 +4,10 @@ import '../models/lead_models.dart';
 import 'auth_service.dart';
 
 class LeadService {
-  static final Dio _dio = Dio(BaseOptions(
+  // test seam: tests set LeadService.testDio to a MockDioAdapter-backed Dio
+  static Dio? testDio;
+  static Dio get _dio => testDio ?? _defaultDio;
+  static final Dio _defaultDio = Dio(BaseOptions(
     connectTimeout: ApiConfig.connectionTimeout,
     receiveTimeout: ApiConfig.receiveTimeout,
   ));

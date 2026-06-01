@@ -12,7 +12,12 @@ class ProjectModuleService {
   ProjectModuleService({
     required this.baseUrl,
     this.token,
+    Dio? dio,
   }) {
+    if (dio != null) {
+      _dio = dio;
+      return;
+    }
     _dio = Dio(BaseOptions(baseUrl: baseUrl));
     _dio.options.headers['Content-Type'] = 'application/json';
     // AuthInterceptor reads the current access token from secure storage on

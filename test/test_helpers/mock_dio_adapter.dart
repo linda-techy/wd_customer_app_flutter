@@ -24,6 +24,14 @@ class MockDioAdapter implements HttpClientAdapter {
     _handlers['POST $path'] = handler;
   }
 
+  void onPut(String path, MockHandler handler) {
+    _handlers['PUT $path'] = handler;
+  }
+
+  void onPatch(String path, MockHandler handler) {
+    _handlers['PATCH $path'] = handler;
+  }
+
   @override
   Future<ResponseBody> fetch(
       RequestOptions options,

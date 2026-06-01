@@ -137,13 +137,14 @@ class CustomerChangeOrder {
 class CustomerBoqService {
   final Dio _dio;
 
-  CustomerBoqService({required String baseUrl, required String token})
-      : _dio = Dio(BaseOptions(
-          baseUrl: baseUrl,
-          headers: ApiConfig.getAuthHeaders(token),
-          connectTimeout: ApiConfig.connectionTimeout,
-          receiveTimeout: ApiConfig.receiveTimeout,
-        ));
+  CustomerBoqService({required String baseUrl, required String token, Dio? dio})
+      : _dio = dio ??
+            Dio(BaseOptions(
+              baseUrl: baseUrl,
+              headers: ApiConfig.getAuthHeaders(token),
+              connectTimeout: ApiConfig.connectionTimeout,
+              receiveTimeout: ApiConfig.receiveTimeout,
+            ));
 
   static Future<CustomerBoqService> create() async {
     final token = await AuthService.getAccessToken() ?? '';

@@ -3,7 +3,10 @@ import '../config/api_config.dart';
 import '../models/content_models.dart';
 
 class ContentService {
-  static final Dio _dio = Dio(BaseOptions(
+  // test seam: tests set ContentService.testDio to a MockDioAdapter-backed Dio
+  static Dio? testDio;
+  static Dio get _dio => testDio ?? _defaultDio;
+  static final Dio _defaultDio = Dio(BaseOptions(
     baseUrl: ApiConfig.baseUrl,
     connectTimeout: ApiConfig.connectionTimeout,
     receiveTimeout: ApiConfig.receiveTimeout,

@@ -6,7 +6,13 @@ import 'auth_interceptor.dart';
 class BoqDiffService {
   BoqDiffService._();
 
+  /// Test seam — set in tests to a [Dio] backed by a MockDioAdapter so the
+  /// service does not need to hit the network. Production code leaves this
+  /// `null` and a token-bearing Dio is built per-call.
+  static Dio? testDio;
+
   static Future<Dio> _dio() async {
+    if (testDio != null) return testDio!;
     final dio = Dio(BaseOptions(
       baseUrl: ApiConfig.baseUrl,
       headers: const {

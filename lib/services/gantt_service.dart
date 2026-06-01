@@ -7,9 +7,16 @@ class GanttService {
 
   late final Dio _dio;
 
-  GanttService({required String baseUrl, required String token})
+  GanttService({required String baseUrl, required String token, Dio? dio})
       : _baseUrl = baseUrl,
         _token = token {
+    if (dio != null) {
+      // Test seam — an injected Dio (backed by a MockDioAdapter) is used as-is
+      // so the service does not need to hit the network and no auth header is
+      // baked in. Production passes nothing and a token-bearing Dio is built.
+      _dio = dio;
+      return;
+    }
     _dio = Dio(BaseOptions(baseUrl: _baseUrl));
     _dio.options.headers['Authorization'] = 'Bearer $_token';
     _dio.options.headers['Content-Type'] = 'application/json';
