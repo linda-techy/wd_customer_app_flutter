@@ -15,10 +15,19 @@ class ApiService {
     _dio.interceptors.add(AuthInterceptor(_dio));
   }
 
-  final Dio _dio = Dio(BaseOptions(
+  Dio _dio = Dio(BaseOptions(
     connectTimeout: ApiConfig.connectionTimeout,
     receiveTimeout: ApiConfig.receiveTimeout,
   ));
+
+  /// Test seam: swap the singleton's underlying Dio for one backed by a
+  /// MockDioAdapter so calls don't hit the network. The injected Dio has no
+  /// AuthInterceptor (the mock adapter intercepts at the transport layer).
+  /// Production code never calls this.
+  @visibleForTesting
+  void setTestDio(Dio dio) {
+    _dio = dio;
+  }
 
   // Login method
   Future<ApiResponse<LoginResponse>> login(
