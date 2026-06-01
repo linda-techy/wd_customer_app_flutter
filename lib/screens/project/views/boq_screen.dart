@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../../models/project_module_models.dart';
 import '../../../services/project_module_service.dart';
@@ -40,7 +42,7 @@ class _BoqScreenState extends State<BoqScreen> {
   @override
   void initState() {
     super.initState();
-    _initService();
+    unawaited(_initService());
   }
 
   Future<void> _initService() async {
@@ -235,7 +237,7 @@ class _BoqScreenState extends State<BoqScreen> {
   // ── Export ───────────────────────────────────────────────────────────────
 
   void _showExportOptions(BuildContext context) {
-    showModalBottomSheet(
+    unawaited(showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
         child: Column(
@@ -246,13 +248,13 @@ class _BoqScreenState extends State<BoqScreen> {
               title: const Text('Export as PDF'),
               onTap: () {
                 Navigator.pop(ctx);
-                _exportPdf();
+                unawaited(_exportPdf());
               },
             ),
           ],
         ),
       ),
-    );
+    ));
   }
 
   Future<void> _exportPdf() async {
@@ -305,9 +307,9 @@ class _BoqScreenState extends State<BoqScreen> {
             IconButton(
               icon: const Icon(Icons.compare_arrows),
               tooltip: 'Compare Revisions',
-              onPressed: () => Navigator.of(context).pushNamed(
+              onPressed: () => unawaited(Navigator.of(context).pushNamed(
                 projectBoqDiffRoute(widget.projectId),
-              ),
+              )),
             ),
           if (_items.isNotEmpty)
             IconButton(

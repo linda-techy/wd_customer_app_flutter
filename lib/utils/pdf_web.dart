@@ -8,7 +8,7 @@ import 'dart:typed_data';
 void openPdfInNewTab(Uint8List bytes) {
   final blob = html.Blob([bytes], 'application/pdf');
   final url = html.Url.createObjectUrlFromBlob(blob);
-  html.window.open(url, '_blank');
+  html.window.open(url, '_blank'); // ignore: unsafe_html - opening a local blob URL for PDF download
   html.Url.revokeObjectUrl(url);
 }
 

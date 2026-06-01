@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../models/site_report_models.dart';
 import '../../services/reports/site_report_pdf.dart';
@@ -188,7 +190,7 @@ class _SiteReportDetailScreenState extends State<SiteReportDetailScreen> {
                         itemBuilder: (context, index) {
                           return GestureDetector(
                             onTap: () {
-                              Navigator.push(
+                              unawaited(Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => SiteReportPhotoViewer(
@@ -196,7 +198,7 @@ class _SiteReportDetailScreenState extends State<SiteReportDetailScreen> {
                                     initialIndex: index,
                                   ),
                                 ),
-                              );
+                              ));
                             },
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(8),

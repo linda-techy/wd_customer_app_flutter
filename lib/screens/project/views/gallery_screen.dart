@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
@@ -36,7 +38,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _initialize();
+    unawaited(_initialize());
   }
 
   @override
@@ -47,7 +49,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_isLoadingMore && _hasMore) {
-      _loadMore();
+      unawaited(_loadMore());
     }
   }
 
@@ -534,7 +536,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
   }
 
   void _openImageViewer(int initialIndex) {
-    Navigator.push(
+    unawaited(Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ImageViewerScreen(
@@ -543,7 +545,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
           authToken: _authToken,
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -674,7 +676,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
   }
 
   void _showImageDetails(GalleryImage image) {
-    showModalBottomSheet(
+    unawaited(showModalBottomSheet(
       context: context,
       builder: (context) => Padding(
         padding: const EdgeInsets.all(24),
@@ -692,7 +694,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _detailRow(String label, String value) {
@@ -723,7 +725,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     //
     // Simplest approach: Just open UniversalFileViewerScreen with the single image.
     // It has a download button.
-     Navigator.push(
+     unawaited(Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => UniversalFileViewerScreen(
@@ -732,7 +734,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
           fileType: 'image/jpeg',
         ),
       ),
-    );
+    ));
   }
 
   String _resolveUrl(String url) {

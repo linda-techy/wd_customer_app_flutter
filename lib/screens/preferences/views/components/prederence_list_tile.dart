@@ -36,7 +36,7 @@ class PreferencesListTile extends StatelessWidget {
       ),
       trailing: CupertinoSwitch(
         onChanged: (value) {
-          press;
+          press();
         },
         activeColor: primaryColor,
         value: isActive,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../constants.dart';
@@ -29,7 +31,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
   @override
   void initState() {
     super.initState();
-    _initialize();
+    unawaited(_initialize());
   }
 
   Future<void> _initialize() async {
@@ -235,7 +237,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                   const SizedBox(height: 8),
                   _buildToolButton(Icons.refresh, "Refresh", () {
                     setState(() => _isLoading = true);
-                    _loadFloorPlans().then((_) => setState(() => _isLoading = false));
+                    unawaited(_loadFloorPlans().then((_) => setState(() => _isLoading = false)));
                   }),
                   const SizedBox(height: 8),
                   const Divider(height: 16),
@@ -294,7 +296,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
   }
 
   void _showDetailsSheet() {
-    showModalBottomSheet(
+    unawaited(showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -389,7 +391,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../../services/auth_service.dart';
 import '../../../widgets/auth_guard.dart';
@@ -23,7 +25,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
   @override
   void initState() {
     super.initState();
-    _checkAuthStatus();
+    unawaited(_checkAuthStatus());
   }
 
   Future<void> _checkAuthStatus() async {
@@ -37,7 +39,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
 
   void _onLoginSuccess() {
     // Refresh auth state; the logged-in pages will be shown by the dashboard
-    _checkAuthStatus();
+    unawaited(_checkAuthStatus());
   }
 
   @override

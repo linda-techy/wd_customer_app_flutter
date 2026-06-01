@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 /// Standardized API exception class for all HTTP errors
 /// Provides structured error handling with correlation IDs for traceability
 class ApiException implements Exception {
@@ -37,7 +39,7 @@ class ApiException implements Exception {
   }
 
   /// Parse API error from Dio exception
-  factory ApiException.fromDioException(dynamic error) {
+  factory ApiException.fromDioException(DioException error) {
     if (error.response != null) {
       return ApiException.fromResponse(
         error.response?.data,

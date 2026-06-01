@@ -33,8 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
-    _loadLiveActivities();
+    unawaited(_loadUserData());
+    unawaited(_loadLiveActivities());
   }
 
   @override
@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openContactForm() {
-    showModalBottomSheet<void>(
+    unawaited(showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -88,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
       ),
-    );
+    ));
   }
 
   @override

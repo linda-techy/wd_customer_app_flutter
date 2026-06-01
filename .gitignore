@@ -45,3 +45,4 @@ app.*.map.json
 
 # SonarQube scanner working directory
 .scannerwork/
+coverage/

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../constants.dart';
@@ -16,7 +18,7 @@ class _EnableNotificationScreenState extends State<EnableNotificationScreen> {
   @override
   void initState() {
     super.initState();
-    _checkNotificationStatus();
+    unawaited(_checkNotificationStatus());
   }
 
   Future<void> _checkNotificationStatus() async {

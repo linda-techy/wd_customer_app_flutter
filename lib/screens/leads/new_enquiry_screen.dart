@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../constants.dart';
 import '../../models/lead_models.dart';
 import '../../providers/lead_provider.dart';
+import '../../widgets/branded_text_field.dart';
 
 class NewEnquiryScreen extends StatefulWidget {
   const NewEnquiryScreen({super.key});
@@ -150,7 +151,8 @@ class _NewEnquiryScreenState extends State<NewEnquiryScreen> {
               // ── Location ─────────────────────────────────────────────────
               _buildSectionHeader('Location', Icons.location_on_outlined),
               const SizedBox(height: 12),
-              _buildTextField(
+              BrandedTextField(
+                brandColor: _brand,
                 controller: _stateCtrl,
                 label: 'State *',
                 hint: 'e.g. Kerala',
@@ -159,7 +161,8 @@ class _NewEnquiryScreenState extends State<NewEnquiryScreen> {
                     (v == null || v.trim().isEmpty) ? 'State is required' : null,
               ),
               const SizedBox(height: 16),
-              _buildTextField(
+              BrandedTextField(
+                brandColor: _brand,
                 controller: _districtCtrl,
                 label: 'District *',
                 hint: 'e.g. Thrissur',
@@ -168,7 +171,8 @@ class _NewEnquiryScreenState extends State<NewEnquiryScreen> {
                     (v == null || v.trim().isEmpty) ? 'District is required' : null,
               ),
               const SizedBox(height: 16),
-              _buildTextField(
+              BrandedTextField(
+                brandColor: _brand,
                 controller: _locationCtrl,
                 label: 'Location / Area (Optional)',
                 hint: 'e.g. Palarivattom, Kakkanad',
@@ -179,7 +183,8 @@ class _NewEnquiryScreenState extends State<NewEnquiryScreen> {
               // ── Project details ───────────────────────────────────────────
               _buildSectionHeader('Project Details', Icons.construction_outlined),
               const SizedBox(height: 12),
-              _buildTextField(
+              BrandedTextField(
+                brandColor: _brand,
                 controller: _budgetCtrl,
                 label: 'Estimated Budget (Optional)',
                 hint: 'e.g. 50 Lakhs, 1 Crore',
@@ -187,7 +192,8 @@ class _NewEnquiryScreenState extends State<NewEnquiryScreen> {
                 keyboardType: TextInputType.text,
               ),
               const SizedBox(height: 16),
-              _buildTextField(
+              BrandedTextField(
+                brandColor: _brand,
                 controller: _areaCtrl,
                 label: 'Estimated Area in sqft (Optional)',
                 hint: 'e.g. 2000',
@@ -196,7 +202,8 @@ class _NewEnquiryScreenState extends State<NewEnquiryScreen> {
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
               const SizedBox(height: 16),
-              _buildTextField(
+              BrandedTextField(
+                brandColor: _brand,
                 controller: _requirementsCtrl,
                 label: 'Requirements / Notes (Optional)',
                 hint: 'Describe your project requirements, preferences, or any questions...',
@@ -257,50 +264,6 @@ class _NewEnquiryScreenState extends State<NewEnquiryScreen> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ],
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    List<TextInputFormatter>? inputFormatters,
-    String? Function(String?)? validator,
-    int maxLines = 1,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      inputFormatters: inputFormatters,
-      maxLines: maxLines,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: Icon(icon, color: _brand, size: 20),
-        filled: true,
-        fillColor: Theme.of(context).cardTheme.color ?? Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _brand, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      ),
     );
   }
 

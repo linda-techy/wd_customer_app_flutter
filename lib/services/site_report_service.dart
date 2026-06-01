@@ -21,7 +21,7 @@ class SiteReportService {
         options: Options(headers: await _getAuthHeaders()),
       );
       if (response.statusCode == 200 && response.data != null) {
-        final data = response.data['data'];
+        final data = (response.data as Map<String, dynamic>)['data'];
         if (data is List) {
           return data
               .map((row) =>
@@ -65,7 +65,7 @@ class SiteReportService {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final data = response.data['data'];
+        final data = (response.data as Map<String, dynamic>)['data'];
         // Backend returns ApiResponse<Page<...>>; the page payload may
         // arrive in a few shapes depending on which controller produced
         // it. Handle each defensively so the customer app doesn't crash
@@ -109,9 +109,9 @@ class SiteReportService {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final data = response.data['data'];
+        final data = (response.data as Map<String, dynamic>)['data'];
         if (data != null) {
-          return SiteReport.fromJson(data);
+          return SiteReport.fromJson(data as Map<String, dynamic>);
         }
       }
       return null;

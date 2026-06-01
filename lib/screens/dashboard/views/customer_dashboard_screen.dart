@@ -50,7 +50,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _loadDashboardData();
+    unawaited(_loadDashboardData());
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -66,7 +66,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
     setState(() {}); // Update section title and clear button
     final q = _searchController.text.trim();
     _searchDebouncer.run(() {
-      if (mounted) _runSearch(q);
+      if (mounted) unawaited(_runSearch(q));
     });
   }
 
@@ -416,7 +416,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
                       if (projects.totalProjects > 0)
                         TextButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, projectsListScreenRoute);
+                            unawaited(Navigator.pushNamed(context, projectsListScreenRoute));
                           },
                           child: const Text("View All"),
                         ),
@@ -533,11 +533,11 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
                       // that passes the project int id so the payments screen
                       // scopes to the right project.
                       GestureDetector(
-                        onTap: () => Navigator.pushNamed(
+                        onTap: () => unawaited(Navigator.pushNamed(
                           context,
                           paymentsScreenRoute,
                           arguments: pp.project.id,
-                        ),
+                        )),
                         // AbsorbPointer prevents the card's own InkWell from
                         // competing — our GestureDetector is the sole tap target.
                         child: AbsorbPointer(
@@ -695,7 +695,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
-      onSubmitted: (value) => _runSearch(value.trim()),
+      onSubmitted: (value) => unawaited(_runSearch(value.trim())),
     );
   }
 
@@ -768,11 +768,11 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
               child: ResponsiveProjectCard(
                 project: project,
                 onTap: () {
-                  Navigator.pushNamed(
+                  unawaited(Navigator.pushNamed(
                     context,
                     projectDetailsRoute(project.projectUuid ?? ''),
                     arguments: project,
-                  );
+                  ));
                 },
               ),
             ),
@@ -866,11 +866,11 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
             child: ResponsiveProjectCard(
               project: project,
               onTap: () {
-                Navigator.pushNamed(
+                unawaited(Navigator.pushNamed(
                   context,
                   projectDetailsRoute(project.projectUuid),
                   arguments: project,
-                );
+                ));
               },
             ),
           ),

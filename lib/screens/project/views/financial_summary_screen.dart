@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../services/customer_boq_service.dart';
@@ -33,7 +35,7 @@ class _FinancialSummaryScreenState extends State<FinancialSummaryScreen>
   void initState() {
     super.initState();
     _tabs = TabController(length: 4, vsync: this);
-    _init();
+    unawaited(_init());
   }
 
   @override

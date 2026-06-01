@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -32,7 +34,7 @@ class _CrOtpApprovalScreenState extends State<CrOtpApprovalScreen> {
         // duplicate OTP request.
         final provider = context.read<CrOtpProvider>();
         if (provider.state == CrOtpState.idle) {
-          provider.requestOtp();
+          unawaited(provider.requestOtp());
         }
       }
     });
@@ -118,7 +120,7 @@ class _CrOtpApprovalScreenState extends State<CrOtpApprovalScreen> {
                 message: p.errorMessage ?? 'Code expired',
                 onRequestNew: () {
                   _ctrl.clear();
-                  context.read<CrOtpProvider>().requestOtp();
+                  unawaited(context.read<CrOtpProvider>().requestOtp());
                 },
               ),
             ] else ...[
@@ -155,7 +157,7 @@ class _CrOtpApprovalScreenState extends State<CrOtpApprovalScreen> {
                 Expanded(
                   child: TextButton(
                     onPressed: p.canResend
-                        ? () => context.read<CrOtpProvider>().requestOtp()
+                        ? () => unawaited(context.read<CrOtpProvider>().requestOtp())
                         : null,
                     child: Text(
                       p.canResend
@@ -174,7 +176,7 @@ class _CrOtpApprovalScreenState extends State<CrOtpApprovalScreen> {
                 onPressed: (_ctrl.text.length == 6 &&
                         p.state != CrOtpState.verifying &&
                         p.state != CrOtpState.sending)
-                    ? () => context.read<CrOtpProvider>().verifyOtp(_ctrl.text)
+                    ? () => unawaited(context.read<CrOtpProvider>().verifyOtp(_ctrl.text))
                     : null,
                 child: p.state == CrOtpState.verifying
                     ? const SizedBox(

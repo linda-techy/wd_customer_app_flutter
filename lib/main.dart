@@ -95,7 +95,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _checkInitialRoute();
+    unawaited(_checkInitialRoute());
     _handleInitialWebUrl();
     _initDeepLinks();
   }
@@ -109,7 +109,7 @@ class _MyAppState extends State<MyApp> {
     _appLinks = AppLinks();
 
     // Handle deep link that opened the app from cold start
-    _appLinks.getInitialLink().then((uri) {
+    unawaited(_appLinks.getInitialLink().then((uri) {
       if (uri != null) {
         _queueOrHandleDeepLink(uri);
       }
@@ -117,7 +117,7 @@ class _MyAppState extends State<MyApp> {
       if (kDebugMode) {
         debugPrint('[DeepLink] Failed to read initial link: $error');
       }
-    });
+    }));
 
     // Handle deep links while the app is already running
     _deepLinkSub = _appLinks.uriLinkStream.listen(
@@ -234,10 +234,10 @@ class _MyAppState extends State<MyApp> {
     _pendingDeepLink = null;
     _lastHandledResetSignature = signature;
     _navigatedToResetFromDeepLink = true;
-    navigator.pushNamed(
+    unawaited(navigator.pushNamed(
       resetPasswordScreenRoute,
       arguments: payload,
-    );
+    ));
   }
 
   Future<void> _checkInitialRoute() async {
@@ -251,7 +251,9 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
-    _deepLinkSub?.cancel();
+    // Cancel the field directly (so the analyzer sees the subscription cancelled);
+    // `?? Future.value()` keeps it non-null for unawaited fire-and-forget.
+    unawaited(_deepLinkSub?.cancel() ?? Future<void>.value());
     super.dispose();
   }
 

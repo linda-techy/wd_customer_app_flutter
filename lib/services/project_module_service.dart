@@ -173,14 +173,15 @@ class ProjectModuleService {
     );
 
     if (response.statusCode == 200) {
-      final jsonData = response.data;
+      final jsonData = response.data as Map<String, dynamic>;
       if (jsonData['success'] == true && jsonData['data'] != null) {
         final Map<String, dynamic> data = jsonData['data'];
         return data.map((key, value) {
           return MapEntry(
             DateTime.parse(key),
             (value as List)
-                .map((e) => CombinedActivityItem.fromJson(e))
+                .map((e) =>
+                    CombinedActivityItem.fromJson(e as Map<String, dynamic>))
                 .toList(),
           );
         });
@@ -225,13 +226,15 @@ class ProjectModuleService {
     );
 
     if (response.statusCode == 200) {
-      final jsonData = response.data;
+      final jsonData = response.data as Map<String, dynamic>;
       if (jsonData['success'] == true && jsonData['data'] != null) {
         final Map<String, dynamic> data = jsonData['data'];
         return data.map((key, value) {
           return MapEntry(
             DateTime.parse(key),
-            (value as List).map((e) => GalleryImage.fromJson(e)).toList(),
+            (value as List)
+                .map((e) => GalleryImage.fromJson(e as Map<String, dynamic>))
+                .toList(),
           );
         });
       }
@@ -356,9 +359,9 @@ class ProjectModuleService {
     );
 
     if (response.statusCode == 200) {
-      final jsonData = response.data;
+      final jsonData = response.data as Map<String, dynamic>;
       if (jsonData['success'] == true && jsonData['data'] != null) {
-        return Map<String, int>.from(jsonData['data']);
+        return Map<String, int>.from(jsonData['data'] as Map);
       }
       return {};
     } else {
@@ -511,7 +514,7 @@ class ProjectModuleService {
       );
       return apiResponse.data!;
     } else {
-      final body = response.data;
+      final body = response.data as Map<String, dynamic>;
       throw Exception(body['message'] ?? 'Failed to check in');
     }
   }
@@ -541,7 +544,7 @@ class ProjectModuleService {
       );
       return apiResponse.data!;
     } else {
-      final body = response.data;
+      final body = response.data as Map<String, dynamic>;
       throw Exception(body['message'] ?? 'Failed to check out');
     }
   }
@@ -663,8 +666,9 @@ class ProjectModuleService {
   /// Only available for CUSTOMER / CUSTOMER_ADMIN / ADMIN roles (others get 403).
   Future<BoqSummary?> getBoqSummary(String projectId) async {
     final response = await _dio.get('/api/projects/$projectId/boq/summary');
-    if (response.statusCode == 200 && response.data['success'] == true) {
-      final data = response.data['data'];
+    final responseData = response.data as Map<String, dynamic>?;
+    if (response.statusCode == 200 && responseData?['success'] == true) {
+      final data = responseData?['data'];
       if (data == null) return null;
       return BoqSummary.fromJson(data as Map<String, dynamic>);
     }
@@ -676,7 +680,9 @@ class ProjectModuleService {
   Future<Map<String, String>> getBoqApprovalStatus(String projectId) async {
     final response = await _dio.get('/api/projects/$projectId/boq/approval');
     if (response.statusCode == 200) {
-      final data = response.data['data'] as Map<String, dynamic>? ?? {};
+      final data = (response.data as Map<String, dynamic>)['data']
+              as Map<String, dynamic>? ??
+          {};
       return data.map((k, v) => MapEntry(k, v?.toString() ?? ''));
     }
     throw Exception('Failed to fetch BOQ approval status');

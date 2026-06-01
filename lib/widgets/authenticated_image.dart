@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -66,14 +67,14 @@ class _AuthenticatedImageState extends State<AuthenticatedImage> {
   @override
   void initState() {
     super.initState();
-    _loadImage();
+    unawaited(_loadImage());
   }
 
   @override
   void didUpdateWidget(AuthenticatedImage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.imageUrl != widget.imageUrl) {
-      _loadImage();
+      unawaited(_loadImage());
     }
   }
 

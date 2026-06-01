@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../constants.dart';
@@ -18,7 +20,7 @@ class _PortfolioDetailScreenState extends State<PortfolioDetailScreen> {
   int _currentImageIndex = 0;
 
   @override
-  void initState() { super.initState(); _loadItem(); }
+  void initState() { super.initState(); unawaited(_loadItem()); }
 
   Future<void> _loadItem() async {
     setState(() { _isLoading = true; _errorMessage = null; });

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:dio/dio.dart';
@@ -33,7 +35,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    unawaited(_loadUserData());
   }
 
   Future<void> _loadUserData() async {
@@ -276,7 +278,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                   ),
                   onPressed: () {
                     if (_isEditing) {
-                      _saveProfile();
+                      unawaited(_saveProfile());
                     } else {
                       setState(() => _isEditing = true);
                     }
@@ -386,7 +388,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
           Expanded(
             child: ScaleButton(
               onTap: _isSaving ? null : () {
-                _loadUserData(); // Reset to saved values
+                unawaited(_loadUserData()); // Reset to saved values
                 setState(() => _isEditing = false);
               },
               child: Container(

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../../constants.dart';
 import '../../../config/api_config.dart';
@@ -28,7 +30,7 @@ class _CctvSurveillanceScreenState extends State<CctvSurveillanceScreen> {
   void initState() {
     super.initState();
     projectId = widget.projectId;
-    _initialize();
+    unawaited(_initialize());
   }
 
   @override
@@ -278,12 +280,12 @@ class _CctvSurveillanceScreenState extends State<CctvSurveillanceScreen> {
                     right: defaultPadding,
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.push(
+                        unawaited(Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => CctvPlayerScreen(camera: camera, projectUuid: projectId!),
                           ),
-                        );
+                        ));
                       },
                       child: Container(
                         padding: const EdgeInsets.all(8),

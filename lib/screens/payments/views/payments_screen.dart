@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../constants.dart';
@@ -43,9 +45,9 @@ class _PaymentsScreenState extends State<PaymentsScreen>
       length: widget.projectUuid != null ? 3 : 1,
       vsync: this,
     );
-    _loadPayments();
+    unawaited(_loadPayments());
     if (widget.projectUuid != null) {
-      _loadBoqInvoices();
+      unawaited(_loadBoqInvoices());
     }
   }
 
@@ -176,7 +178,7 @@ class _PaymentsScreenState extends State<PaymentsScreen>
   // ── Export ───────────────────────────────────────────────────────────────
 
   void _showExportOptions(BuildContext context) {
-    showModalBottomSheet(
+    unawaited(showModalBottomSheet<void>(
       context: context,
       builder: (ctx) => SafeArea(
         child: Column(
@@ -187,7 +189,7 @@ class _PaymentsScreenState extends State<PaymentsScreen>
               title: const Text('Export as PDF'),
               onTap: () {
                 Navigator.pop(ctx);
-                _exportPdf();
+                unawaited(_exportPdf());
               },
             ),
             if (widget.projectId != null)
@@ -196,13 +198,13 @@ class _PaymentsScreenState extends State<PaymentsScreen>
                 title: const Text('Export as CSV'),
                 onTap: () {
                   Navigator.pop(ctx);
-                  _exportCsv();
+                  unawaited(_exportCsv());
                 },
               ),
           ],
         ),
       ),
-    );
+    ));
   }
 
   Future<void> _exportPdf() async {

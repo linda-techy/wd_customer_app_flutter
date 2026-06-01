@@ -209,8 +209,8 @@ class SiteReport {
       // field. Falls back to nested entity shape for legacy responses.
       submittedByName: json['submittedByName'] as String?
           ?? (json['submittedBy'] is Map
-              ? ('${json['submittedBy']['firstName'] ?? ''} '
-                      '${json['submittedBy']['lastName'] ?? ''}')
+              ? ('${(json['submittedBy'] as Map)['firstName'] ?? ''} '
+                      '${(json['submittedBy'] as Map)['lastName'] ?? ''}')
                   .trim()
               : null),
       weather: json['weather'] as String?,

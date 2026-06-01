@@ -29,7 +29,7 @@ class PaymentSchedule {
       amount: ((json['amount'] as num?) ?? 0).toDouble(),
       dueDate: (json['dueDate'] ?? json['due_date']) as String?,
       status: (json['status'] as String?) ?? 'PENDING',
-      paidAmount: (json['paidAmount'] ?? json['paid_amount'] ?? 0).toDouble(),
+      paidAmount: ((json['paidAmount'] ?? json['paid_amount'] ?? 0) as num).toDouble(),
       paidDate: (json['paidDate'] ?? json['paid_date']) as String?,
       transactions: (json['transactions'] as List<dynamic>?)
               ?.map((t) => PaymentTransaction.fromJson(t as Map<String, dynamic>))
@@ -79,8 +79,8 @@ class PaymentTransaction {
       paymentDate: ((json['paymentDate'] ?? json['payment_date']) as String?) ?? '',
       receiptNumber: (json['receiptNumber'] ?? json['receipt_number']) as String?,
       status: (json['status'] as String?) ?? 'PENDING',
-      tdsPercentage: (json['tdsPercentage'] ?? json['tds_percentage'] ?? 0).toDouble(),
-      tdsAmount: (json['tdsAmount'] ?? json['tds_amount'] ?? 0).toDouble(),
+      tdsPercentage: ((json['tdsPercentage'] ?? json['tds_percentage'] ?? 0) as num).toDouble(),
+      tdsAmount: ((json['tdsAmount'] ?? json['tds_amount'] ?? 0) as num).toDouble(),
       netAmount: ((json['netAmount'] ?? json['net_amount'] ?? 0) as num).toDouble(),
     );
   }
@@ -117,9 +117,9 @@ class CustomerInvoice {
       invoiceNumber: json['invoiceNumber'] ?? '',
       invoiceDate: DateTime.parse(json['invoiceDate']),
       dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate']) : null,
-      subTotal: (json['subTotal'] ?? 0).toDouble(),
-      gstAmount: (json['gstAmount'] ?? 0).toDouble(),
-      totalAmount: (json['totalAmount'] ?? 0).toDouble(),
+      subTotal: ((json['subTotal'] ?? 0) as num).toDouble(),
+      gstAmount: ((json['gstAmount'] ?? 0) as num).toDouble(),
+      totalAmount: ((json['totalAmount'] ?? 0) as num).toDouble(),
       status: json['status'] ?? 'ISSUED',
       createdAt: DateTime.parse(json['createdAt']),
     );

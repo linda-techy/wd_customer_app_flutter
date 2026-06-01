@@ -73,15 +73,15 @@ class Project {
       city: json['city'],
       area: json['area'],
       status: _parseProjectStatus(json['status'] as String?),
-      progress: json['progress'].toDouble(),
+      progress: (json['progress'] as num).toDouble(),
       nextMilestone: json['nextMilestone'],
       nextMilestoneDate: DateTime.parse(json['nextMilestoneDate']),
       thumbnailUrl: json['thumbnailUrl'],
       lastUpdate: json['lastUpdate'],
       lastUpdatedAt: DateTime.parse(json['lastUpdatedAt']),
-      totalBudget: json['totalBudget'].toDouble(),
-      paidAmount: json['paidAmount'].toDouble(),
-      dueAmount: json['dueAmount'].toDouble(),
+      totalBudget: (json['totalBudget'] as num).toDouble(),
+      paidAmount: (json['paidAmount'] as num).toDouble(),
+      dueAmount: (json['dueAmount'] as num).toDouble(),
       qcCompleted: json['qcCompleted'],
       qcPending: json['qcPending'],
       activeQueries: json['activeQueries'],
@@ -364,8 +364,8 @@ class Payment {
     return Payment(
       id: json['id'],
       invoiceNumber: json['invoiceNumber'],
-      amount: json['amount'].toDouble(),
-      paidAmount: json['paidAmount'].toDouble(),
+      amount: (json['amount'] as num).toDouble(),
+      paidAmount: (json['paidAmount'] as num).toDouble(),
       dueDate: DateTime.parse(json['dueDate']),
       paidDate:
           json['paidDate'] != null ? DateTime.parse(json['paidDate']) : null,
@@ -493,7 +493,7 @@ class ProgressDataPoint {
   factory ProgressDataPoint.fromJson(Map<String, dynamic> json) {
     return ProgressDataPoint(
       date: DateTime.parse(json['date']),
-      progress: json['progress'].toDouble(),
+      progress: (json['progress'] as num).toDouble(),
     );
   }
 

@@ -329,7 +329,7 @@ class _DesignPackageSelectionScreenState
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
-                  ...pkg['features'].map<Widget>((feature) => Padding(
+                  ...(pkg['features'] as List<dynamic>).map<Widget>((feature) => Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,

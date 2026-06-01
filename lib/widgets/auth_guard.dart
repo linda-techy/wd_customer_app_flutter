@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../route/route_constants.dart';
@@ -24,7 +25,7 @@ class _AuthGuardState extends State<AuthGuard> {
   @override
   void initState() {
     super.initState();
-    _checkAuthStatus();
+    unawaited(_checkAuthStatus());
   }
 
   Future<void> _checkAuthStatus() async {
@@ -43,9 +44,9 @@ class _AuthGuardState extends State<AuthGuard> {
 
   void _handleLogin() {
     // Use root navigator so login works with nested MaterialApp
-    Navigator.of(context, rootNavigator: true).pushReplacementNamed(
+    unawaited(Navigator.of(context, rootNavigator: true).pushReplacementNamed(
       widget.redirectRoute ?? logInScreenRoute,
-    );
+    ));
   }
 
   @override

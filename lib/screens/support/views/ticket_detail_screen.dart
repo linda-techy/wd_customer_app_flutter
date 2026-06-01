@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../../constants.dart';
 import '../../../models/support_models.dart';
@@ -28,7 +30,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _loadTicket();
+    unawaited(_loadTicket());
   }
 
   @override

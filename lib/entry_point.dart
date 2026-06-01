@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'constants.dart';
@@ -25,7 +26,7 @@ class _EntryPointState extends State<EntryPoint> {
   @override
   void initState() {
     super.initState();
-    _checkAuthStatus();
+    unawaited(_checkAuthStatus());
   }
 
   @override
@@ -42,7 +43,7 @@ class _EntryPointState extends State<EntryPoint> {
       }
     }
     // Refresh auth status when dependencies change (e.g., after sign out)
-    _checkAuthStatus();
+    unawaited(_checkAuthStatus());
   }
 
   Future<void> _checkAuthStatus() async {

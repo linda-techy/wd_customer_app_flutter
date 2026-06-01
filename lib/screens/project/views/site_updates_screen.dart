@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../components/organisms/site_update_card.dart';
@@ -26,7 +28,7 @@ class _SiteUpdatesScreenState extends State<SiteUpdatesScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeService();
+    unawaited(_initializeService());
   }
 
   Future<void> _initializeService() async {

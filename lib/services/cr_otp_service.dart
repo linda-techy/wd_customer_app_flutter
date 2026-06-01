@@ -79,11 +79,13 @@ class CrOtpService {
       }
       if (r.statusCode == 429) {
         final retryAfter =
-            ((r.data is Map ? r.data['retryAfterSeconds'] : null) as num?)
+            ((r.data is Map ? (r.data as Map)['retryAfterSeconds'] : null)
+                        as num?)
                     ?.toInt() ??
                 3600;
-        final msg = (r.data is Map ? r.data['message'] : null) as String? ??
-            'Too many OTP requests';
+        final msg =
+            (r.data is Map ? (r.data as Map)['message'] : null) as String? ??
+                'Too many OTP requests';
         throw RateLimitException(retryAfter, msg);
       }
       throw ApiException(r.statusCode ?? 0, 'request-otp failed');
@@ -110,7 +112,8 @@ class CrOtpService {
       if (r.statusCode == null || r.statusCode! < 200 || r.statusCode! >= 300) {
         throw ApiException(r.statusCode ?? 0, 'approve failed');
       }
-      final result = (r.data is Map ? r.data['result'] : null) as String?;
+      final result =
+          (r.data is Map ? (r.data as Map)['result'] : null) as String?;
       switch (result) {
         case 'VERIFIED':
           return OtpVerifyResult.verified;

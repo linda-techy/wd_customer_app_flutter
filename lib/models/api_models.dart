@@ -322,12 +322,12 @@ class ProjectCard {
       startDate: json['startDate'],
       endDate: json['endDate'],
       status: json['status'],
-      progress: (json['progress'] ?? 0).toDouble(),
+      progress: ((json['progress'] ?? 0) as num).toDouble(),
       projectPhase: json['projectPhase'],
       projectType: json['projectType'],
       designPackage: json['designPackage'],
       isDesignAgreementSigned: json['isDesignAgreementSigned'] ?? false,
-      designProgress: (json['designProgress'] ?? 0).toDouble(),
+      designProgress: ((json['designProgress'] ?? 0) as num).toDouble(),
     );
   }
 }
@@ -378,8 +378,8 @@ class QuickStats {
       totalBills: json['totalBills'] ?? 0,
       pendingBills: json['pendingBills'] ?? 0,
       paidBills: json['paidBills'] ?? 0,
-      totalAmount: (json['totalAmount'] ?? 0).toDouble(),
-      pendingAmount: (json['pendingAmount'] ?? 0).toDouble(),
+      totalAmount: ((json['totalAmount'] ?? 0) as num).toDouble(),
+      pendingAmount: ((json['pendingAmount'] ?? 0) as num).toDouble(),
     );
   }
 }
@@ -483,7 +483,7 @@ class ProjectDetails {
       startDate: json['startDate'],
       endDate: json['endDate'],
       status: json['status'],
-      progress: (json['progress'] ?? 0).toDouble(),
+      progress: ((json['progress'] ?? 0) as num).toDouble(),
       phase: json['projectPhase'],
       projectType: json['projectType'],
       designPackage: json['designPackage'],
@@ -497,7 +497,7 @@ class ProjectDetails {
       progressData: json['progressData'] != null
           ? ProgressData.fromJson(json['progressData'])
           : null,
-      designProgress: (json['designProgress'] ?? 0).toDouble(),
+      designProgress: ((json['designProgress'] ?? 0) as num).toDouble(),
       contractValueDisplay: json['contractValueDisplay'] as String?,
       estimatedCompletionDate: json['estimatedCompletionDate'] as String?,
     );

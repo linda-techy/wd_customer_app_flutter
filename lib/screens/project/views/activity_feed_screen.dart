@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
@@ -33,7 +35,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _initService();
+    unawaited(_initService());
   }
 
   @override
@@ -44,7 +46,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_isLoadingMore && _hasMore) {
-      _loadMore();
+      unawaited(_loadMore());
     }
   }
 
@@ -483,7 +485,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   void _showActivityDetails(CombinedActivityItem activity) {
     final config = _getActivityConfig(activity.type);
 
-    showModalBottomSheet(
+    unawaited(showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -579,7 +581,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
           );
         },
       ),
-    );
+    ));
   }
 
   bool _isToday(DateTime date) {

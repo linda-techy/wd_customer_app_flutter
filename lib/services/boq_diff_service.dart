@@ -28,7 +28,8 @@ class BoqDiffService {
     final dio = await _dio();
     final res = await dio.get('/api/projects/$projectId/boq/revisions');
     _check(res.data, 'Failed to load BOQ revisions');
-    final list = (res.data['revisions'] ?? []) as List;
+    final data = res.data as Map<String, dynamic>;
+    final list = (data['revisions'] ?? []) as List;
     return list
         .map((j) => BoqRevision.fromJson(j as Map<String, dynamic>))
         .toList();
@@ -43,7 +44,8 @@ class BoqDiffService {
       queryParameters: {'fromDoc': fromDocId, 'toDoc': toDocId},
     );
     _check(res.data, 'Failed to load BOQ diff');
-    return BoqDiffResult.fromJson(res.data['data'] as Map<String, dynamic>);
+    final data = res.data as Map<String, dynamic>;
+    return BoqDiffResult.fromJson(data['data'] as Map<String, dynamic>);
   }
 
   static void _check(dynamic data, String fallback) {

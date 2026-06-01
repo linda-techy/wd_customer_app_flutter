@@ -30,7 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   void _showErrorDialog(String message) {
-    showDialog(
+    unawaited(showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Login Failed'),
@@ -42,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   void _showSuccessSnackBar(String message) {
@@ -473,7 +473,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       if (widget.onForgotPassword != null) {
                         widget.onForgotPassword!();
                       } else {
-                        Navigator.pushNamed(context, passwordRecoveryScreenRoute);
+                        unawaited(Navigator.pushNamed(context, passwordRecoveryScreenRoute));
                       }
                     },
                   ),

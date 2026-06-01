@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../constants.dart';
@@ -43,7 +45,7 @@ class _GanttTask {
       name: json['name']?.toString() ?? json['taskName']?.toString() ?? 'Task',
       startDate: parseDate(json['startDate'] ?? json['plannedStartDate']),
       endDate: parseDate(json['endDate'] ?? json['plannedEndDate']),
-      progress: (json['progress'] ?? json['completionPercentage'] ?? 0).toDouble(),
+      progress: ((json['progress'] ?? json['completionPercentage'] ?? 0) as num).toDouble(),
       status: (json['status'] ?? 'not-started').toString().toLowerCase().replaceAll('_', '-'),
       assignee: json['assignee']?.toString() ?? json['assignedTo']?.toString(),
     );
@@ -117,7 +119,7 @@ class _ProjectTimelineScreenState extends State<ProjectTimelineScreen> {
     super.initState();
     _headerScrollCtrl.addListener(_syncHeaderToBody);
     _bodyScrollCtrl.addListener(_syncBodyToHeader);
-    _loadData();
+    unawaited(_loadData());
   }
 
   void _syncHeaderToBody() {
@@ -198,7 +200,7 @@ class _ProjectTimelineScreenState extends State<ProjectTimelineScreen> {
         _tasks = tasks;
         _projectStart = start;
         _projectEnd = end;
-        _overallProgress = (data['overallProgress'] ?? 0).toDouble();
+        _overallProgress = ((data['overallProgress'] ?? 0) as num).toDouble();
         _overdueTasks = (data['overdueTasks'] ?? 0) as int;
         _isLoading = false;
       });
@@ -696,7 +698,7 @@ class _ProjectTimelineScreenState extends State<ProjectTimelineScreen> {
 
   void _showTaskDetails(_GanttTask task) {
     final df = DateFormat('dd MMM yyyy');
-    showModalBottomSheet(
+    unawaited(showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
@@ -816,7 +818,7 @@ class _ProjectTimelineScreenState extends State<ProjectTimelineScreen> {
           ),
         );
       },
-    );
+    ));
   }
 
   Widget _detailRow(IconData icon, String label, String value) {

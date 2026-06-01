@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -22,7 +24,7 @@ class _BlogScreenState extends State<BlogScreen> {
   @override
   void initState() {
     super.initState();
-    _loadBlogs();
+    unawaited(_loadBlogs());
   }
 
   Future<void> _loadBlogs() async {
@@ -142,7 +144,7 @@ class _BlogScreenState extends State<BlogScreen> {
   Widget _buildBlogCard(BuildContext context, BlogPost blog) {
     return HoverCard(
       child: GestureDetector(
-        onTap: () => Navigator.pushNamed(context, 'blog_details/${blog.slug}'),
+        onTap: () => unawaited(Navigator.pushNamed(context, 'blog_details/${blog.slug}')),
         child: Container(
           margin: const EdgeInsets.only(bottom: 24),
           decoration: BoxDecoration(
@@ -236,7 +238,7 @@ class _BlogScreenState extends State<BlogScreen> {
                     ),
                     const SizedBox(height: 16),
                     ScaleButton(
-                      onTap: () => Navigator.pushNamed(context, 'blog_details/${blog.slug}'),
+                      onTap: () => unawaited(Navigator.pushNamed(context, 'blog_details/${blog.slug}')),
                       child: const Row(
                         children: [
                           Text(

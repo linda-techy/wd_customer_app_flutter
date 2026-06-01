@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../../constants.dart';
 import '../../../config/api_config.dart';
@@ -32,7 +34,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   void initState() {
     super.initState();
     projectId = widget.projectId;
-    _initialize();
+    unawaited(_initialize());
   }
 
   @override

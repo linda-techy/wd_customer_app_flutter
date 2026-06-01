@@ -52,7 +52,7 @@ class _SiteReportPhotoViewerState extends State<SiteReportPhotoViewer> {
         itemBuilder: (context, index) {
           final photo = widget.photos[index];
           return FutureBuilder<Uint8List>(
-            future: AuthenticatedImage.fetchBytes(photo.fullUrl),
+            future: AuthenticatedImage.fetchBytes(photo.fullUrl), // ignore: discarded_futures - consumed by FutureBuilder
             builder: (context, snap) {
               if (snap.connectionState != ConnectionState.done) {
                 return const Center(

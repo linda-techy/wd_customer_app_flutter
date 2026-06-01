@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/lead_models.dart';
@@ -19,7 +21,7 @@ class _EnquiryDetailScreenState extends State<EnquiryDetailScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<LeadProvider>().fetchLeadDetail(widget.leadId);
+      unawaited(context.read<LeadProvider>().fetchLeadDetail(widget.leadId));
     });
   }
 
@@ -64,7 +66,7 @@ class _EnquiryDetailScreenState extends State<EnquiryDetailScreen> {
                   const Text('Could not load enquiry details.'),
                   const SizedBox(height: 12),
                   TextButton(
-                    onPressed: () => context.read<LeadProvider>().fetchLeadDetail(widget.leadId),
+                    onPressed: () => unawaited(context.read<LeadProvider>().fetchLeadDetail(widget.leadId)),
                     child: const Text('Retry'),
                   ),
                 ],

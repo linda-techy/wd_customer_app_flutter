@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import '../models/api_models.dart';
 import '../models/team_contact.dart';
@@ -15,7 +17,8 @@ class DashboardService {
   /// succeed, stranding the customer. Also returns a jargon-free error (no
   /// "token") for any UI that paints it in the frame before the redirect lands.
   static ApiResponse<T> _sessionExpired<T>() {
-    SessionManager.expireSession(reason: 'DashboardService: no valid session');
+    unawaited(SessionManager.expireSession(
+        reason: 'DashboardService: no valid session'));
     return ApiResponse.error(
       ApiError(message: SessionManager.sessionExpiredMessage, statusCode: 401),
     );

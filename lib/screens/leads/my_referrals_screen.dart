@@ -41,7 +41,9 @@ class _MyReferralsScreenState extends State<MyReferralsScreen> {
         }
 
         return RefreshIndicator(
-          onRefresh: () => context.read<LeadProvider>().fetchMyReferrals(),
+          onRefresh: () async {
+            await context.read<LeadProvider>().fetchMyReferrals();
+          },
           child: ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: referrals.length,

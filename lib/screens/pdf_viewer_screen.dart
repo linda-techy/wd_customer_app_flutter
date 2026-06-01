@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
+import 'dart:async';
 import 'dart:io';
 import 'package:share_plus/share_plus.dart' show XFile, Share;
 import '../services/auth_service.dart';
@@ -33,7 +34,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
   @override
   void initState() {
     super.initState();
-    _loadAuthToken();
+    unawaited(_loadAuthToken());
   }
 
   Future<void> _loadAuthToken() async {
@@ -120,7 +121,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
           PopupMenuButton<String>(
             onSelected: (value) {
               if (value == 'share') {
-                _shareFile();
+                unawaited(_shareFile());
               }
             },
             itemBuilder: (context) => [
@@ -187,7 +188,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
       Directory? directory;
       if (Platform.isAndroid) {
         directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
+        if (!directory.existsSync()) {
           directory = await getExternalStorageDirectory();
         }
       } else {
@@ -272,7 +273,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
   }
 
   void _showErrorDialog(String message) {
-    showDialog(
+    unawaited(showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Error'),
@@ -284,7 +285,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   @override

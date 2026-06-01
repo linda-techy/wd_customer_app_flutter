@@ -76,7 +76,8 @@ class ApiService {
         );
       }
       final message =
-          e.response?.data?['message'] ?? 'An unexpected error occurred';
+          (e.response?.data as Map?)?['message'] ??
+              'An unexpected error occurred';
       final statusCode = e.response?.statusCode ?? 0;
       return ApiResponse.error(
           ApiError(message: message.toString(), statusCode: statusCode));
@@ -135,7 +136,8 @@ class ApiService {
           ),
         );
       }
-      final message = e.response?.data?['message'] ?? 'Failed to send reset code';
+      final message =
+          (e.response?.data as Map?)?['message'] ?? 'Failed to send reset code';
       return ApiResponse.error(
           ApiError(message: message.toString(), statusCode: e.response?.statusCode ?? 0));
     } catch (e) {
@@ -199,7 +201,7 @@ class ApiService {
         );
       }
       final message =
-          e.response?.data?['message'] ?? 'Failed to reset password';
+          (e.response?.data as Map?)?['message'] ?? 'Failed to reset password';
       return ApiResponse.error(
           ApiError(message: message.toString(), statusCode: e.response?.statusCode ?? 0));
     } catch (e) {
@@ -242,7 +244,7 @@ class ApiService {
         );
       }
       final message =
-          e.response?.data?['message'] ?? 'Failed to refresh token';
+          (e.response?.data as Map?)?['message'] ?? 'Failed to refresh token';
       return ApiResponse.error(
         ApiError(
           message: 'Failed to refresh token: ${message.toString()}',
@@ -287,7 +289,8 @@ class ApiService {
           ),
         );
       }
-      final message = e.response?.data?['message'] ?? 'Failed to logout';
+      final message =
+          (e.response?.data as Map?)?['message'] ?? 'Failed to logout';
       return ApiResponse.error(
         ApiError(
           message: 'Failed to logout: ${message.toString()}',
@@ -329,7 +332,8 @@ class ApiService {
           ),
         );
       }
-      final message = e.response?.data?['message'] ?? 'Failed to get user info';
+      final message =
+          (e.response?.data as Map?)?['message'] ?? 'Failed to get user info';
       return ApiResponse.error(
         ApiError(
           message: 'Failed to get user info: ${message.toString()}',
@@ -385,7 +389,8 @@ class ApiService {
         );
       }
       final message =
-          e.response?.data?['message'] ?? 'Failed to get dashboard data';
+          (e.response?.data as Map?)?['message'] ??
+              'Failed to get dashboard data';
       return ApiResponse.error(
         ApiError(
           message: 'Failed to get dashboard data: ${message.toString()}',
@@ -446,7 +451,8 @@ class ApiService {
         );
       }
       final message =
-          e.response?.data?['message'] ?? 'Failed to get project details';
+          (e.response?.data as Map?)?['message'] ??
+              'Failed to get project details';
       return ApiResponse.error(
         ApiError(
           message: 'Failed to get project details: ${message.toString()}',
@@ -499,7 +505,7 @@ class ApiService {
       }
       return ApiResponse.error(ApiError(
           message:
-              'Failed to get project phases: ${e.response?.data?['message'] ?? e.toString()}',
+              'Failed to get project phases: ${(e.response?.data as Map?)?['message'] ?? e.toString()}',
           statusCode: e.response?.statusCode ?? 0));
     } catch (e) {
       return ApiResponse.error(ApiError(
@@ -549,7 +555,8 @@ class ApiService {
         );
       }
       final message =
-          e.response?.data?['message'] ?? 'Failed to search projects';
+          (e.response?.data as Map?)?['message'] ??
+              'Failed to search projects';
       return ApiResponse.error(
         ApiError(
           message: 'Failed to search projects: ${message.toString()}',
@@ -611,7 +618,7 @@ class ApiService {
       return ApiResponse.error(
         ApiError(
           message:
-              'Connection test failed: ${e.response?.data?['message'] ?? e.toString()}',
+              'Connection test failed: ${(e.response?.data as Map?)?['message'] ?? e.toString()}',
           statusCode: e.response?.statusCode ?? 0,
         ),
       );
@@ -662,7 +669,7 @@ class ApiService {
       }
       return ApiResponse.error(ApiError(
           message:
-              'Failed to get project team: ${e.response?.data?['message'] ?? e.toString()}',
+              'Failed to get project team: ${(e.response?.data as Map?)?['message'] ?? e.toString()}',
           statusCode: e.response?.statusCode ?? 0));
     } catch (e) {
       return ApiResponse.error(ApiError(
@@ -705,7 +712,7 @@ class ApiService {
       }
       return ApiResponse.error(ApiError(
           message:
-              'Failed to get timeline: ${e.response?.data?['message'] ?? e.toString()}',
+              'Failed to get timeline: ${(e.response?.data as Map?)?['message'] ?? e.toString()}',
           statusCode: e.response?.statusCode ?? 0));
     } catch (e) {
       return ApiResponse.error(ApiError(
@@ -747,7 +754,7 @@ class ApiService {
       }
       return ApiResponse.error(ApiError(
           message:
-              'Failed to get timeline summary: ${e.response?.data?['message'] ?? e.toString()}',
+              'Failed to get timeline summary: ${(e.response?.data as Map?)?['message'] ?? e.toString()}',
           statusCode: e.response?.statusCode ?? 0));
     } catch (e) {
       return ApiResponse.error(ApiError(
@@ -790,7 +797,8 @@ class ApiService {
         );
       }
       final message =
-          e.response?.data?['message'] ?? 'Failed to update design package';
+          (e.response?.data as Map?)?['message'] ??
+              'Failed to update design package';
       return ApiResponse.error(
         ApiError(
           message: 'Failed to update design package: ${message.toString()}',

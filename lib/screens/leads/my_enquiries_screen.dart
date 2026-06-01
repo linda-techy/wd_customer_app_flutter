@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../constants.dart';
@@ -19,7 +21,7 @@ class _MyEnquiriesScreenState extends State<MyEnquiriesScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<LeadProvider>().fetchMyLeads();
+      unawaited(context.read<LeadProvider>().fetchMyLeads());
     });
   }
 
@@ -69,8 +71,8 @@ class _MyEnquiriesScreenState extends State<MyEnquiriesScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           final provider = context.read<LeadProvider>();
-          Navigator.pushNamed(context, newEnquiryScreenRoute)
-              .then((_) => provider.fetchMyLeads());
+          unawaited(Navigator.pushNamed(context, newEnquiryScreenRoute)
+              .then((_) => provider.fetchMyLeads()));
         },
         backgroundColor: _brand,
         foregroundColor: Colors.white,
@@ -126,8 +128,8 @@ class _MyEnquiriesScreenState extends State<MyEnquiriesScreen> {
                           ),
                           onPressed: () {
                             final provider = context.read<LeadProvider>();
-                            Navigator.pushNamed(context, newEnquiryScreenRoute)
-                                .then((_) => provider.fetchMyLeads());
+                            unawaited(Navigator.pushNamed(context, newEnquiryScreenRoute)
+                                .then((_) => provider.fetchMyLeads()));
                           },
                           icon: const Icon(Icons.add),
                           label: const Text('New Project Enquiry'),
@@ -142,7 +144,9 @@ class _MyEnquiriesScreenState extends State<MyEnquiriesScreen> {
 
           return RefreshIndicator(
             color: _brand,
-            onRefresh: () => context.read<LeadProvider>().fetchMyLeads(),
+            onRefresh: () async {
+              await context.read<LeadProvider>().fetchMyLeads();
+            },
             child: ListView.builder(
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.all(defaultPadding),
@@ -160,11 +164,11 @@ class _MyEnquiriesScreenState extends State<MyEnquiriesScreen> {
                       : null,
                   onTap: () {
                     final provider = context.read<LeadProvider>();
-                    Navigator.pushNamed(
+                    unawaited(Navigator.pushNamed(
                       context,
                       leadDetailScreenRoute,
                       arguments: lead.id,
-                    ).then((_) => provider.fetchMyLeads());
+                    ).then((_) => provider.fetchMyLeads()));
                   },
                 );
               },

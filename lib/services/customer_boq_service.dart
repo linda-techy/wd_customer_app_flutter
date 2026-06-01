@@ -175,7 +175,7 @@ class CustomerBoqService {
     final res =
         await _dio.get('/api/projects/$projectUuid/boq/change-orders');
     _check(res.data, 'Failed to load change orders');
-    return ((res.data['changeOrders'] ?? []) as List)
+    return (((res.data as Map<String, dynamic>)['changeOrders'] ?? []) as List)
         .map((j) => CustomerChangeOrder.fromJson(j as Map<String, dynamic>))
         .toList();
   }
@@ -185,7 +185,7 @@ class CustomerBoqService {
     final res = await _dio
         .get('/api/projects/$projectUuid/boq/change-orders/pending-review');
     _check(res.data, 'Failed to load pending change orders');
-    return ((res.data['changeOrders'] ?? []) as List)
+    return (((res.data as Map<String, dynamic>)['changeOrders'] ?? []) as List)
         .map((j) => CustomerChangeOrder.fromJson(j as Map<String, dynamic>))
         .toList();
   }
@@ -196,7 +196,8 @@ class CustomerBoqService {
         .patch('/api/projects/$projectUuid/boq/change-orders/$coId/approve');
     _check(res.data, 'Failed to approve change order');
     return CustomerChangeOrder.fromJson(
-        res.data['changeOrder'] as Map<String, dynamic>);
+        (res.data as Map<String, dynamic>)['changeOrder']
+            as Map<String, dynamic>);
   }
 
   Future<CustomerChangeOrder> reject(
@@ -206,7 +207,8 @@ class CustomerBoqService {
         data: {'reason': reason});
     _check(res.data, 'Failed to reject change order');
     return CustomerChangeOrder.fromJson(
-        res.data['changeOrder'] as Map<String, dynamic>);
+        (res.data as Map<String, dynamic>)['changeOrder']
+            as Map<String, dynamic>);
   }
 
   Future<Map<String, dynamic>?> getFinancialStages(String projectUuid) async {
@@ -259,7 +261,7 @@ class CustomerBoqService {
     final res = await _dio
         .get('/api/projects/$projectUuid/financial/boq-invoices');
     _check(res.data, 'Failed to load BOQ invoices');
-    return ((res.data['invoices'] ?? []) as List)
+    return (((res.data as Map<String, dynamic>)['invoices'] ?? []) as List)
         .map((j) => BoqInvoice.fromJson(j as Map<String, dynamic>))
         .toList();
   }

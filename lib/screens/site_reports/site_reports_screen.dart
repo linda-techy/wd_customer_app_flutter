@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'dart:math';
 import 'package:intl/intl.dart';
 import '../../models/site_report_models.dart';
@@ -38,7 +39,7 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _loadReports();
+    unawaited(_loadReports());
   }
 
   Future<void> _loadOtherProjectSummary() async {
@@ -58,7 +59,7 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
   Widget _buildEmptyState() {
     // Trigger lazy summary fetch on first render.
     if (_otherProjectSummary == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _loadOtherProjectSummary());
+      WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_loadOtherProjectSummary()));
     }
     final others = _otherProjectSummary ?? const [];
     final totalElsewhere = others.fold<int>(0, (s, r) => s + r.count);
@@ -121,7 +122,7 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_isLoadingMore && _hasMore) {
-      _loadMore();
+      unawaited(_loadMore());
     }
   }
 
@@ -436,12 +437,12 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          Navigator.push(
+          unawaited(Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => SiteReportDetailScreen(report: report),
             ),
-          );
+          ));
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -554,12 +555,12 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          Navigator.push(
+          unawaited(Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => SiteReportDetailScreen(report: report),
             ),
-          );
+          ));
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -736,7 +737,7 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
   }
 
   void _openPhotoGallery(SiteReport report, int initialIndex) {
-    Navigator.push(
+    unawaited(Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => SiteReportPhotoViewer(
@@ -744,6 +745,6 @@ class _SiteReportsScreenState extends State<SiteReportsScreen> {
           initialIndex: initialIndex,
         ),
       ),
-    );
+    ));
   }
 }

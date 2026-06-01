@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../constants.dart';
@@ -20,7 +22,7 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _loadBlog();
+    unawaited(_loadBlog());
   }
 
   Future<void> _loadBlog() async {

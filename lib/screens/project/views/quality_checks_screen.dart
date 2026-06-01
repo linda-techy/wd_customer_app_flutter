@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../../services/project_module_service.dart';
 import '../../../services/auth_service.dart';
@@ -18,7 +20,7 @@ class _QualityChecksScreenState extends State<QualityChecksScreen> {
   @override
   void initState() {
     super.initState();
-    _initService();
+    unawaited(_initService());
   }
 
   Future<void> _initService() async {
@@ -59,7 +61,7 @@ class _QualityChecksScreenState extends State<QualityChecksScreen> {
                         padding: const EdgeInsets.all(16),
                         itemCount: _checks.length,
                         itemBuilder: (context, index) {
-                          final check = _checks[index];
+                          final check = _checks[index] as Map<String, dynamic>;
                           final status = check['status'] ?? 'Pending';
                           final isPass = status.toString().toLowerCase().contains('pass') || status.toString().toLowerCase().contains('approved');
                           return Card(
@@ -90,7 +92,7 @@ class _QualityChecksScreenState extends State<QualityChecksScreen> {
                                   ],
                                   if (check['createdAt'] != null) ...[
                                     const SizedBox(height: 4),
-                                    Text('Date: ${check['createdAt'].toString().split('T')[0]}', style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                                    Text('Date: ${(check['createdAt'] as Object).toString().split('T')[0]}', style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
                                   ],
                                 ],
                               ),

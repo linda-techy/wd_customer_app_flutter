@@ -33,10 +33,12 @@ class PaymentService {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final data = response.data['data'];
+        final data =
+            (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>?;
         if (data != null && data['content'] != null) {
           return (data['content'] as List)
-              .map((json) => PaymentSchedule.fromJson(json))
+              .map((json) =>
+                  PaymentSchedule.fromJson(json as Map<String, dynamic>))
               .toList();
         }
       }
@@ -58,7 +60,8 @@ class PaymentService {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final data = response.data['data'];
+        final data =
+            (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>?;
         if (data != null) {
           return PaymentSchedule.fromJson(data);
         }
@@ -89,10 +92,12 @@ class PaymentService {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final data = response.data['data'];
+        final data =
+            (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>?;
         if (data != null && data['content'] != null) {
           return (data['content'] as List)
-              .map((json) => CustomerInvoice.fromJson(json))
+              .map((json) =>
+                  CustomerInvoice.fromJson(json as Map<String, dynamic>))
               .toList();
         }
       }

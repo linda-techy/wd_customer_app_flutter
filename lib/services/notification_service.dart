@@ -1,3 +1,8 @@
+// NotificationService.initialize is invoked from auth_service during the login
+// flow; unreachable_from_main can't trace through Flutter widget callbacks.
+// ignore_for_file: unreachable_from_main
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart'; // re-exports @visibleForTesting from foundation
@@ -132,7 +137,8 @@ class NotificationService {
       case 'PROJECT_UPDATE':
       case 'PHASE_UPDATED':
         if (projectId != null) {
-          Navigator.of(context).pushNamed('project_details/$projectId');
+          unawaited(
+              Navigator.of(context).pushNamed('project_details/$projectId'));
         }
         break;
       case 'PAYMENT_RECORDED':
@@ -144,24 +150,25 @@ class NotificationService {
         // since paymentsScreenRoute is the only deep-link target for
         // payment-related notifications today.
         if (projectId != null) {
-          Navigator.of(context).pushNamed(
+          unawaited(Navigator.of(context).pushNamed(
             paymentsScreenRoute,
             arguments: int.tryParse(projectId),
-          );
+          ));
         }
         break;
       case 'DELAY_REPORTED':
         if (projectId != null) {
-          Navigator.of(context).pushNamed('delay_logs/$projectId');
+          unawaited(Navigator.of(context).pushNamed('delay_logs/$projectId'));
         }
         break;
       case 'TICKET_REPLY':
         if (referenceId != null) {
-          Navigator.of(context).pushNamed('ticket_detail/$referenceId');
+          unawaited(
+              Navigator.of(context).pushNamed('ticket_detail/$referenceId'));
         }
         break;
       default:
-        Navigator.of(context).pushNamed(notificationsScreenRoute);
+        unawaited(Navigator.of(context).pushNamed(notificationsScreenRoute));
     }
   }
 

@@ -463,12 +463,12 @@ class SiteVisit {
       location: json['location'],
       weatherConditions: json['weatherConditions'],
       attendees: json['attendees'] != null ? List<String>.from(json['attendees']) : null,
-      checkInLatitude: json['checkInLatitude']?.toDouble(),
-      checkInLongitude: json['checkInLongitude']?.toDouble(),
-      checkOutLatitude: json['checkOutLatitude']?.toDouble(),
-      checkOutLongitude: json['checkOutLongitude']?.toDouble(),
-      distanceFromProjectCheckIn: json['distanceFromProjectCheckIn']?.toDouble(),
-      distanceFromProjectCheckOut: json['distanceFromProjectCheckOut']?.toDouble(),
+      checkInLatitude: (json['checkInLatitude'] as num?)?.toDouble(),
+      checkInLongitude: (json['checkInLongitude'] as num?)?.toDouble(),
+      checkOutLatitude: (json['checkOutLatitude'] as num?)?.toDouble(),
+      checkOutLongitude: (json['checkOutLongitude'] as num?)?.toDouble(),
+      distanceFromProjectCheckIn: (json['distanceFromProjectCheckIn'] as num?)?.toDouble(),
+      distanceFromProjectCheckOut: (json['distanceFromProjectCheckOut'] as num?)?.toDouble(),
     );
   }
 

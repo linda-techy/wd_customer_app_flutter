@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -33,7 +35,7 @@ class NextPaymentMilestoneCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => Navigator.pushNamed(context, paymentsScreenRoute),
+        onTap: () => unawaited(Navigator.pushNamed(context, paymentsScreenRoute)),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

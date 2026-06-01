@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../models/change_request_summary.dart';
 import '../../../services/customer_boq_service.dart';
 import '../../../design_tokens/app_colors.dart';
+import '../../../widgets/detail_row.dart';
+import '../../../widgets/error_view.dart';
 
 class CoReviewScreen extends StatefulWidget {
   final String projectId;
@@ -30,7 +34,7 @@ class _CoReviewScreenState extends State<CoReviewScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _init();
+    unawaited(_init());
   }
 
   @override
@@ -148,7 +152,7 @@ class _CoReviewScreenState extends State<CoReviewScreen>
   }
 
   void _showDetail(CustomerChangeOrder co) {
-    showModalBottomSheet(
+    unawaited(showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
@@ -157,13 +161,13 @@ class _CoReviewScreenState extends State<CoReviewScreen>
         co: co,
         currency: _currency,
         onApprove: co.isPendingReview
-            ? () { Navigator.pop(context); _approve(co); }
+            ? () { Navigator.pop(context); unawaited(_approve(co)); }
             : null,
         onReject: co.isPendingReview
-            ? () { Navigator.pop(context); _reject(co); }
+            ? () { Navigator.pop(context); unawaited(_reject(co)); }
             : null,
       ),
-    );
+    ));
   }
 
   @override
@@ -206,7 +210,7 @@ class _CoReviewScreenState extends State<CoReviewScreen>
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? _ErrorView(message: _error!, onRetry: _load)
+              ? ErrorView(message: _error!, onRetry: _load)
               : RefreshIndicator(
                   onRefresh: _load,
                   child: TabBarView(
@@ -502,10 +506,10 @@ class _CoDetailSheet extends StatelessWidget {
               const SizedBox(height: 12),
             ],
             const Divider(),
-            _DetailRow('Amount (excl. GST)',
+            DetailRow('Amount (excl. GST)',
                 currency.format(co.netAmountExGst)),
-            _DetailRow('GST', currency.format(co.gstAmount)),
-            _DetailRow(
+            DetailRow('GST', currency.format(co.gstAmount)),
+            DetailRow(
               co.isReduction ? 'Total Reduction' : 'Total Addition',
               (co.isReduction ? '- ' : '+ ') +
                   currency.format(co.netAmountInclGst),
@@ -514,9 +518,9 @@ class _CoDetailSheet extends StatelessWidget {
             ),
             if (co.createdAt != null) ...[
               const Divider(),
-              _DetailRow('Created', df.format(co.createdAt!)),
+              DetailRow('Created', df.format(co.createdAt!)),
               if (co.submittedAt != null)
-                _DetailRow('Submitted', df.format(co.submittedAt!)),
+                DetailRow('Submitted', df.format(co.submittedAt!)),
             ],
             if (co.rejectionReason != null) ...[
               const SizedBox(height: 8),
@@ -598,56 +602,3 @@ class _CoDetailSheet extends StatelessWidget {
   }
 }
 
-class _DetailRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool bold;
-  final Color? color;
-
-  const _DetailRow(this.label, this.value,
-      {this.bold = false, this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label,
-              style: const TextStyle(
-                  color: AppColors.grey600, fontSize: 13)),
-          Text(value,
-              style: TextStyle(
-                  fontWeight:
-                      bold ? FontWeight.bold : FontWeight.normal,
-                  color: color,
-                  fontSize: 13)),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorView extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _ErrorView({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline,
-                size: 48, color: AppColors.error),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            ElevatedButton(
-                onPressed: onRetry, child: const Text('Retry')),
-          ],
-        ),
-      );
-}

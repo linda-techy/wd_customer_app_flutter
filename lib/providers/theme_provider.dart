@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,7 +12,7 @@ class ThemeProvider extends ChangeNotifier {
   ThemeMode get themeMode => _isDark ? ThemeMode.dark : ThemeMode.light;
 
   ThemeProvider() {
-    _loadTheme();
+    unawaited(_loadTheme());
   }
 
   Future<void> _loadTheme() async {

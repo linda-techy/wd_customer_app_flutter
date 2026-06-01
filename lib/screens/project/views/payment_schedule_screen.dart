@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../services/customer_boq_service.dart';
 import '../../../design_tokens/app_colors.dart';
+import '../../../widgets/detail_row.dart';
+import '../../../widgets/error_view.dart';
 
 class PaymentScheduleScreen extends StatefulWidget {
   final String projectId;
@@ -25,7 +29,7 @@ class _PaymentScheduleScreenState extends State<PaymentScheduleScreen> {
   @override
   void initState() {
     super.initState();
-    _init();
+    unawaited(_init());
   }
 
   Future<void> _init() async {
@@ -59,7 +63,7 @@ class _PaymentScheduleScreenState extends State<PaymentScheduleScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? _ErrorView(message: _error!, onRetry: _load)
+              ? ErrorView(message: _error!, onRetry: _load)
               : RefreshIndicator(
                   onRefresh: _load,
                   child: ListView(
@@ -273,86 +277,32 @@ class _StageCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            _DetailRow('Stage %', pct.format(stage.stagePercentage)),
-            _DetailRow('Amount (excl. GST)',
+            DetailRow('Stage %', pct.format(stage.stagePercentage)),
+            DetailRow('Amount (excl. GST)',
                 currency.format(stage.stageAmountExGst)),
-            _DetailRow('GST', currency.format(stage.gstAmount)),
-            _DetailRow('Gross Payable',
+            DetailRow('GST', currency.format(stage.gstAmount)),
+            DetailRow('Gross Payable',
                 currency.format(stage.stageAmountInclGst),
                 bold: true),
             if (stage.appliedCreditAmount > 0)
-              _DetailRow('Credit Applied',
+              DetailRow('Credit Applied',
                   '- ${currency.format(stage.appliedCreditAmount)}',
                   color: AppColors.info),
-            _DetailRow(
+            DetailRow(
               'Net Payable',
               currency.format(stage.netPayableAmount),
               bold: true,
               color: stage.status == 'PAID' ? AppColors.success : null,
             ),
             if (stage.dueDate != null)
-              _DetailRow(
+              DetailRow(
                   'Due Date', df.format(stage.dueDate!)),
             if (stage.paidAt != null)
-              _DetailRow('Paid On', df.format(stage.paidAt!),
+              DetailRow('Paid On', df.format(stage.paidAt!),
                   color: AppColors.success),
           ],
         ),
       ),
     );
   }
-}
-
-class _DetailRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool bold;
-  final Color? color;
-
-  const _DetailRow(this.label, this.value,
-      {this.bold = false, this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label,
-              style: const TextStyle(
-                  color: AppColors.grey600, fontSize: 13)),
-          Text(value,
-              style: TextStyle(
-                  fontWeight:
-                      bold ? FontWeight.bold : FontWeight.normal,
-                  color: color,
-                  fontSize: 13)),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorView extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _ErrorView({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline,
-                size: 48, color: AppColors.error),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            ElevatedButton(
-                onPressed: onRetry, child: const Text('Retry')),
-          ],
-        ),
-      );
 }

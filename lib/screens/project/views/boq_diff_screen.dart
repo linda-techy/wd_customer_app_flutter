@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../../models/boq_diff_models.dart';
 import '../../../services/boq_diff_service.dart';
@@ -27,7 +29,7 @@ class _BoqDiffScreenState extends State<BoqDiffScreen> {
   @override
   void initState() {
     super.initState();
-    _loadRevisions();
+    unawaited(_loadRevisions());
   }
 
   Future<void> _loadRevisions() async {

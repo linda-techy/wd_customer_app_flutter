@@ -22,6 +22,7 @@ Widget buildWebPdfViewer(Uint8List bytes, String filename) {
       
       // Create iframe element
       final iframe = html.IFrameElement()
+        // ignore: unsafe_html - src is a local blob URL built from in-memory PDF bytes
         ..src = url
         ..style.border = 'none'
         ..style.width = '100%'

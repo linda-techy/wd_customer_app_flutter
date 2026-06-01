@@ -82,7 +82,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       if (!mounted) return;
 
       final statusCode = e.response?.statusCode;
-      final rawMsg = e.response?.data?['message']?.toString() ?? '';
+      final rawMsg = (e.response?.data as Map<String, dynamic>?)?['message']?.toString() ?? '';
 
       if (statusCode == 400 &&
           rawMsg.toLowerCase().contains('current password is incorrect')) {

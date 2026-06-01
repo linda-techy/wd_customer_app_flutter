@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -22,7 +24,7 @@ class _InternalTimelineTabState extends State<InternalTimelineTab> {
   void initState() {
     super.initState();
     _provider = widget.provider ?? TimelineProvider(widget.projectUuid);
-    if (widget.provider == null) _provider.loadAll();
+    if (widget.provider == null) unawaited(_provider.loadAll());
   }
 
   @override

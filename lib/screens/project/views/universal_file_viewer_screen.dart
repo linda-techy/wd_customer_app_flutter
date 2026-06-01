@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
@@ -55,7 +56,8 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
     super.initState();
     _detectFileType();
     _resolvedFileUrl = _resolveFileUrl(widget.fileUrl);
-    _authTokenFuture = _loadAuthToken();
+    // Stored in a field and consumed by the FutureBuilder below; intentionally not awaited here.
+    _authTokenFuture = _loadAuthToken(); // ignore: discarded_futures
   }
 
   void _detectFileType() {
@@ -184,8 +186,8 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
       debugPrint('Response headers: ${response.headers}');
       debugPrint('Content-Type: ${response.headers.value('content-type')}');
       debugPrint('Content-Length: ${response.headers.value('content-length')}');
-      debugPrint('Response data type: ${response.data.runtimeType}');
-      debugPrint('Response data length: ${response.data?.length ?? 0}');
+      debugPrint('Response data type: ${(response.data as Object?)?.runtimeType}');
+      debugPrint('Response data length: ${(response.data as List<int>?)?.length ?? 0}');
 
       if (response.statusCode == 401 || response.statusCode == 403) {
         throw Exception('Authentication failed. Please log in again.');
@@ -210,7 +212,7 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
         throw Exception(errorMsg);
       }
 
-      if (response.data == null || response.data.isEmpty) {
+      if (response.data == null || (response.data as List<int>).isEmpty) {
         throw Exception('Received empty response from server');
       }
 
@@ -222,7 +224,7 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
         bytes = Uint8List.fromList(response.data);
       } else {
         throw Exception(
-            'Unexpected response data type: ${response.data.runtimeType}');
+            'Unexpected response data type: ${(response.data as Object?)?.runtimeType}');
       }
 
       debugPrint('Converted to bytes: ${bytes.length}');
@@ -391,7 +393,7 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
         bytes = Uint8List.fromList(response.data);
       } else {
         throw Exception(
-            'Unexpected response data type: ${response.data.runtimeType}');
+            'Unexpected response data type: ${(response.data as Object?)?.runtimeType}');
       }
 
       debugPrint('Downloaded ${bytes.length} bytes');
@@ -562,7 +564,7 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
                   setState(() {
                     _error = null;
                   });
-                  _loadFileForViewing();
+                  unawaited(_loadFileForViewing());
                 },
                 icon: const Icon(Icons.refresh),
                 label: const Text('Retry'),
@@ -584,7 +586,7 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
     // PDFs stream directly; trigger background preload for download/sharing
     if (_detectedFileType == FileType.pdf) {
       if (_fileBytes == null && !_isLoading) {
-        _loadFileForViewing();
+        unawaited(_loadFileForViewing());
       }
       return _buildPdfViewer();
     }
@@ -592,7 +594,7 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
     // Other file types need bytes before viewing
     if (_fileBytes == null && _localFilePath == null) {
       if (!_isLoading) {
-        _loadFileForViewing();
+        unawaited(_loadFileForViewing());
       }
       return const Center(
         child: Column(
@@ -712,7 +714,7 @@ class _UniversalFileViewerScreenState extends State<UniversalFileViewerScreen> {
 
     // Fallback to network image with auth headers
     return FutureBuilder<String?>(
-      future: _ensureAuthToken(),
+      future: _ensureAuthToken(), // ignore: discarded_futures - consumed by FutureBuilder
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());

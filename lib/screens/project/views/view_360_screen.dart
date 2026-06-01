@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -28,7 +30,7 @@ class _View360ScreenState extends State<View360Screen> {
   @override
   void initState() {
     super.initState();
-    _initialize();
+    unawaited(_initialize());
   }
 
   Future<void> _initialize() async {
@@ -363,9 +365,12 @@ class _View360ScreenState extends State<View360Screen> {
 
   void _openPanoramaViewer(View360 view) {
     // Increment view count
-    service?.increment360ViewCount(widget.projectId, view.id);
-    
-    Navigator.push(
+    final svc = service;
+    if (svc != null) {
+      unawaited(svc.increment360ViewCount(widget.projectId, view.id));
+    }
+
+    unawaited(Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => _PanoramaViewerScreen(
@@ -373,7 +378,7 @@ class _View360ScreenState extends State<View360Screen> {
           authToken: _authToken,
         ),
       ),
-    );
+    ));
   }
 }
 

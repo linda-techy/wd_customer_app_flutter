@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 import 'dart:ui';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../constants.dart';
 import '../../../services/auth_service.dart';
@@ -34,7 +36,7 @@ class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
   @override
   void initState() {
     super.initState();
-    _initialize();
+    unawaited(_initialize());
   }
 
   Future<void> _initialize() async {
@@ -295,7 +297,7 @@ class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
   }
 
   void _showInfoSheet() {
-    showModalBottomSheet(
+    unawaited(showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
@@ -342,7 +344,7 @@ class _ThreeDDesignScreenState extends State<ThreeDDesignScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
   
   Widget _buildInfoStat(String label, String value) {

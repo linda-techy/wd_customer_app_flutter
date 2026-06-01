@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -227,11 +229,11 @@ class _AddressCard extends StatelessWidget {
           ? IconButton(
               icon: const Icon(Icons.map_outlined),
               tooltip: 'Open in Maps',
-              onPressed: () => launchUrl(
+              onPressed: () => unawaited(launchUrl(
                 Uri.parse(
                     'https://maps.google.com/?q=${Uri.encodeComponent(location)}'),
                 mode: LaunchMode.externalApplication,
-              ),
+              )),
             )
           : null,
       children: [
@@ -323,16 +325,16 @@ class _TeamMemberTile extends StatelessWidget {
             icon: const Icon(Icons.phone),
             tooltip: member.hasPhone ? 'Call ${member.name}' : 'No phone available',
             onPressed: member.hasPhone
-                ? () => launchUrl(Uri.parse('tel:${member.phone}'),
-                    mode: LaunchMode.externalApplication)
+                ? () => unawaited(launchUrl(Uri.parse('tel:${member.phone}'),
+                    mode: LaunchMode.externalApplication))
                 : null,
           ),
           IconButton(
             icon: const Icon(Icons.email_outlined),
             tooltip: member.hasEmail ? 'Email ${member.name}' : 'No email available',
             onPressed: member.hasEmail
-                ? () => launchUrl(Uri.parse('mailto:${member.email}'),
-                    mode: LaunchMode.externalApplication)
+                ? () => unawaited(launchUrl(Uri.parse('mailto:${member.email}'),
+                    mode: LaunchMode.externalApplication))
                 : null,
           ),
         ],
@@ -387,10 +389,10 @@ class _DocumentTile extends StatelessWidget {
       subtitle: doc.categoryName != null ? Text(doc.categoryName!) : null,
       trailing: IconButton(
         icon: const Icon(Icons.download_outlined),
-        onPressed: () => launchUrl(
+        onPressed: () => unawaited(launchUrl(
           Uri.parse(doc.downloadUrl),
           mode: LaunchMode.externalApplication,
-        ),
+        )),
       ),
     );
   }

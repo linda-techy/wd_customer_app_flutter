@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../../services/project_module_service.dart';
 import '../../../services/auth_service.dart';
@@ -16,7 +18,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   String? _error;
 
   @override
-  void initState() { super.initState(); _initService(); }
+  void initState() { super.initState(); unawaited(_initService()); }
 
   Future<void> _initService() async {
     final token = await AuthService.getAccessToken();
@@ -36,14 +38,15 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   }
 
   void _showFeedbackDialog(dynamic form) {
+    final f = form as Map<String, dynamic>;
     final ratingNotifier = ValueNotifier<int>(0);
     final commentController = TextEditingController();
-    showDialog(
+    unawaited(showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(form['title'] ?? 'Feedback'),
+        title: Text(f['title'] ?? 'Feedback'),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
-          if (form['description'] != null) ...[Text(form['description'], style: TextStyle(color: Colors.grey.shade600)), const SizedBox(height: 16)],
+          if (f['description'] != null) ...[Text(f['description'], style: TextStyle(color: Colors.grey.shade600)), const SizedBox(height: 16)],
           const Text('Your Rating:', style: TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           ValueListenableBuilder<int>(
@@ -69,7 +72,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                 return;
               }
               try {
-                await _service!.submitFeedback(widget.projectId, form['id'] as int, rating: ratingNotifier.value, comments: commentController.text);
+                await _service!.submitFeedback(widget.projectId, f['id'] as int, rating: ratingNotifier.value, comments: commentController.text);
                 if (ctx.mounted) Navigator.pop(ctx);
                 await _loadData();
                 if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Feedback submitted successfully')));
@@ -81,7 +84,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   @override
@@ -101,7 +104,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                         padding: const EdgeInsets.all(16),
                         itemCount: _forms.length,
                         itemBuilder: (context, index) {
-                          final form = _forms[index];
+                          final form = _forms[index] as Map<String, dynamic>;
                           return Card(
                             margin: const EdgeInsets.only(bottom: 12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

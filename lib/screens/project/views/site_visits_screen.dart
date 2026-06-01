@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
@@ -29,7 +31,7 @@ class _SiteVisitsScreenState extends State<SiteVisitsScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _initialize();
+    unawaited(_initialize());
   }
 
   @override
@@ -502,12 +504,12 @@ class _SiteVisitsScreenState extends State<SiteVisitsScreen>
   }
 
   void _showVisitDetails(SiteVisit visit) {
-    showModalBottomSheet(
+    unawaited(showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _SiteVisitDetailsSheet(visit: visit),
-    );
+    ));
   }
 }
 

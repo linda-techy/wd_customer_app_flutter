@@ -28,7 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    unawaited(_loadUserData());
   }
 
   Future<void> _loadUserData() async {
@@ -41,7 +41,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showSignOutDialog() {
-    showDialog(
+    unawaited(showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -58,7 +58,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _handleSignOut();
+                unawaited(_handleSignOut());
               },
               child: const Text(
                 'Sign Out',
@@ -68,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         );
       },
-    );
+    ));
   }
 
   Future<void> _handleSignOut() async {
@@ -120,9 +120,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               imageSrc: "",
               press: () {
                 if (isLoggedIn) {
-                  Navigator.pushNamed(context, userInfoScreenRoute);
+                  unawaited(Navigator.pushNamed(context, userInfoScreenRoute));
                 } else {
-                  Navigator.pushNamed(context, logInScreenRoute);
+                  unawaited(Navigator.pushNamed(context, logInScreenRoute));
                 }
               },
             ),
@@ -137,7 +137,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: HoverCard(
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.pushNamed(context, referAFriendScreenRoute);
+                    unawaited(Navigator.pushNamed(context, referAFriendScreenRoute));
                   },
                   child: Container(
                     padding: const EdgeInsets.all(20),
@@ -215,43 +215,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildAnimatedTile(
               "My Projects",
               "assets/icons/document.svg",
-              () => Navigator.pushNamed(context, projectScreenRoute),
+              () => unawaited(Navigator.pushNamed(context, projectScreenRoute)),
               400.ms,
             ),
             _buildAnimatedTile(
               "Edit Profile",
               "assets/icons/Profile.svg",
-              () => Navigator.pushNamed(context, editUserInfoScreenRoute),
+              () => unawaited(Navigator.pushNamed(context, editUserInfoScreenRoute)),
               420.ms,
             ),
             _buildAnimatedTile(
               "Change Password",
               "assets/icons/Profile.svg",
-              () => Navigator.pushNamed(context, currentPasswordScreenRoute),
+              () => unawaited(Navigator.pushNamed(context, currentPasswordScreenRoute)),
               440.ms,
             ),
             _buildAnimatedTile(
               "Floor Plans & 3D Designs",
               "assets/icons/document.svg",
-              () => Navigator.pushNamed(context, floorPlanScreenRoute),
+              () => unawaited(Navigator.pushNamed(context, floorPlanScreenRoute)),
               470.ms,
             ),
             _buildAnimatedTile(
               "Site Visits & Surveillance",
               "assets/icons/Location.svg",
-              () => Navigator.pushNamed(context, cctvSurveillanceScreenRoute),
+              () => unawaited(Navigator.pushNamed(context, cctvSurveillanceScreenRoute)),
               520.ms,
             ),
             _buildAnimatedTile(
               "Project Documents",
               "assets/icons/document.svg",
-              () => Navigator.pushNamed(context, documentsScreenRoute),
+              () => unawaited(Navigator.pushNamed(context, documentsScreenRoute)),
               570.ms,
             ),
             _buildAnimatedTile(
               "Payment & Invoices",
               "assets/icons/card.svg",
-              () => Navigator.pushNamed(context, paymentsScreenRoute),
+              () => unawaited(Navigator.pushNamed(context, paymentsScreenRoute)),
               620.ms,
             ),
             const SizedBox(height: defaultPadding / 2),
@@ -265,7 +265,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildAnimatedTile(
               "Login",
               "assets/icons/Profile.svg",
-              () => Navigator.pushNamed(context, logInScreenRoute),
+              () => unawaited(Navigator.pushNamed(context, logInScreenRoute)),
               400.ms,
             ),
           ],
@@ -292,7 +292,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               title: "Notification",
               trailingText: "Off",
               onTap: () {
-                Navigator.pushNamed(context, notificationsScreenRoute);
+                unawaited(Navigator.pushNamed(context, notificationsScreenRoute));
               },
             ),
           ),
@@ -304,7 +304,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildAnimatedTile(
             "Help & Support",
             "assets/icons/Chat.svg",
-            () => Navigator.pushNamed(context, getHelpScreenRoute),
+            () => unawaited(Navigator.pushNamed(context, getHelpScreenRoute)),
             870.ms,
           ),
           _buildAnimatedTile(
@@ -406,7 +406,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               scale: 0.85,
               child: Switch(
                 value: isDark,
-                onChanged: (_) => themeProvider.toggleTheme(),
+                onChanged: (_) => unawaited(themeProvider.toggleTheme()),
                 activeColor: Colors.indigo,
               ),
             ),
@@ -445,7 +445,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showAboutDialog() {
-    showDialog(
+    unawaited(showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -511,6 +511,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 }

@@ -53,7 +53,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _loadTickets();
+    unawaited(_loadTickets());
   }
 
   @override
@@ -233,7 +233,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
   Widget _buildTicketCard(SupportTicket ticket) {
     return GestureDetector(
       onTap: () =>
-          Navigator.pushNamed(context, 'ticket_detail/${ticket.id}'),
+          unawaited(Navigator.pushNamed(context, 'ticket_detail/${ticket.id}')),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(

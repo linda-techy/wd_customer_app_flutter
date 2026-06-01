@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -22,7 +24,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   @override
   void initState() {
     super.initState();
-    _loadPortfolio();
+    unawaited(_loadPortfolio());
   }
 
   Future<void> _loadPortfolio() async {
@@ -166,7 +168,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   Widget _buildPortfolioItem(BuildContext context, PortfolioItem item) {
     return HoverCard(
       child: GestureDetector(
-        onTap: () => Navigator.pushNamed(context, 'portfolio_details/${item.slug}'),
+        onTap: () => unawaited(Navigator.pushNamed(context, 'portfolio_details/${item.slug}')),
         child: Container(
           margin: const EdgeInsets.only(bottom: 24),
           decoration: BoxDecoration(
@@ -271,7 +273,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     ),
                     const SizedBox(height: 20),
                     ScaleButton(
-                      onTap: () => Navigator.pushNamed(context, 'portfolio_details/${item.slug}'),
+                      onTap: () => unawaited(Navigator.pushNamed(context, 'portfolio_details/${item.slug}')),
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(vertical: 12),

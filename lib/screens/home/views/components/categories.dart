@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../../../route/screen_export.dart';
 
@@ -55,7 +57,7 @@ class Categories extends StatelessWidget {
                 isActive: index == 0,
                 press: () {
                   if (demoCategories[index].route != null) {
-                    Navigator.pushNamed(context, demoCategories[index].route!);
+                    unawaited(Navigator.pushNamed(context, demoCategories[index].route!));
                   }
                 },
               ),

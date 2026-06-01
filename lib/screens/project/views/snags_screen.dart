@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -39,7 +41,7 @@ class _SnagsScreenState extends State<SnagsScreen>
     _tabController = TabController(length: 2, vsync: this);
     _activeScrollController.addListener(_onScroll);
     _resolvedScrollController.addListener(_onScroll);
-    _initialize();
+    unawaited(_initialize());
   }
 
   @override
@@ -53,7 +55,7 @@ class _SnagsScreenState extends State<SnagsScreen>
   void _onScroll() {
     final ctrl = _tabController.index == 0 ? _activeScrollController : _resolvedScrollController;
     if (ctrl.position.pixels >= ctrl.position.maxScrollExtent - 200 && !_isLoadingMore && _hasMore) {
-      _loadMore();
+      unawaited(_loadMore());
     }
   }
 
@@ -471,7 +473,7 @@ class _SnagsScreenState extends State<SnagsScreen>
   }
 
   void _showSnagDetails(Observation snag) {
-    showModalBottomSheet(
+    unawaited(showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -480,7 +482,7 @@ class _SnagsScreenState extends State<SnagsScreen>
         authToken: _authToken,
         resolveUrl: _resolveUrl,
       ),
-    );
+    ));
   }
 
   Color _getPriorityColor(String? priority) {

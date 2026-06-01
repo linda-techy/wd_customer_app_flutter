@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import '../../../config/api_config.dart';
@@ -30,7 +32,7 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
   @override
   void initState() {
     super.initState();
-    _loadUserInfo();
+    unawaited(_loadUserInfo());
   }
 
   @override
@@ -113,7 +115,7 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
       Navigator.pop(context);
     } on DioException catch (e) {
       if (!mounted) return;
-      final msg = e.response?.data?['message'] ?? e.message ?? 'Failed to update profile';
+      final msg = (e.response?.data as Map<String, dynamic>?)?['message'] ?? e.message ?? 'Failed to update profile';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(msg.toString()), backgroundColor: errorColor),
       );

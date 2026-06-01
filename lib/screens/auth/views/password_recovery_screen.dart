@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../../constants.dart';
 import '../../../services/auth_service.dart';
@@ -133,7 +135,7 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.done,
-          onSubmitted: (_) => _sendResetLink(),
+          onSubmitted: (_) => unawaited(_sendResetLink()),
           decoration: InputDecoration(
             labelText: 'Email Address',
             hintText: 'you@example.com',

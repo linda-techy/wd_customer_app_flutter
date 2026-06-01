@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import '../../../config/api_config.dart';
 import '../../../constants.dart';
 import '../../leads/my_referrals_screen.dart';
+import '../../../widgets/branded_text_field.dart';
 
 /// Comprehensive Refer a Friend screen.
 /// Submits a referral lead to the portal API's public /leads/referral endpoint.
@@ -301,7 +302,8 @@ class _ReferAFriendScreenState extends State<ReferAFriendScreen>
             // ── Section: Your Information ────────────────────────────────
             _buildSectionHeader('Your Information', Icons.person),
             const SizedBox(height: 16),
-            _buildTextField(
+            BrandedTextField(
+              brandColor: _brand,
               controller: _yourNameCtrl,
               label: 'Your Name *',
               hint: 'Enter your full name',
@@ -309,7 +311,8 @@ class _ReferAFriendScreenState extends State<ReferAFriendScreen>
               validator: (v) => _requiredValidator(v, 'Your name'),
             ),
             const SizedBox(height: 16),
-            _buildTextField(
+            BrandedTextField(
+              brandColor: _brand,
               controller: _yourPhoneCtrl,
               label: 'Your Mobile Number *',
               hint: '10-digit mobile number',
@@ -319,7 +322,8 @@ class _ReferAFriendScreenState extends State<ReferAFriendScreen>
               validator: _phoneValidator,
             ),
             const SizedBox(height: 16),
-            _buildTextField(
+            BrandedTextField(
+              brandColor: _brand,
               controller: _yourEmailCtrl,
               label: 'Your Email (Optional)',
               hint: 'your@email.com',
@@ -328,7 +332,8 @@ class _ReferAFriendScreenState extends State<ReferAFriendScreen>
               validator: _emailValidator,
             ),
             const SizedBox(height: 16),
-            _buildTextField(
+            BrandedTextField(
+              brandColor: _brand,
               controller: _yourRelationCtrl,
               label: 'Your Relation to Friend (Optional)',
               hint: 'e.g. Colleague, Neighbour, Friend',
@@ -347,7 +352,8 @@ class _ReferAFriendScreenState extends State<ReferAFriendScreen>
               ),
             ),
             const SizedBox(height: 16),
-            _buildTextField(
+            BrandedTextField(
+              brandColor: _brand,
               controller: _referralNameCtrl,
               label: "Friend's Name *",
               hint: "Enter friend's full name",
@@ -355,7 +361,8 @@ class _ReferAFriendScreenState extends State<ReferAFriendScreen>
               validator: (v) => _requiredValidator(v, "Friend's name"),
             ),
             const SizedBox(height: 16),
-            _buildTextField(
+            BrandedTextField(
+              brandColor: _brand,
               controller: _referralPhoneCtrl,
               label: "Friend's Mobile Number *",
               hint: '10-digit mobile number',
@@ -365,7 +372,8 @@ class _ReferAFriendScreenState extends State<ReferAFriendScreen>
               validator: _phoneValidator,
             ),
             const SizedBox(height: 16),
-            _buildTextField(
+            BrandedTextField(
+              brandColor: _brand,
               controller: _referralEmailCtrl,
               label: "Friend's Email (Optional)",
               hint: "friend@email.com",
@@ -374,7 +382,8 @@ class _ReferAFriendScreenState extends State<ReferAFriendScreen>
               validator: _emailValidator,
             ),
             const SizedBox(height: 16),
-            _buildTextField(
+            BrandedTextField(
+              brandColor: _brand,
               controller: _referralLocationCtrl,
               label: 'Location / District *',
               hint: 'e.g. Thrissur, Ernakulam, Kozhikode',
@@ -438,7 +447,8 @@ class _ReferAFriendScreenState extends State<ReferAFriendScreen>
               onChanged: (v) => setState(() => _timeline = v ?? ''),
             ),
             const SizedBox(height: 16),
-            _buildTextField(
+            BrandedTextField(
+              brandColor: _brand,
               controller: _messageCtrl,
               label: 'Additional Notes (Optional)',
               hint: 'Any other details that may help our team...',
@@ -584,49 +594,6 @@ class _ReferAFriendScreenState extends State<ReferAFriendScreen>
           style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
         ),
       ],
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    List<TextInputFormatter>? inputFormatters,
-    String? Function(String?)? validator,
-    int maxLines = 1,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      inputFormatters: inputFormatters,
-      maxLines: maxLines,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: Icon(icon, color: _brand, size: 20),
-        filled: true,
-        fillColor: Theme.of(context).cardTheme.color ?? Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _brand, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      ),
     );
   }
 

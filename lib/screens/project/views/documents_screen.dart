@@ -1,7 +1,9 @@
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'dart:typed_data';
 import '../../../constants.dart';
 import '../../../services/auth_service.dart';
 import '../../../models/api_models.dart';
@@ -41,7 +43,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   @override
   void initState() {
     super.initState();
-    _initialize();
+    unawaited(_initialize());
   }
 
   Future<void> _initialize() async {
@@ -341,7 +343,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     return HoverCard(
       child: GestureDetector(
         onTap: () {
-          Navigator.push(
+          unawaited(Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => UniversalFileViewerScreen(
@@ -350,7 +352,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 fileType: doc.fileType,
               ),
             ),
-          );
+          ));
         },
         child: Container(
           margin: const EdgeInsets.only(bottom: 16),
@@ -456,7 +458,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   }
   
   void _showDownloadOption(ProjectDocument doc) {
-    showModalBottomSheet(
+    unawaited(showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -471,7 +473,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               title: const Text("Download to Device"),
               onTap: () {
                 Navigator.pop(context);
-                _downloadDocument(doc);
+                unawaited(_downloadDocument(doc));
               },
             ),
              ListTile(
@@ -479,13 +481,13 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               title: const Text("Share Document"),
               onTap: () {
                 Navigator.pop(context);
-                _shareDocument(doc);
+                unawaited(_shareDocument(doc));
               },
             ),
           ],
         ),
       ),
-    );
+    ));
   }
 
   void _handleBackButton(BuildContext context) {
@@ -493,9 +495,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       Navigator.of(context).pop();
     } else {
       if (projectId != null) {
-        Navigator.of(context).pushReplacementNamed('/project_details/$projectId');
+        unawaited(Navigator.of(context).pushReplacementNamed('/project_details/$projectId'));
       } else {
-        Navigator.of(context).pushReplacementNamed('/dashboard');
+        unawaited(Navigator.of(context).pushReplacementNamed('/dashboard'));
       }
     }
   }

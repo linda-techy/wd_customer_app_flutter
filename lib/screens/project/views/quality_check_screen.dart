@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
@@ -30,7 +32,7 @@ class _QualityCheckScreenState extends State<QualityCheckScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _initialize();
+    unawaited(_initialize());
   }
 
   @override
@@ -445,14 +447,14 @@ class _QualityCheckScreenState extends State<QualityCheckScreen>
   }
 
   void _showCheckDetails(QualityCheck check) {
-    showModalBottomSheet(
+    unawaited(showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _QualityCheckDetailsSheet(
         check: check,
       ),
-    );
+    ));
   }
 }
 

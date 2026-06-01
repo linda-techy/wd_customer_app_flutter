@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -51,7 +53,7 @@ class _FeedbackSheetState extends State<_FeedbackSheet> {
   @override
   void initState() {
     super.initState();
-    _initialize();
+    unawaited(_initialize());
   }
 
   @override

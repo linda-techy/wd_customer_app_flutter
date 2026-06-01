@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:dio/dio.dart';
@@ -95,7 +97,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _loadNotifications();
+    unawaited(_loadNotifications());
   }
 
   @override
@@ -106,7 +108,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_isLoadingMore && _hasMore) {
-      _loadMore();
+      unawaited(_loadMore());
     }
   }
 
@@ -126,7 +128,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         options: Options(headers: ApiConfig.getAuthHeaders(token), validateStatus: (_) => true),
       );
       if (response.statusCode == 200) {
-        final data = (response.data['data'] as Map<String, dynamic>?) ?? {};
+        final data = ((response.data as Map<String, dynamic>?)?['data'] as Map<String, dynamic>?) ?? {};
         final rawList = (data['notifications'] as List<dynamic>?) ?? [];
         final loaded = rawList.map((e) => _mapNotification(e as Map<String, dynamic>)).toList();
         setState(() {
@@ -169,7 +171,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       );
 
       if (response.statusCode == 200) {
-        final data = (response.data['data'] as Map<String, dynamic>?) ?? {};
+        final data = ((response.data as Map<String, dynamic>?)?['data'] as Map<String, dynamic>?) ?? {};
         final rawList = (data['notifications'] as List<dynamic>?) ?? [];
         final loaded = rawList.map((e) => _mapNotification(e as Map<String, dynamic>)).toList();
         setState(() {

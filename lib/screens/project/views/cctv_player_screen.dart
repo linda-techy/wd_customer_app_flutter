@@ -26,7 +26,7 @@ class _CctvPlayerScreenState extends State<CctvPlayerScreen> {
     super.initState();
     _player = Player();
     _controller = VideoController(_player);
-    _startStream();
+    unawaited(_startStream());
   }
 
   Future<void> _startStream() async {
@@ -63,7 +63,7 @@ class _CctvPlayerScreenState extends State<CctvPlayerScreen> {
 
   @override
   void dispose() {
-    _player.dispose();
+    unawaited(_player.dispose());
     super.dispose();
   }
 

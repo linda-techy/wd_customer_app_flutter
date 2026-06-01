@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../../constants.dart';
 import '../../../route/route_constants.dart';
@@ -185,7 +187,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             controller: _confirmPasswordController,
             obscureText: _obscureConfirmPassword,
             textInputAction: TextInputAction.done,
-            onFieldSubmitted: (_) => _handleResetPassword(),
+            onFieldSubmitted: (_) => unawaited(_handleResetPassword()),
             decoration: InputDecoration(
               labelText: 'Confirm New Password',
               hintText: 'Re-enter new password',
@@ -278,10 +280,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pushNamedAndRemoveUntil(
+              unawaited(Navigator.of(context).pushNamedAndRemoveUntil(
                 logInScreenRoute,
                 (route) => false,
-              );
+              ));
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: logoRed,

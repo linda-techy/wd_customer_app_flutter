@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -22,7 +24,7 @@ class _ProjectWorkspaceScreenState extends State<ProjectWorkspaceScreen> {
     return ChangeNotifierProvider<ProjectWorkspaceProvider>(
       create: (ctx) {
         final provider = ProjectWorkspaceProvider(widget.projectUuid);
-        provider.load();
+        unawaited(provider.load());
         return provider;
       },
       child: Scaffold(

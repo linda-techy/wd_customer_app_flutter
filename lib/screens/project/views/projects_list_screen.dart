@@ -29,7 +29,7 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProjects(null);
+    unawaited(_loadProjects(null));
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -49,7 +49,7 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
       const Duration(milliseconds: _searchDebounceMs),
       () {
         if (!mounted) return;
-        if (q != _lastQuery) _loadProjects(q.isEmpty ? null : q);
+        if (q != _lastQuery) unawaited(_loadProjects(q.isEmpty ? null : q));
       },
     );
   }
@@ -136,7 +136,7 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                           icon: const Icon(Icons.clear_rounded),
                           onPressed: () {
                             _searchController.clear();
-                            _loadProjects(null);
+                            unawaited(_loadProjects(null));
                           },
                         )
                       : null,
@@ -157,7 +157,7 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
-                onSubmitted: (value) => _loadProjects(value.trim().isEmpty ? null : value.trim()),
+                onSubmitted: (value) => unawaited(_loadProjects(value.trim().isEmpty ? null : value.trim())),
               ),
             ),
             Padding(
@@ -210,7 +210,7 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 TextButton.icon(
-                                  onPressed: () => _loadProjects(_searchController.text.trim().isEmpty ? null : _searchController.text.trim()),
+                                  onPressed: () => unawaited(_loadProjects(_searchController.text.trim().isEmpty ? null : _searchController.text.trim())),
                                   icon: const Icon(Icons.refresh_rounded),
                                   label: const Text('Retry'),
                                 ),
@@ -249,11 +249,13 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                               ),
                             )
                           : RefreshIndicator(
-                              onRefresh: () => _loadProjects(
-                                _searchController.text.trim().isEmpty
-                                    ? null
-                                    : _searchController.text.trim(),
-                              ),
+                              onRefresh: () async {
+                                await _loadProjects(
+                                  _searchController.text.trim().isEmpty
+                                      ? null
+                                      : _searchController.text.trim(),
+                                );
+                              },
                               color: primaryColor,
                               child: ListView.builder(
                                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
@@ -265,13 +267,13 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                                     child: ResponsiveProjectCard(
                                       project: project,
                                       onTap: () {
-                                        Navigator.pushNamed(
+                                        unawaited(Navigator.pushNamed(
                                           context,
                                           projectDetailsRoute(
                                             project.projectUuid ?? '',
                                           ),
                                           arguments: project,
-                                        );
+                                        ));
                                       },
                                     ),
                                   );
