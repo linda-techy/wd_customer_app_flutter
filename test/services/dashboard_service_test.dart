@@ -16,7 +16,7 @@ import '../test_helpers/mock_dio_adapter.dart';
 /// DashboardService is fully static and routes every HTTP call through the
 /// ApiService singleton (`static final _apiService = ApiService()`). We swap
 /// that singleton's underlying Dio for one backed by [MockDioAdapter] via the
-/// `setTestDio` test seam, so the service's calls hit the mock transport.
+/// `testDio` test seam, so the service's calls hit the mock transport.
 ///
 /// Each DashboardService method also runs a pre-flight token check:
 ///   1. AuthService.getAccessToken()  -> flutter_secure_storage `read`
@@ -54,7 +54,7 @@ void main() {
     adapter = MockDioAdapter();
     final dio = Dio(BaseOptions(baseUrl: 'https://test.example'))
       ..httpClientAdapter = adapter;
-    ApiService().setTestDio(dio); // dashboard's _apiService is this singleton.
+    ApiService().testDio = dio; // dashboard's _apiService is this singleton.
 
     mockToken('fake-token');
     // Far-future expiry => AuthService.isTokenExpired() == false, so the

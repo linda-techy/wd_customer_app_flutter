@@ -25,7 +25,7 @@ void main() {
     final dio = Dio(BaseOptions(baseUrl: 'https://test.example'))
       ..httpClientAdapter = adapter;
     api = ApiService();
-    api.setTestDio(dio);
+    api.testDio = dio;
   });
 
   // Note on error paths: Dio's default validateStatus REJECTS non-2xx, so a

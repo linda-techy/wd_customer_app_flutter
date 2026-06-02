@@ -24,8 +24,11 @@ class ApiService {
   /// MockDioAdapter so calls don't hit the network. The injected Dio has no
   /// AuthInterceptor (the mock adapter intercepts at the transport layer).
   /// Production code never calls this.
+  // Write-only test seam — a production getter would expose the internal Dio for
+  // no reason, so no corresponding getter is provided.
   @visibleForTesting
-  void setTestDio(Dio dio) {
+  // ignore: avoid_setters_without_getters
+  set testDio(Dio dio) {
     _dio = dio;
   }
 

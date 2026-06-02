@@ -67,7 +67,7 @@ void main() {
     adapter = MockDioAdapter();
     final dio = Dio(BaseOptions(baseUrl: 'https://test.example'))
       ..httpClientAdapter = adapter;
-    ApiService().setTestDio(dio);
+    ApiService().testDio = dio;
 
     // 2) SharedPreferences — start empty; individual tests seed what they read.
     SharedPreferences.setMockInitialValues(<String, Object>{});
